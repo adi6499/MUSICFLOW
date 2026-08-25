@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MusicFlow — Lossless Music Player for Android & iOS</title>
+  <meta name="description" content="Experience 320kbps Lossless Hi-Fi audio, reactive glass waveform visualizers, instant synced lyrics, smart radio, and sleek glassmorphic UI on Android & iOS.">
+  <meta name="keywords" content="MusicFlow, lossless music player, free music streaming, android music app, ios music ipa, apk download, hifi audio, visualizer">
+  <meta property="og:title" content="MusicFlow — The Future of Lossless Music Streaming">
+  <meta property="og:description" content="Download MusicFlow for Android (.APK) and iOS (.IPA). 100% Free, Zero Ads, 320kbps Lossless Audio.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23E50914'/><path d='M35 25v50l40-25z' fill='white'/></svg>">
+</head>
+<body>
+
+  <!-- Ambient Dynamic Canvas -->
+  <canvas id="ambient-canvas"></canvas>
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-center-right"></div>
+  <div class="ambient-glow glow-bottom-left"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo">
+        <div class="logo-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </div>
+        <span>MusicFlow</span>
+        <span class="brand-badge">v2.4 PRO</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features" class="nav-link">Features</a></li>
+        <li><a href="#preview" class="nav-link">Web Preview</a></li>
+        <li><a href="#download" class="nav-link">Downloads</a></li>
+        <li><a href="#sideload" class="nav-link">Install Guide</a></li>
+        <li><a href="#faq" class="nav-link">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="#download" class="btn btn-primary" id="nav-download-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+          <span>Get App</span>
+        </a>
+        <button class="mobile-toggle" aria-label="Toggle menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-pill">
+          <span class="hero-pill-dot"></span>
+          <span>MusicFlow v2.4.0 is now live for Android & iOS</span>
+        </div>
+
+        <h1 class="hero-title">
+          The Future of <span class="text-gradient">Lossless Music</span> <br>
+          <span class="text-gradient-neon">Without Limits.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Experience ultra-high definition 320kbps streaming, live reactive glass waveforms, studio equalizer, AI artist radios, and synchronized karaoke lyrics with zero subscription fees.
+        </p>
+
+        <div class="hero-download-stack">
+          <div class="hero-buttons-row">
+            <a href="downloads/MusicFlow.apk" download="MusicFlow.apk" class="btn btn-primary btn-large" id="hero-primary-btn">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4128 13.8533 8.0822 12 8.0822s-3.5902.3306-5.1367.8675L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/></svg>
+              <span>Download Android APK (25.2 MB)</span>
+            </a>
+            
+            <a href="downloads/MusicFlow.ipa" download="MusicFlow.ipa" class="btn btn-glass btn-large" id="hero-secondary-btn">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
+              <span>Download iOS IPA (5.15 MB)</span>
+            </a>
+          </div>
+
+          <div class="download-meta-text">
+            <div class="download-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#00F2FE"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              <span>100% Clean & Verified</span>
+            </div>
+            <div class="download-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#00F2FE"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+              <span>Zero Ads & Tracking</span>
+            </div>
+            <div class="download-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#00F2FE"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+              <span>Auto Offline Sync</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D Interactive Phone Showcase -->
+      <div class="mockup-container">
+        <div class="floating-stat-badge stat-badge-1">
+          <div class="badge-label">Hi-Fi Bitrate</div>
+          <div class="badge-value">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#00F2FE"><circle cx="12" cy="12" r="10"/></svg>
+            <span>320 kbps Lossless</span>
+          </div>
+        </div>
+
+        <div class="floating-stat-badge stat-badge-2">
+          <div class="badge-label">Hardware DSP</div>
+          <div class="badge-value">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#E50914"><path d="M3 17h18v2H3zm0-7h18v2H3zm0-7h18v2H3z"/></svg>
+            <span>10-Band EQ + Bass</span>
+          </div>
+        </div>
+
+        <div class="phone-mockup">
+          <div class="phone-notch">
+            <div class="notch-camera"></div>
+          </div>
+
+          <div class="phone-screen">
+            <div class="mockup-album-art"></div>
+
+            <div class="mockup-visualizer-bars">
+              <div class="mockup-bar" style="animation-delay: 0.1s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.4s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.2s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.6s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.3s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.5s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.2s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.7s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.1s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.4s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.8s;"></div>
+              <div class="mockup-bar" style="animation-delay: 0.3s;"></div>
+            </div>
+
+            <div class="mockup-track-info">
+              <div class="mockup-track-title">Chikiri Chikiri</div>
+              <div class="mockup-track-artist">A.R. Rahman • Peddi</div>
+            </div>
+
+            <div class="mockup-controls">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              <div class="mockup-play-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#000000"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Audio Preview Section -->
+  <section class="preview-section" id="preview">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Demo</span>
+        <h2 class="section-title">Test the Lossless Engine Live</h2>
+        <p class="section-desc">Experience the liquid glass player interface and real-time spectrum visualizer directly in your browser.</p>
+      </div>
+
+      <div class="web-player-card">
+        <div class="web-player-grid">
+          <div class="player-artwork-box">
+            <img src="https://c.saavncdn.com/artists/A_R_Rahman_500x500.jpg" alt="A.R. Rahman" class="player-art-img">
+            <div class="player-quality-tag">320 KBPS FLAC</div>
+          </div>
+
+          <div class="player-controls-box">
+            <h3 style="font-size: 22px; font-weight: 700;">Chikiri Chikiri (From "Peddi")</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">A.R. Rahman, Raqeeb Alam • Lossless Master</p>
+
+            <canvas id="web-spectrum-canvas" class="player-canvas-spectrum"></canvas>
+
+            <div class="progress-bar-container">
+              <div class="progress-fill">
+                <div class="progress-thumb"></div>
+              </div>
+            </div>
+
+            <div class="time-row">
+              <span>01:14</span>
+              <span>03:42</span>
+            </div>
+
+            <div class="player-actions-row">
+              <button class="action-icon-btn" title="Shuffle">🔀</button>
+              <button class="action-icon-btn" title="Previous">⏮</button>
+              <button class="play-main-btn" id="web-player-play-btn" title="Play / Pause">▶</button>
+              <button class="action-icon-btn" title="Next">⏭</button>
+              <button class="action-icon-btn" title="Repeat">🔁</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Grid Section -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Feature Suite</span>
+        <h2 class="section-title">Built for Serious Audiophiles</h2>
+        <p class="section-desc">Every element engineered from scratch for unmatched fidelity, instant response, and stunning glassmorphism.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🎧</div>
+          <h3 class="feature-card-title">320kbps Lossless Audio</h3>
+          <p class="feature-card-desc">Studio-grade Bitrate streaming with support for adaptive qualities (320kbps, 160kbps, 96kbps, 48kbps Data Saver).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🌊</div>
+          <h3 class="feature-card-title">Live Reactive Visualizer</h3>
+          <p class="feature-card-desc">24-band live frequency analyzer rendered dynamically under the artwork with neon cyan & crimson glass reflections.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">📻</div>
+          <h3 class="feature-card-title">Smart AI Artist Radio</h3>
+          <p class="feature-card-desc">Instant infinite queue generation based on artist acoustic signatures, mood analysis, and trending popularity.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🌙</div>
+          <h3 class="feature-card-title">Sleep Timer Natural Decay</h3>
+          <p class="feature-card-desc">Volume automatically decays linearly over the final 60 seconds so you drift off peacefully without abrupt cutoffs.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">📱</div>
+          <h3 class="feature-card-title">9:16 Instagram Story Exporter</h3>
+          <p class="feature-card-desc">Generate frosted glass story cards with album art and track metadata ready to share directly to Instagram & WhatsApp.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">🎵</div>
+          <h3 class="feature-card-title">Synced Karaoke Lyrics</h3>
+          <p class="feature-card-desc">Zero-latency word-by-word synced scrolling lyrics powered by LRCLIB with instant offline database caching.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download Hub Section -->
+  <section class="download-section" id="download">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Install MusicFlow</span>
+        <h2 class="section-title">Direct Package Downloads</h2>
+        <p class="section-desc">Download authentic, verified builds with zero malware, zero ads, and zero analytics.</p>
+      </div>
+
+      <div class="download-cards-grid">
+        <!-- Android Card -->
+        <div class="platform-download-card recommended" id="card-android">
+          <div class="card-recommended-badge">Recommended for Android</div>
+          <div class="platform-logo">🤖</div>
+          <h3 class="platform-title">Android Package</h3>
+          <p class="platform-version">v2.4.0 • Android 8.0 (Oreo) or later</p>
+
+          <div class="file-spec-row">
+            <div class="file-spec-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              <span>25.2 MB</span>
+            </div>
+            <div class="file-spec-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              <span>Arm64-v8a / Universal</span>
+            </div>
+          </div>
+
+          <a href="downloads/MusicFlow.apk" download="MusicFlow.apk" class="btn btn-primary download-action-btn">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            <span>Download APK Direct</span>
+          </a>
+        </div>
+
+        <!-- iOS Card -->
+        <div class="platform-download-card" id="card-ios">
+          <div class="platform-logo">🍎</div>
+          <h3 class="platform-title">iOS Package</h3>
+          <p class="platform-version">v2.4.0 • iOS 14.0 or later (iPhone & iPad)</p>
+
+          <div class="file-spec-row">
+            <div class="file-spec-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              <span>5.15 MB</span>
+            </div>
+            <div class="file-spec-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              <span>Sideloadable IPA</span>
+            </div>
+          </div>
+
+          <a href="downloads/MusicFlow.ipa" download="MusicFlow.ipa" class="btn btn-glass download-action-btn">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            <span>Download IPA Direct</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sideloading Guides Hub -->
+      <div class="sideload-guide-box" id="sideload">
+        <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center;">Installation & Sideloading Guide</h3>
+        
+        <div class="guide-tabs-header">
+          <button class="tab-btn active" data-target="guide-android">Android (APK)</button>
+          <button class="tab-btn" data-target="guide-altstore">iOS (AltStore)</button>
+          <button class="tab-btn" data-target="guide-sideloadly">iOS (Sideloadly)</button>
+          <button class="tab-btn" data-target="guide-scarlet">iOS (Scarlet / TrollStore)</button>
+        </div>
+
+        <div class="tab-content">
+          <!-- Android Pane -->
+          <div class="tab-pane active" id="guide-android">
+            <ul class="steps-list">
+              <li class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <h4>Download the APK</h4>
+                  <p>Click the "Download Android APK" button above to download the <code>MusicFlow.apk</code> file to your device.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <h4>Allow Unknown Sources</h4>
+                  <p>When prompted by Android, enable "Install unknown apps" or "Allow from this source" in Settings.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                  <h4>Open & Enjoy</h4>
+                  <p>Tap <strong>Install</strong>. Once completed, open MusicFlow and start enjoying lossless music immediately.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- AltStore Pane -->
+          <div class="tab-pane" id="guide-altstore">
+            <ul class="steps-list">
+              <li class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <h4>Download the IPA</h4>
+                  <p>Download <code>MusicFlow.ipa</code> directly on your iPhone or transfer it from your computer.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <h4>Open in AltStore</h4>
+                  <p>Open the AltStore app on your iPhone, go to <strong>My Apps</strong>, tap the <strong>+</strong> icon in the top left, and choose <code>MusicFlow.ipa</code>.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                  <h4>Launch MusicFlow</h4>
+                  <p>AltStore will sign and install the app. Once installed, MusicFlow appears on your Home Screen.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Sideloadly Pane -->
+          <div class="tab-pane" id="guide-sideloadly">
+            <ul class="steps-list">
+              <li class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <h4>Connect iPhone to PC/Mac</h4>
+                  <p>Launch Sideloadly and connect your iOS device via USB or Wi-Fi.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <h4>Drag & Drop IPA</h4>
+                  <p>Drag the <code>MusicFlow.ipa</code> file into Sideloadly, enter your Apple ID, and click <strong>Start</strong>.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                  <h4>Trust Developer Certificate</h4>
+                  <p>On your iPhone, navigate to <em>Settings → General → VPN & Device Management</em> and tap <strong>Trust</strong>.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Scarlet / TrollStore Pane -->
+          <div class="tab-pane" id="guide-scarlet">
+            <ul class="steps-list">
+              <li class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <h4>Direct On-Device Install</h4>
+                  <p>If you have Scarlet or TrollStore installed on your iPhone, download <code>MusicFlow.ipa</code> in Safari.</p>
+                </div>
+              </li>
+              <li class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <h4>Install in 1-Click</h4>
+                  <p>Share or import the IPA into TrollStore or Scarlet to instantly sign and install permanently without revokes.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="features-section" id="faq" style="background: var(--bg-surface);">
+    <div class="container" style="max-width: 860px;">
+      <div class="section-header">
+        <span class="section-tag">Common Questions</span>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="glass-card">
+          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #FFFFFF;">Is MusicFlow completely free?</h4>
+          <p style="color: var(--text-muted); font-size: 14px;">Yes! MusicFlow is 100% free with zero in-app purchases, zero subscription paywalls, and zero ads.</p>
+        </div>
+
+        <div class="glass-card">
+          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #FFFFFF;">Can I play music in the background and with the screen locked?</h4>
+          <p style="color: var(--text-muted); font-size: 14px;">Yes! MusicFlow uses native background audio sessions with full lock screen media controls (album art, seekbar, next/previous, play/pause).</p>
+        </div>
+
+        <div class="glass-card">
+          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #FFFFFF;">Does the app remember where I left off when I close it?</h4>
+          <p style="color: var(--text-muted); font-size: 14px;">Yes! MusicFlow has persistent cold-start restoration. When you reopen the app, your last song and playback position are restored instantly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <div class="logo-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            </div>
+            <span>MusicFlow</span>
+          </div>
+          <p>The premier open lossless music streaming player for Android and iOS devices.</p>
+        </div>
+
+        <div class="footer-col">
+          <h5>Downloads</h5>
+          <ul class="footer-links">
+            <li><a href="downloads/MusicFlow.apk" download="MusicFlow.apk">Android APK (25.2 MB)</a></li>
+            <li><a href="downloads/MusicFlow.ipa" download="MusicFlow.ipa">iOS IPA (5.15 MB)</a></li>
+            <li><a href="#sideload">Sideloading Guide</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Features</h5>
+          <ul class="footer-links">
+            <li><a href="#features">320kbps Lossless</a></li>
+            <li><a href="#features">Reactive Visualizer</a></li>
+            <li><a href="#features">Synced Lyrics</a></li>
+            <li><a href="#features">Story Card Exporter</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Platform</h5>
+          <ul class="footer-links">
+            <li><a href="#faq">Compatibility</a></li>
+            <li><a href="#faq">Privacy & Zero Ads</a></li>
+            <li><a href="#preview">Web Demo</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 MusicFlow. Built for high-fidelity music lovers.</span>
+        <span>Version 2.4.0 • Verified Clean</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
