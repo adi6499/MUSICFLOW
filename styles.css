@@ -897,6 +897,7 @@ body {
 }
 
 .card-recommended-badge {
+  display: none;
   position: absolute;
   top: 16px;
   right: 16px;
@@ -910,9 +911,36 @@ body {
   letter-spacing: 0.5px;
 }
 
+.platform-download-card.recommended .card-recommended-badge {
+  display: block;
+}
+
 .platform-logo {
-  font-size: 48px;
-  margin-bottom: 16px;
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #FFFFFF;
+  transition: var(--transition-smooth);
+}
+
+.platform-download-card:hover .platform-logo {
+  transform: scale(1.08) translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-glass-hover);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.platform-download-card.recommended .platform-logo {
+  background: rgba(229, 9, 20, 0.12);
+  border-color: var(--border-accent);
+  color: #FF2E36;
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.2);
 }
 
 .platform-title {
@@ -979,6 +1007,13 @@ body {
   cursor: pointer;
   transition: var(--transition-fast);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn svg {
+  flex-shrink: 0;
 }
 
 .tab-btn.active {
