@@ -1,0 +1,39 @@
+{
+  "updateAvailable": false,
+  "updateRequired": false,
+  "currentVersion": "2.7.0",
+  "latestVersion": "2.7.0",
+  "versionCode": 27,
+  "minimumVersion": "1.0.0",
+  "platform": "android",
+  "title": "MusicFlow v2.7.0",
+  "message": "MusicFlow is up to date",
+  "releaseNotes": [
+    "YouTube Music single-song and playlist import",
+    "Playlist search continuous multi-character filtering",
+    "Radio playback instant start and stream skip recovery",
+    "Non-blocking startup and Stale-While-Revalidate caching",
+    "Lock-screen media controls and background playback"
+  ],
+  "releaseUrl": "https://github.com/adi6499/MUSIC-FLOW",
+  "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
+  "apkUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
+  "fileName": "MusicFlow.apk",
+  "fileSize": 34296622,
+  "assetAvailable": true,
+  "mandatory": false,
+  "android": {
+    "available": true,
+    "version": "2.7.0",
+    "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
+    "fileName": "MusicFlow.apk",
+    "size": 34296622
+  },
+  "ios": {
+    "available": true,
+    "version": "2.7.0",
+    "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.ipa",
+    "fileName": "MusicFlow.ipa",
+    "size": 3994324
+  }
+}
