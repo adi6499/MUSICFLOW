@@ -1,39 +1,39 @@
 {
   "updateAvailable": false,
   "updateRequired": false,
-  "currentVersion": "2.7.2",
-  "latestVersion": "2.7.2",
-  "versionCode": 29,
+  "currentVersion": "2.7.3",
+  "latestVersion": "2.7.3",
+  "versionCode": 30,
   "minimumVersion": "1.0.0",
   "platform": "android",
-  "title": "MusicFlow v2.7.2",
+  "title": "MusicFlow v2.7.3",
   "message": "MusicFlow is up to date",
   "releaseNotes": [
-    "Permanent Keychain backup retention across app reinstall on iOS",
-    "Universal native HTTP bridge eliminating CORS and connection errors",
-    "Full YouTube and YouTube Music playlist import with 320kbps matching",
-    "Extended New Releases catalog with instant See All expansion",
-    "Lock-screen controls and continuous background playback"
+    "Next-generation Recommendation Engine with deep multi-signal taste profile and dynamic affinity matching",
+    "Optimized high-fidelity audio pipeline with studio equalizer and enhanced spatial audio",
+    "Instant zero-latency search responsiveness with automatic stream caching and pre-buffering",
+    "Enhanced album discography resilience, seamless back navigation, and playlist view optimizations",
+    "Continuous radio autoplay queue recovery and persistent playback state"
   ],
-  "releaseUrl": "https://github.com/adi6499/MUSIC-FLOW",
+  "releaseUrl": "https://adi6499.github.io/MUSICFLOW/",
   "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "apkUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "fileName": "MusicFlow.apk",
-  "fileSize": 25188956,
+  "fileSize": 25280917,
   "assetAvailable": true,
   "mandatory": false,
   "android": {
     "available": true,
-    "version": "2.7.2",
+    "version": "2.7.3",
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
     "fileName": "MusicFlow.apk",
-    "size": 25188956
+    "size": 25280917
   },
   "ios": {
     "available": true,
-    "version": "2.7.2",
+    "version": "2.7.3",
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.ipa",
     "fileName": "MusicFlow.ipa",
-    "size": 5571930
+    "size": 5656242
   }
 }
