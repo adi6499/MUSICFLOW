@@ -62,6 +62,7 @@ const App = (() => {
     console.log('[PERF] app start');
     try { fixIosViewportGap(); } catch (_) {}
     try { showScreenDiagnostics(); } catch (_) {}
+    try { watchDiagnosticsGesture(); } catch (_) {}
 
     if (typeof ThemeManager !== 'undefined') {
       ThemeManager.apply();
@@ -1348,19 +1349,43 @@ const App = (() => {
   function fixIosViewportGap() {
     if (!isIosDevice() || window.navigator.standalone !== true) return;
     const apply = () => {
+      const root = document.documentElement;
+      const cs = getComputedStyle(root);
+      const envTop = parseFloat(cs.getPropertyValue('--safe-top')) || 0;        // env(safe-area-inset-top) on iOS
+      const envBottom = parseFloat(cs.getPropertyValue('--safe-bottom')) || 0;
       const landscape = window.innerWidth > window.innerHeight;
       const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
       let gap = Math.round(full - window.innerHeight);
-      if (!(gap > 0 && gap < 120)) gap = 0;
-      document.documentElement.style.setProperty('--ios-gap', gap + 'px');
+      // Only when the page really starts under the status bar (envTop > 0) can a short viewport leave a strip
+      // at the bottom; otherwise the viewport simply starts below the status bar and ends at the screen edge.
+      if (!(envTop > 0) || !(gap > 0 && gap < 160)) gap = 0;
+      root.style.setProperty('--ios-gap', gap + 'px');
+      // the home-indicator zone must stay clear even when the viewport did not cover it (env bottom = 0)
+      if (gap > 0 && envBottom === 0) root.style.setProperty('--safe-bottom', '34px');
     };
     apply();
     window.addEventListener('resize', apply);
     window.addEventListener('orientationchange', () => setTimeout(apply, 350));
   }
-  // Open the app with ?diag=1 to see the numbers behind the layout (for screenshots from a real phone).
+  // Open the app with ?diag=1, or tap the "musicflow" label five times, to see the numbers behind the layout.
   function showScreenDiagnostics() {
     if (!/[?&#]diag=1/.test(location.search + location.hash)) return;
+    toggleScreenDiagnostics(true);
+  }
+  let diagTaps = [];
+  function watchDiagnosticsGesture() {
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.fl-app-name, .nav-brand-text')) return;
+      const now = Date.now();
+      diagTaps = diagTaps.filter(t => now - t < 2000);
+      diagTaps.push(now);
+      if (diagTaps.length >= 5) { diagTaps = []; toggleScreenDiagnostics(); }
+    });
+  }
+  function toggleScreenDiagnostics(forceOn) {
+    const existing = document.getElementById('screen-diag');
+    if (existing && !forceOn) { existing.remove(); return; }
+    if (existing) return;
     const el = document.createElement('pre');
     el.id = 'screen-diag';
     el.style.cssText = 'position:fixed;left:8px;right:8px;top:50%;transform:translateY(-50%);z-index:100000;background:#107C10;color:#fff;font:12px/1.5 monospace;padding:12px;white-space:pre-wrap;border:2px solid #fff;margin:0;';

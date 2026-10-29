@@ -134,11 +134,11 @@
         body.theme-fluent .mini-player-dock {
           bottom: calc(-1 * var(--ios-gap, 0px));
           height: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px));
-          padding-bottom: calc(max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px));
+          padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom));
         }
-        body.theme-fluent .main-content { padding-bottom: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px) + 16px); }
-        body.theme-fluent .full-player-sheet { padding-bottom: calc(72px + max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px)); }
-        body.theme-fluent .ytm-player-drawer { padding-bottom: calc(max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px)); }
+        body.theme-fluent .main-content { padding-bottom: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + 16px); }
+        body.theme-fluent .full-player-sheet { padding-bottom: calc(72px + max(var(--safe-bottom), env(safe-area-inset-bottom))); }
+        body.theme-fluent .ytm-player-drawer { padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom)); }
       }
     }
   </style>
