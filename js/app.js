@@ -77,6 +77,19 @@ const App = (() => {
     UI.renderHomeGreeting();
     showWelcomeIfFirstLaunch();
     renderAccentSetting();
+    try {
+      const titleObserver = new MutationObserver(() => {
+        const active = document.querySelector('.screen.active');
+        if (!active) return;
+        const id = active.id.replace('screen-', '');
+        if (id === 'detail') {
+          const tag = (document.getElementById('detail-source-tag') || {}).textContent || '';
+          FL_TITLES.detail = /playlist/i.test(tag) ? 'Playlist' : 'Album';
+        }
+        setTopbarTitle(id);
+      });
+      document.querySelectorAll('.screen').forEach(s => titleObserver.observe(s, { attributes: true, attributeFilter: ['class'] }));
+    } catch (_) {}
     try { if (typeof ApiConfig !== 'undefined' && !ApiConfig.isNativeApp()) { const r = document.getElementById('settings-get-app-row'); if (r) r.style.display = 'flex'; } } catch (_) {}
     initTimeOfDayMoodChips();
     UI.renderRecentSearchChips();
@@ -1253,7 +1266,7 @@ const App = (() => {
   }
 
   // Fluent shell: the navigation rail is an overlay on phones
-  const FL_TITLES = { home: 'Home', explore: 'Browse', radio: 'Radio', search: 'Search', library: 'My music', samples: 'Samples' };
+  const FL_TITLES = { home: 'Home', explore: 'Browse', radio: 'Radio', search: 'Search', library: 'My music', samples: 'Samples', detail: 'Album', artist: 'Artist', genre: 'Genre' };
   function toggleRail() { document.body.classList.toggle('rail-open'); }
   function closeRail() { document.body.classList.remove('rail-open'); }
   function setTopbarTitle(screen) {
