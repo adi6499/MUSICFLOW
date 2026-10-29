@@ -1,525 +1,2289 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-fluent">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MusicFlow — Lossless Music Player for Android & iOS</title>
-  <meta name="description" content="Experience 320kbps Lossless Hi-Fi audio, reactive glass waveform visualizers, instant synced lyrics, smart radio, and sleek glassmorphic UI on Android & iOS.">
-  <meta name="keywords" content="MusicFlow, lossless music player, free music streaming, android music app, ios music ipa, apk download, hifi audio, visualizer">
-  <meta property="og:title" content="MusicFlow — The Future of Lossless Music Streaming">
-  <meta property="og:description" content="Download MusicFlow for Android (.APK) and iOS (.IPA). 100% Free, Zero Ads, 320kbps Lossless Audio.">
-  <meta property="og:type" content="website">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23E50914'/><path d='M35 25v50l40-25z' fill='white'/></svg>">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MusicFlow">
+  <meta name="theme-color" content="#1F1F1F">
+  <meta name="description" content="MusicFlow — Ultimate lossless music streaming matching native Android app">
+
+  <title>MusicFlow</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <!-- Fonts are bundled locally (assets/fonts) via css/fluent.css -->
+
+  <script>
+    // System-bar insets from the Android shell (MainActivity → __mfSetInsets). Cached so the very first paint
+    // after a cold start already clears the status bar.
+    (function () {
+      var root = document.documentElement;
+      function apply(t, b, l, r) {
+        root.style.setProperty('--safe-top', (Number(t) || 0) + 'px');
+        root.style.setProperty('--safe-bottom', (Number(b) || 0) + 'px');
+        root.style.setProperty('--safe-left', (Number(l) || 0) + 'px');
+        root.style.setProperty('--safe-right', (Number(r) || 0) + 'px');
+      }
+      window.__mfSetInsets = function (t, b, l, r) {
+        apply(t, b, l, r);
+        try { localStorage.setItem('mf_insets', JSON.stringify([t, b, l, r])); } catch (_) {}
+      };
+      try {
+        var cached = JSON.parse(localStorage.getItem('mf_insets') || 'null');
+        if (Array.isArray(cached)) apply(cached[0], cached[1], cached[2], cached[3]);
+      } catch (_) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="css/app.css?v=5.0.0">
+  <link rel="stylesheet" href="css/fluent.css?v=5.0.0">
+  <link rel="stylesheet" href="css/fluent-motion.css?v=5.0.0">
+  <link rel="stylesheet" href="css/ambient.css?v=5.0.0">
 </head>
-<body>
+<body class="theme-fluent">
+  <!-- Global Top Progress Loading Bar -->
+  <div id="app-loader" class="app-loader"></div>
 
-  <!-- Ambient Dynamic Canvas -->
-  <canvas id="ambient-canvas"></canvas>
-  <div class="ambient-glow glow-top-left"></div>
-  <div class="ambient-glow glow-center-right"></div>
-  <div class="ambient-glow glow-bottom-left"></div>
+  <!-- Dynamic Ambient Background Lighting -->
+  <div id="dynamic-bg"></div>
 
-  <!-- Header -->
-  <header class="site-header">
-    <div class="container nav-container">
-      <a href="#" class="brand-logo">
-        <div class="logo-icon-box">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-        </div>
-        <span>MusicFlow</span>
-        <span class="brand-badge">v2.7.3 PRO</span>
-      </a>
-
-      <ul class="nav-links">
-        <li><a href="#features" class="nav-link">Features</a></li>
-        <li><a href="#preview" class="nav-link">Web Preview</a></li>
-        <li><a href="#download" class="nav-link">Downloads</a></li>
-        <li><a href="#sideload" class="nav-link">Install Guide</a></li>
-        <li><a href="#faq" class="nav-link">FAQ</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <a href="#download" class="btn btn-primary" id="nav-download-btn">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-          <span>Get App</span>
-        </a>
-        <button class="mobile-toggle" aria-label="Toggle menu">☰</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="container hero-grid">
-      <div class="hero-content">
-        <div class="hero-pill">
-          <span class="hero-pill-dot"></span>
-          <span>MusicFlow v2.7.3 is now live for Android & iOS</span>
-        </div>
-
-        <h1 class="hero-title">
-          The Future of <span class="text-gradient">Lossless Music</span> <br>
-          <span class="text-gradient-neon">Without Limits.</span>
-        </h1>
-
-        <p class="hero-subtitle">
-          Experience ultra-high definition streaming, YouTube Music playlist import, studio equalizer, AI artist radios, and synchronized karaoke lyrics with zero subscription fees.
-        </p>
-
-        <div class="hero-download-stack">
-          <div class="hero-buttons-row">
-            <a href="downloads/MusicFlow.apk" download="MusicFlow.apk" class="btn btn-primary btn-large" id="hero-primary-btn">
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4128 13.8533 8.0822 12 8.0822s-3.5902.3306-5.1367.8675L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/></svg>
-              <span>Download Android APK (Direct)</span>
-            </a>
-            
-            <a href="downloads/MusicFlow.ipa" download="MusicFlow.ipa" class="btn btn-glass btn-large" id="hero-secondary-btn">
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
-              <span>Download iOS IPA (3.8 MB)</span>
-            </a>
-          </div>
-
-          <div class="download-meta-text">
-            <div class="download-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#00F2FE"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              <span>100% Clean & Verified</span>
-            </div>
-            <div class="download-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#00F2FE"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
-              <span>Zero Ads & Tracking</span>
-            </div>
-            <div class="download-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#00F2FE"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-              <span>Auto Offline Sync</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3D Interactive Phone Showcase -->
-      <div class="mockup-container">
-        <div class="floating-stat-badge stat-badge-1">
-          <div class="badge-label">Hi-Fi Bitrate</div>
-          <div class="badge-value">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#00F2FE"><circle cx="12" cy="12" r="10"/></svg>
-            <span>320 kbps Lossless</span>
-          </div>
-        </div>
-
-        <div class="floating-stat-badge stat-badge-2">
-          <div class="badge-label">Hardware DSP</div>
-          <div class="badge-value">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#E50914"><path d="M3 17h18v2H3zm0-7h18v2H3zm0-7h18v2H3z"/></svg>
-            <span>10-Band EQ + Bass</span>
-          </div>
-        </div>
-
-        <div class="phone-mockup">
-          <div class="phone-notch">
-            <div class="notch-camera"></div>
-          </div>
-
-          <div class="phone-screen">
-            <div class="mockup-album-art"></div>
-
-            <div class="mockup-visualizer-bars">
-              <div class="mockup-bar" style="animation-delay: 0.1s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.4s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.2s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.6s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.3s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.5s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.2s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.7s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.1s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.4s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.8s;"></div>
-              <div class="mockup-bar" style="animation-delay: 0.3s;"></div>
-            </div>
-
-            <div class="mockup-track-info">
-              <div class="mockup-track-title">Chikiri Chikiri</div>
-              <div class="mockup-track-artist">A.R. Rahman • Peddi</div>
-            </div>
-
-            <div class="mockup-controls">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-              <div class="mockup-play-btn">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#000000"><path d="M8 5v14l11-7z"/></svg>
+  <!-- Main Edge-to-Edge Mobile Container -->
+  <div id="app" class="app-container">
+    <!-- Phone top bar: menu · page title · search -->
+    <header class="fl-topbar" id="fl-topbar">
+      <button class="fl-topbar-btn" onclick="App.toggleRail()" aria-label="Menu" title="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="fl-topbar-title"><span id="fl-topbar-title">Home</span><small>MusicFlow</small></div>
+      <button class="fl-topbar-btn" onclick="App.navigate('search')" aria-label="Search" title="Search"><span class="material-symbols-outlined">search</span></button>
+    </header>
+    <div class="fl-scrim" onclick="App.closeRail()"></div>
+    <!-- Inline title bar shown when a Large Title scrolls away (Browse / Radio / Library) -->
+    <div id="inline-title-bar" class="inline-title-bar" aria-hidden="true"><span id="inline-title-text"></span></div>
+    <main class="main-content" id="main-scroll-container">
+      
+      <!-- ================= 1. HOME SCREEN (HomeScreen.kt) ================= -->
+      <section id="screen-home" class="screen active">
+        <!-- Sticky Header Wrapper: Top Bar (Greeting & Settings) + Mood & Activity Filter Chips -->
+        <div class="home-sticky-header" id="home-sticky-header">
+          <header class="home-top-bar ytm-top-bar" id="ytm-top-bar">
+            <div class="ytm-brand-wrap" onclick="App.navigate('home')" title="MusicFlow">
+              <div class="ytm-logo-icon">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+                  <circle cx="12" cy="12" r="11" fill="#FF0000"/>
+                  <polygon points="9.5,7.5 16.5,12 9.5,16.5" fill="#FFFFFF"/>
+                </svg>
               </div>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              <span class="ytm-brand-text">Home</span>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Live Audio Preview Section -->
-  <section class="preview-section" id="preview">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Interactive Demo</span>
-        <h2 class="section-title">Test the Lossless Engine Live</h2>
-        <p class="section-desc">Experience the liquid glass player interface and real-time spectrum visualizer directly in your browser.</p>
-      </div>
-
-      <div class="web-player-card">
-        <div class="web-player-grid">
-          <div class="player-artwork-box">
-            <img src="https://c.saavncdn.com/artists/A_R_Rahman_500x500.jpg" alt="A.R. Rahman" class="player-art-img">
-            <div class="player-quality-tag">320 KBPS FLAC</div>
-          </div>
-
-          <div class="player-controls-box">
-            <h3 style="font-size: 22px; font-weight: 700;">Chikiri Chikiri (From "Peddi")</h3>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">A.R. Rahman, Raqeeb Alam • Lossless Master</p>
-
-            <canvas id="web-spectrum-canvas" class="player-canvas-spectrum"></canvas>
-
-            <div class="progress-bar-container">
-              <div class="progress-fill">
-                <div class="progress-thumb"></div>
+            <h1 class="home-greeting-text" id="home-greeting" style="display:none;">Good morning</h1>
+            <div id="offline-pill-indicator" style="display:none; align-items:center; gap:4px; padding:3px 8px; border-radius:12px; background:var(--accent-soft); border:1px solid var(--accent-border); font-size:10.5px; font-weight:800; color:var(--accent); letter-spacing:0.5px; margin-left:auto; margin-right:8px;">
+              <span class="material-symbols-outlined" style="font-size:13px;">cloud_off</span>
+              <span>OFFLINE</span>
+            </div>
+            <div class="ytm-top-actions">
+              <button class="icon-btn-glass" id="btn-top-equalizer" onclick="App.openEqualizer()" aria-label="Equalizer & Sound FX" title="Equalizer & Sound FX">
+                <span class="material-symbols-outlined">equalizer</span>
+              </button>
+              <button class="icon-btn-glass" id="btn-top-cast" onclick="App.openAudioOutputSheet()" aria-label="Connect to a device" title="Connect to a device" style="display:none;">
+                <span class="material-symbols-outlined">cast</span>
+              </button>
+              <button class="icon-btn-glass" id="btn-top-search" onclick="App.navigate('search')" aria-label="Search" title="Search">
+                <span class="material-symbols-outlined">search</span>
+              </button>
+              <button class="icon-btn-glass" id="btn-open-settings" onclick="App.openSettings()" aria-label="Settings" title="Settings" style="display:none;">
+                <span class="material-symbols-outlined">settings</span>
+              </button>
+              <div class="user-avatar-wrap" id="btn-user-profile" onclick="App.openProfile()" title="Account & Profile">
+                <img id="home-user-avatar" src="assets/logo.png" alt="Avatar" style="pointer-events:none;">
               </div>
             </div>
+          </header>
 
-            <div class="time-row">
-              <span>01:14</span>
-              <span>03:42</span>
-            </div>
+          <!-- Sticky Mood & Activity Filter Chips Bar -->
+          <div class="mood-chips-scroll" id="mood-chips-container">
+            <button class="mood-chip active" data-mood="All">All</button>
+            <button class="mood-chip" data-mood="Energize">Energize</button>
+            <button class="mood-chip" data-mood="Workout">Workout</button>
+            <button class="mood-chip" data-mood="Relax">Relax</button>
+            <button class="mood-chip" data-mood="Focus">Focus</button>
+            <button class="mood-chip" data-mood="Commute">Commute</button>
+          </div>
+        </div>
 
-            <div class="player-actions-row">
-              <button class="action-icon-btn" title="Shuffle">🔀</button>
-              <button class="action-icon-btn" title="Previous">⏮</button>
-              <button class="play-main-btn" id="web-player-play-btn" title="Play / Pause">▶</button>
-              <button class="action-icon-btn" title="Next">⏭</button>
-              <button class="action-icon-btn" title="Repeat">🔁</button>
+        <div class="home-feed-sections" id="home-feed-sections">
+          <!-- Hero: the first Top Pick, written on its artwork, with Play Now -->
+          <section class="shelf-section home-hero-section" id="home-hero-section" style="display:none;">
+            <div class="home-hero-card" id="home-hero-card" onclick="App.playHeroSong()" role="button" aria-label="Play the featured song">
+              <img class="home-hero-art" id="home-hero-art" src="assets/logo.png" alt="" onerror="this.src='assets/logo.png'">
+              <div class="home-hero-overlay"></div>
+              <div class="home-hero-top">
+                <span class="home-hero-tag" id="home-hero-tag">Top pick for you</span>
+                <h2 class="home-hero-title" id="home-hero-title">Song</h2>
+                <span class="home-hero-artist" id="home-hero-artist">Artist</span>
+              </div>
+              <button class="home-hero-play" onclick="event.stopPropagation(); App.playHeroSong();" aria-label="Play Now">
+                <span class="material-symbols-outlined fill-icon">play_arrow</span>
+                <span>Play Now</span>
+              </button>
             </div>
+          </section>
+          <!-- YouTube Music "Listen Again" 2x3 Grid -->
+          <section class="shelf-section" id="shelf-listen-again-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">LISTEN AGAIN</span>
+                <h2 class="shelf-title">Recently Played</h2>
+              </div>
+            </div>
+            <div class="ytm-listen-again-grid" id="ytm-listen-again-container"></div>
+          </section>
+
+          <!-- Continue Listening (RESUME) -->
+          <section class="shelf-section" id="shelf-continue-listening-section" style="display:none;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">RESUME</span>
+                <h2 class="shelf-title">Continue Listening</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-continue-listening-container"></div>
+          </section>
+
+          <!-- Quick Picks (START RADIO FROM A SONG) -->
+          <section class="shelf-section" id="quick-picks-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">START RADIO FROM A SONG</span>
+                <h2 class="shelf-title">Top Picks</h2>
+              </div>
+              <button class="shelf-action-pill" id="btn-quick-picks-play-all">
+                <span class="material-symbols-outlined fill-icon" style="color:var(--accent); font-size:16px;">play_arrow</span>
+                <span>Play all</span>
+              </button>
+            </div>
+            <div class="quick-picks-carousel" id="quick-picks-container">
+              <div class="loading-shimmer-card"></div>
+            </div>
+          </section>
+
+          <!-- Made For You (PERSONALIZED MIX - Phase 5.2 Recommendation Engine) -->
+          <section class="shelf-section" id="shelf-made-for-you-section" style="display:none;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">PERSONALIZED FOR YOU</span>
+                <h2 class="shelf-title">Made For You</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-made-for-you-container">
+              <div class="loading-shimmer-card"></div>
+              <div class="loading-shimmer-card"></div>
+            </div>
+          </section>
+
+          <!-- Because You Listened To (SIMILAR STYLE) -->
+          <section class="shelf-section" id="shelf-because-listened-section" style="display:none;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag" id="because-listened-tag">SIMILAR STYLE</span>
+                <h2 class="shelf-title" id="because-listened-title">Because you listened</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-because-listened-container">
+              <div class="loading-shimmer-card"></div>
+            </div>
+          </section>
+
+          <!-- Daily Mixes (MIXED FOR YOU) -->
+          <section class="shelf-section" id="daily-mixes-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">MIXED FOR YOU</span>
+                <h2 class="shelf-title">Daily Mixes</h2>
+              </div>
+            </div>
+            <div class="daily-mixes-shelf">
+              <!-- Supermix Card -->
+              <div class="daily-mix-card card-supermix" id="card-mix-supermix">
+                <div class="mix-card-ripple-1"></div>
+                <div class="mix-card-ripple-2"></div>
+                <div class="mix-card-ripple-3"></div>
+                <div class="mix-card-play-btn"><span class="material-symbols-outlined fill-icon">play_arrow</span></div>
+                <div class="mix-card-text">
+                  <h3 class="mix-card-title">Supermix</h3>
+                  <p class="mix-card-sub">Personalized for you</p>
+                </div>
+              </div>
+
+              <!-- Phonk Waves Card -->
+              <div class="daily-mix-card card-phonk" id="card-mix-phonk">
+                <div class="mix-card-wave-bg"></div>
+                <div class="mix-card-play-btn"><span class="material-symbols-outlined fill-icon">play_arrow</span></div>
+                <div class="mix-card-text">
+                  <h3 class="mix-card-title">Phonk Waves</h3>
+                  <p class="mix-card-sub">High energy phonk</p>
+                </div>
+              </div>
+
+              <!-- Lo-Fi Beats Card -->
+              <div class="daily-mix-card card-lofi" id="card-mix-lofi">
+                <div class="mix-card-lofi-bg"></div>
+                <div class="mix-card-play-btn"><span class="material-symbols-outlined fill-icon">play_arrow</span></div>
+                <div class="mix-card-text">
+                  <h3 class="mix-card-title">Lo-Fi Beats</h3>
+                  <p class="mix-card-sub">Study &amp; chill mix</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Your Favorite Artists (DISCOGRAPHY) -->
+          <section class="shelf-section" id="shelf-favorite-artists-section" style="display:none;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">DISCOGRAPHY</span>
+                <h2 class="shelf-title">Your Favorite Artists</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-favorite-artists-container"></div>
+          </section>
+
+          <!-- Discover Something New (FRESH PICKS) -->
+          <section class="shelf-section" id="shelf-discover-section" style="display:none;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">FRESH PICKS</span>
+                <h2 class="shelf-title">New Discoveries</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-discover-container"></div>
+          </section>
+
+          <!-- Forgotten Favorites (LISTEN AGAIN) -->
+          <section class="shelf-section" id="shelf-recent-section" style="display:none;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">LISTEN AGAIN</span>
+                <h2 class="shelf-title">From Your Library</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-recent-container"></div>
+          </section>
+
+          <!-- Recommended Tracks (DISCOVER) -->
+          <section class="shelf-section" id="shelf-recommended-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">DISCOVER</span>
+                <h2 class="shelf-title">Recommended for You</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-recommended-container">
+              <div class="loading-shimmer-card"></div>
+              <div class="loading-shimmer-card"></div>
+              <div class="loading-shimmer-card"></div>
+            </div>
+          </section>
+
+          <!-- New Releases (FRESH MUSIC) -->
+          <section class="shelf-section" id="shelf-new-releases-section">
+            <div class="shelf-header clickable-link" onclick="App.toggleAllNewReleases()" style="cursor:pointer;">
+              <div>
+                <span class="shelf-tag">FRESH MUSIC</span>
+                <h2 class="shelf-title">New releases</h2>
+              </div>
+              <div style="display:flex; align-items:center; gap:4px; color:var(--color-primary); font-size:13px; font-weight:700;">
+                <span id="new-releases-toggle-label">See all</span>
+                <span class="material-symbols-outlined chevron-icon" id="new-releases-chevron">chevron_right</span>
+              </div>
+            </div>
+            <div class="vertical-tracks-shelf" id="shelf-new-releases-container">
+              <div class="loading-shimmer-row"></div>
+              <div class="loading-shimmer-row"></div>
+            </div>
+          </section>
+
+          <!-- Trending Charts & Playlists (EXPLORE) -->
+          <section class="shelf-section" id="shelf-trending-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">EXPLORE</span>
+                <h2 class="shelf-title">Charts &amp; Playlists</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-trending-container">
+              <div class="loading-shimmer-card"></div>
+            </div>
+          </section>
+
+          <!-- Top Albums & EPs (DISCOGRAPHY) -->
+          <section class="shelf-section" id="shelf-albums-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">DISCOGRAPHY</span>
+                <h2 class="shelf-title">Top Albums</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="shelf-albums-container">
+              <div class="loading-shimmer-card"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ================= 1.5 SAMPLES SCREEN (YouTube Music Shorts Discovery Reel) ================= -->
+      <section id="screen-samples" class="screen">
+        <header class="samples-top-bar">
+          <span class="samples-top-title">Samples</span>
+        </header>
+        <div class="samples-reel-wrapper" id="samples-reel-wrapper">
+          <div class="samples-reel-container" id="samples-reel-container">
+            <!-- Dynamic vertical scroll cards -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. NAVIGATION / EXPLORE SCREEN ================= -->
+      <section id="screen-explore" class="screen">
+        <header class="screen-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <h1 class="screen-title" style="margin:0;">Browse</h1>
+        </header>
+
+        <!-- 1. 3D SWIPE DISCOVERY: Discover For You -->
+        <div class="discover-swipe-section">
+          <div class="shelf-header">
+            <div>
+              <span class="shelf-tag">3D DISCOVERY</span>
+              <h2 class="shelf-title">Discover For You</h2>
+            </div>
+          </div>
+          <div class="discover-swipe-container" id="discover-swipe-container">
+            <div class="swipe-card-stack" id="swipe-card-stack">
+              <div class="loading-shimmer-card" style="height:320px; border-radius:24px;"></div>
+            </div>
+          </div>
+          <div class="swipe-card-actions">
+            <button class="swipe-btn swipe-btn-nope" onclick="App.swipeCardAction('nope')" title="Not interested" aria-label="Not interested">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+            <button class="swipe-btn swipe-btn-play" onclick="App.swipeCardAction('play')" title="Play track" aria-label="Play track">
+              <span class="material-symbols-outlined fill-icon" style="font-size:32px;">play_arrow</span>
+            </button>
+            <button class="swipe-btn swipe-btn-like" onclick="App.swipeCardAction('like')" title="Favorite track" aria-label="Favorite track">
+              <span class="material-symbols-outlined fill-icon">favorite</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. BROWSE HUB: Genres, Moods, Charts, New Releases, Top Playlists -->
+        <div class="explore-section" style="margin-top:28px;">
+          <h2 class="explore-subheading">Genres &amp; Moods</h2>
+          <div class="search-chips-row" style="margin-bottom:16px;">
+            <button class="search-pill-btn active" onclick="App.openGenre('All')">Genres</button>
+            <button class="search-pill-btn" onclick="App.openGenre('Moods & Moments')">Moods</button>
+            <button class="search-pill-btn" onclick="App.openGenre('Top Charts')">Charts</button>
+            <button class="search-pill-btn" onclick="App.openGenre('New Releases')">New Releases</button>
+            <button class="search-pill-btn" onclick="App.openGenre('Top Playlists')">Top Playlists</button>
+          </div>
+          <div class="search-categories-grid">
+            <div class="search-cat-card" onclick="App.openGenre('Bollywood')" style="background: linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%);">
+              <span class="search-cat-name">Bollywood</span>
+              <span class="material-symbols-outlined search-cat-icon">local_fire_department</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Pop')" style="background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);">
+              <span class="search-cat-name">Pop</span>
+              <span class="material-symbols-outlined search-cat-icon">music_note</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Hip-Hop & Rap')" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);">
+              <span class="search-cat-name">Hip-Hop</span>
+              <span class="material-symbols-outlined search-cat-icon">headphones</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Lo-Fi & Chill')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <span class="search-cat-name">Lo-Fi &amp; Chill</span>
+              <span class="material-symbols-outlined search-cat-icon">spa</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Rock & Metal')" style="background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);">
+              <span class="search-cat-name">Rock</span>
+              <span class="material-symbols-outlined search-cat-icon">album</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Punjabi Hits')" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);">
+              <span class="search-cat-name">Punjabi</span>
+              <span class="material-symbols-outlined search-cat-icon">bolt</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Romantic')" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+              <span class="search-cat-name">Romantic</span>
+              <span class="material-symbols-outlined search-cat-icon">favorite</span>
+            </div>
+            <div class="search-cat-card" onclick="App.openGenre('Dance / EDM')" style="background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);">
+              <span class="search-cat-name">Dance / EDM</span>
+              <span class="material-symbols-outlined search-cat-icon">equalizer</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. TRENDING HUB: Songs, Artists, Albums -->
+        <div class="explore-section" style="margin-top:24px;">
+          <h2 class="explore-subheading">Trending Now</h2>
+          <div class="search-chips-row" style="margin-bottom:12px;">
+            <button class="search-pill-btn" onclick="App.searchCategory('Trending Songs')">🔥 Trending Songs</button>
+            <button class="search-pill-btn" onclick="App.searchCategory('Top Artists')">⭐ Trending Artists</button>
+            <button class="search-pill-btn" onclick="App.searchCategory('Top Albums')">💿 Trending Albums</button>
+          </div>
+        </div>
+
+        <!-- 4. EXPLORE: Made For You, Popular In India, International Hits -->
+        <div class="explore-section" id="explore-charts-section" style="margin-top:20px;">
+          <div class="shelf-header">
+            <div>
+              <span class="shelf-tag">EXPLORE DISCOVERY</span>
+              <h2 class="shelf-title">Popular In India &amp; Global Hits</h2>
+            </div>
+          </div>
+          <div class="cards-horizontal-shelf" id="explore-charts-container">
+            <div class="loading-shimmer-card"></div>
+            <div class="loading-shimmer-card"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2.1 GENRE DETAIL SCREEN ================= -->
+      <section id="screen-genre" class="screen">
+        <header class="genre-header" id="genre-header-banner">
+          <button class="icon-btn-glass" onclick="App.navigate('explore')" aria-label="Back">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </button>
+          <div class="genre-header-info">
+            <span class="genre-tag">GENRE &amp; STYLE</span>
+            <h1 class="genre-title" id="genre-screen-title">Bollywood</h1>
+          </div>
+          <button class="genre-radio-btn" id="btn-genre-radio" onclick="App.startGenreRadio()">
+            <span class="material-symbols-outlined">radio</span>
+            <span>Start Radio</span>
+          </button>
+        </header>
+
+        <div class="genre-content-body" style="padding: 16px 20px;">
+          <!-- Top Songs in Genre -->
+          <div class="shelf-section">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">TOP TRACKS</span>
+                <h2 class="shelf-title">Popular in this Genre</h2>
+              </div>
+              <button class="shelf-action-pill" id="btn-genre-play-all" onclick="App.playAllGenreSongs()">
+                <span class="material-symbols-outlined fill-icon" style="color:var(--accent); font-size:16px;">play_arrow</span>
+                <span>Play all</span>
+              </button>
+            </div>
+            <div class="vertical-tracks-shelf" id="genre-songs-container"></div>
+          </div>
+
+          <!-- Featured Artists in Genre -->
+          <div class="shelf-section" id="genre-artists-section" style="margin-top:20px;">
+            <div class="shelf-header">
+              <div>
+                <span class="shelf-tag">KEY ARTISTS</span>
+                <h2 class="shelf-title">Featured Artists</h2>
+              </div>
+            </div>
+            <div class="cards-horizontal-shelf" id="genre-artists-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2.5 RADIO SCREEN (RadioScreen) ================= -->
+      <section id="screen-radio" class="screen">
+        <header class="screen-header">
+          <h1 class="screen-title">Radio</h1>
+        </header>
+        <div id="radio-screen-body"></div>
+      </section>
+
+      <!-- ================= 3. SEARCH SCREEN (SearchScreen.kt) ================= -->
+      <section id="screen-search" class="screen">
+        <!-- Sticky Search Header (Bar + Categories) -->
+        <div class="search-header-sticky-container" id="search-sticky-header">
+          <!-- Search Input Bar -->
+          <div class="search-bar-wrap">
+            <div class="search-bar-inner">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input type="search" id="search-input" class="search-input" placeholder="Artists, Songs, Lyrics and More" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              <button class="search-clear-btn" id="btn-search-clear" style="display:none;" aria-label="Clear">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+              <button class="search-voice-btn" id="btn-search-voice" onclick="App.startVoiceSearch()" aria-label="Voice search" title="Search with voice" style="display:none;">
+                <span class="material-symbols-outlined">mic</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Category Chips -->
+          <div class="search-category-chips" id="search-category-chips">
+            <button class="search-cat-chip active" data-cat="All">All</button>
+            <button class="search-cat-chip" data-cat="Songs">Songs</button>
+            <button class="search-cat-chip" data-cat="Artists">Artists</button>
+            <button class="search-cat-chip" data-cat="Albums">Albums</button>
+            <button class="search-cat-chip" data-cat="Playlists">Playlists</button>
+          </div>
+        </div>
+
+        <!-- Floating Compact Scroll to Top Control -->
+        <button class="scroll-top-btn" id="btn-search-scroll-top" onclick="App.scrollSearchToTop()" aria-label="Scroll to top" style="display:none;">
+          <span class="material-symbols-outlined">arrow_upward</span>
+        </button>
+
+        <!-- Search Discovery Hub (when query is empty) -->
+        <div id="search-discovery-hub" class="search-discovery-hub">
+
+          <!-- Recent Searches -->
+          <div id="search-recent-section" class="search-recent-section" style="display:none;">
+            <div class="search-section-head">
+              <span class="search-section-title">Recent searches</span>
+              <button class="search-clear-all-btn" id="btn-clear-search-history">Clear all</button>
+            </div>
+            <div class="search-chips-row" id="search-recent-chips"></div>
+          </div>
+
+          <!-- Top Searches -->
+          <div class="search-trending-section">
+            <span class="search-section-title">Top searches</span>
+            <div class="search-chips-row" id="search-top-chips">
+              <button class="search-pill-btn" onclick="App.searchCategory('Arijit Singh')">Arijit Singh</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('Kanye West')">Kanye West</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('Travis Scott')">Travis Scott</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('The Weeknd')">The Weeknd</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('Lo-Fi Chill')">Lo-Fi Chill</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('Taylor Swift')">Taylor Swift</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('Katy Perry')">Katy Perry</button>
+              <button class="search-pill-btn" onclick="App.searchCategory('Gym Workout')">Gym Workout</button>
+            </div>
+          </div>
+
+          <!-- Browse All Categories -->
+          <div class="search-browse-section">
+            <span class="search-section-title">Browse all</span>
+            <div class="search-categories-grid">
+              <div class="search-cat-card" onclick="App.searchCategory('Pop Hits 2024')" style="background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);">
+                <span class="search-cat-name">Pop</span>
+                <span class="material-symbols-outlined search-cat-icon">music_note</span>
+              </div>
+              <div class="search-cat-card" onclick="App.searchCategory('Hip Hop Rap Hits')" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);">
+                <span class="search-cat-name">Hip-Hop</span>
+                <span class="material-symbols-outlined search-cat-icon">headphones</span>
+              </div>
+              <div class="search-cat-card" onclick="App.searchCategory('Bollywood Top 50')" style="background: linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%);">
+                <span class="search-cat-name">Bollywood</span>
+                <span class="material-symbols-outlined search-cat-icon">local_fire_department</span>
+              </div>
+              <div class="search-cat-card" onclick="App.searchCategory('Lo-Fi Study Beats')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <span class="search-cat-name">Lo-Fi &amp; Chill</span>
+                <span class="material-symbols-outlined search-cat-icon">spa</span>
+              </div>
+              <div class="search-cat-card" onclick="App.searchCategory('Rock Classics')" style="background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);">
+                <span class="search-cat-name">Rock</span>
+                <span class="material-symbols-outlined search-cat-icon">album</span>
+              </div>
+              <div class="search-cat-card" onclick="App.searchCategory('Electronic Dance EDM')" style="background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);">
+                <span class="search-cat-name">Dance / EDM</span>
+                <span class="material-symbols-outlined search-cat-icon">equalizer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Search Results Container -->
+        <div id="search-results-container" class="search-results-area" style="display:none;"></div>
+      </section>
+
+      <!-- ================= 4. LIBRARY SCREEN 2.0 (LibraryScreen.kt) ================= -->
+      <section id="screen-library" class="screen">
+        <header class="library-top-bar">
+          <h1 class="screen-title">My music</h1>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="icon-btn-glass" id="btn-lib-search-toggle" aria-label="Search Library" title="Search Library">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+            <button class="icon-btn-glass" id="btn-create-playlist" aria-label="Create Playlist" title="Create Playlist">
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Library Search Bar (Toggleable) -->
+        <div class="library-search-wrap" id="lib-search-bar-wrap" style="display:none;">
+          <span class="material-symbols-outlined" style="color:var(--text-secondary); font-size:20px;">search</span>
+          <input type="text" id="lib-search-input" placeholder="Search in your library..." autocomplete="off">
+          <button class="icon-btn-mini" id="btn-lib-search-clear" style="display:none; background:transparent;">
+            <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+          </button>
+        </div>
+
+        <!-- Library rows (Apple Music style) -->
+        <div class="lib-rows" id="library-rows">
+          <button class="lib-row" onclick="App.openLibrarySection('playlists')"><span class="material-symbols-outlined lib-row-icon">queue_music</span><span class="lib-row-label">Playlists</span><span class="lib-row-count" id="lib-count-playlists"></span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+          <button class="lib-row" onclick="App.openLibrarySection('artists')"><span class="material-symbols-outlined lib-row-icon">person</span><span class="lib-row-label">Artists</span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+          <button class="lib-row" onclick="App.openLibrarySection('albums')"><span class="material-symbols-outlined lib-row-icon">album</span><span class="lib-row-label">Albums</span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+          <button class="lib-row" onclick="App.openLibrarySection('songs')"><span class="material-symbols-outlined lib-row-icon">favorite</span><span class="lib-row-label">Liked Songs</span><span class="lib-row-count" id="lib-count-liked"></span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+          <button class="lib-row" onclick="App.openLibrarySection('downloads')"><span class="material-symbols-outlined lib-row-icon">download</span><span class="lib-row-label">Downloaded</span><span class="lib-row-count" id="lib-count-downloads"></span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+          <button class="lib-row" onclick="App.openLibrarySection('history')"><span class="material-symbols-outlined lib-row-icon">history</span><span class="lib-row-label">Recently Played</span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+          <button class="lib-row" onclick="App.openLibrarySection('local')"><span class="material-symbols-outlined lib-row-icon">folder</span><span class="lib-row-label">Local Files</span><span class="material-symbols-outlined lib-row-chev">chevron_right</span></button>
+        </div>
+        <div class="lib-section-head" id="library-section-head">
+          <button class="lib-back-btn" onclick="App.closeLibrarySection()"><span class="material-symbols-outlined">chevron_left</span><span>Library</span></button>
+          <h2 class="lib-section-title" id="library-section-title">Playlists</h2>
+        </div>
+        <section class="shelf-section lib-recent" id="library-recent-section" style="display:none;">
+          <div class="shelf-header"><div><h2 class="shelf-title">Recently Played</h2></div></div>
+          <div class="lib-recent-grid" id="library-recent-grid"></div>
+        </section>
+        <!-- 7 Library Tabs: Playlists, Songs, Albums, Artists, Downloads, History, Local -->
+        <div class="library-tabs-bar" id="library-tabs-bar">
+          <button class="lib-tab-btn active" data-tab="playlists">Playlists</button>
+          <button class="lib-tab-btn" data-tab="songs">Songs</button>
+          <button class="lib-tab-btn" data-tab="albums">Albums</button>
+          <button class="lib-tab-btn" data-tab="artists">Artists</button>
+          <button class="lib-tab-btn" data-tab="downloads">Downloads</button>
+          <button class="lib-tab-btn" data-tab="history">History</button>
+          <button class="lib-tab-btn" data-tab="local">Local</button>
+        </div>
+
+        <!-- Library Content Body -->
+        <div class="library-tab-content" id="library-tab-content"></div>
+      </section>
+
+      <!-- ================= 5. ARTIST PROFILE SCREEN (ArtistScreen.kt) ================= -->
+      <section id="screen-artist" class="screen screen-detail">
+        <!-- 1. Hero Photo Card (340dp radius 28dp) -->
+        <div class="artist-hero-wrap">
+          <div class="artist-hero-card">
+            <img id="artist-hero-img" class="artist-hero-img" src="assets/logo.png" alt="Artist">
+            <div class="artist-hero-vignette"></div>
+            <div class="artist-hero-name" id="artist-hero-name">ARTIST NAME</div>
+          </div>
+
+          <!-- Top Overlay Buttons -->
+          <div class="artist-nav-overlay">
+            <button class="icon-btn-glass" onclick="App.goBack()" aria-label="Back">
+              <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <span class="artist-top-nav-title" id="artist-top-nav-title">Artist</span>
+            <button class="icon-btn-glass" id="btn-artist-menu" aria-label="Menu">
+              <span class="material-symbols-outlined">grid_view</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Header & Action Row -->
+        <div class="artist-header-row">
+          <div class="artist-title-col">
+            <h1 class="artist-main-name" id="artist-main-name">Artist Name</h1>
+            <p class="artist-listeners-text" id="artist-listeners-text">3 234 900 listeners per month</p>
+          </div>
+
+          <div class="artist-actions-row">
+            <!-- Red Play Button -->
+            <button class="artist-red-play-btn" id="btn-artist-play-all" title="Play All">
+              <span class="material-symbols-outlined fill-icon">play_arrow</span>
+            </button>
+            <!-- Radio Button -->
+            <button class="artist-dark-action-btn" id="btn-artist-radio" onclick="App.startArtistRadio()" title="Start Radio">
+              <span class="material-symbols-outlined">radio</span>
+            </button>
+            <!-- Follow Button -->
+            <button class="artist-dark-action-btn" id="btn-artist-follow" onclick="App.toggleFollowArtist()" title="Follow">
+              <span class="material-symbols-outlined" id="artist-follow-icon">thumb_up_off_alt</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Genre Pills Row -->
+        <div class="artist-genre-pills" id="artist-genre-pills">
+          <button class="artist-genre-pill active" data-genre="All">All</button>
+          <button class="artist-genre-pill" data-genre="Top Hits">Top Hits</button>
+          <button class="artist-genre-pill" data-genre="Romantic">Romantic</button>
+          <button class="artist-genre-pill" data-genre="Melody">Melody</button>
+          <button class="artist-genre-pill" data-genre="90s Hits">90s Hits</button>
+          <button class="artist-genre-pill" data-genre="Duets">Duets</button>
+          <button class="artist-genre-pill" data-genre="Pop">Pop</button>
+          <button class="artist-genre-pill" data-genre="Hip Hop">Hip Hop</button>
+          <button class="artist-genre-pill" data-genre="R&B">R&B</button>
+        </div>
+
+        <!-- 4. Recent Release Section -->
+        <div class="artist-section-wrap" id="artist-recent-section" style="display:none;">
+          <h3 class="artist-section-heading">Recent release</h3>
+          <div class="artist-recent-card" id="artist-recent-card">
+            <img id="artist-recent-img" class="artist-recent-img" src="assets/logo.png" alt="Recent Track">
+            <div class="artist-recent-info">
+              <span class="artist-recent-title" id="artist-recent-title">Track Name</span>
+              <span class="artist-recent-sub" id="artist-recent-sub">2024 • Single</span>
+            </div>
+            <button class="icon-btn-glass" id="btn-artist-recent-more" aria-label="More">
+              <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. Top Tracks Section (Numbered 01, 02, 03...) -->
+        <div class="artist-section-wrap">
+          <div class="artist-section-head-row clickable-link" onclick="App.toggleAllArtistTracks()" style="cursor:pointer;">
+            <h3 class="artist-section-heading">Top tracks</h3>
+            <div style="display:flex; align-items:center; gap:4px; color:var(--color-primary); font-size:13px; font-weight:700;">
+              <span id="artist-tracks-toggle-label">See all</span>
+              <span class="material-symbols-outlined chevron-icon" id="artist-tracks-chevron">chevron_right</span>
+            </div>
+          </div>
+          <div class="artist-tracks-list" id="artist-tracks-container"></div>
+          <div style="text-align:center; padding: 14px 0 6px 0;" id="artist-load-more-wrap">
+            <button class="artist-genre-pill" onclick="App.loadMoreArtistSongs()" style="padding: 8px 24px; font-size: 13px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);">
+              <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; margin-right:4px;">expand_more</span>
+              Load More Songs
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. Playlists Section -->
+        <div class="artist-section-wrap">
+          <h3 class="artist-section-heading">Playlists</h3>
+          <div class="artist-playlists-shelf">
+            <div class="artist-pl-card card-teal" id="artist-pl-best">
+              <img id="artist-pl-img-1" class="artist-pl-bg" src="assets/logo.png" alt="">
+              <div class="artist-pl-overlay"></div>
+              <div class="artist-pl-circle"><span class="material-symbols-outlined fill-icon">play_arrow</span></div>
+              <div class="artist-pl-info">
+                <span class="artist-pl-title" id="artist-pl-title-1">Best of Artist</span>
+                <span class="artist-pl-meta">49 songs • 1 h 17 min</span>
+              </div>
+            </div>
+            <div class="artist-pl-card card-burgundy" id="artist-pl-radio">
+              <img id="artist-pl-img-2" class="artist-pl-bg" src="assets/logo.png" alt="">
+              <div class="artist-pl-overlay"></div>
+              <div class="artist-pl-circle"><span class="material-symbols-outlined fill-icon">play_arrow</span></div>
+              <div class="artist-pl-info">
+                <span class="artist-pl-title" id="artist-pl-title-2">Style Mix</span>
+                <span class="artist-pl-meta">37 songs • 1 h 01 min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Albums and EPs Section -->
+        <div class="artist-section-wrap" id="artist-albums-section" style="display:none;">
+          <h3 class="artist-section-heading">Albums and EPs</h3>
+          <div class="cards-horizontal-shelf" id="artist-albums-container"></div>
+        </div>
+
+        <!-- 8. Similar Artists Section -->
+        <div class="artist-section-wrap" id="artist-similar-section">
+          <div class="artist-section-head-row">
+            <h3 class="artist-section-heading">Similar artists</h3>
+            <span class="material-symbols-outlined chevron-icon">chevron_right</span>
+          </div>
+          <div class="similar-artists-shelf" id="artist-similar-container"></div>
+        </div>
+      </section>
+
+      <!-- ================= 6. ALBUM / PLAYLIST DETAIL SCREEN ================= -->
+      <section id="screen-detail" class="screen screen-detail">
+        <div class="detail-header-wrap">
+          <button class="icon-btn-glass" onclick="App.goBack()" aria-label="Back">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </button>
+          <div class="detail-hero-content" id="detail-hero-content">
+            <img id="detail-cover-img" class="detail-cover-img" src="assets/logo.png" alt="Cover" onerror="this.src='assets/logo.png'">
+            <div class="detail-info-col" id="detail-info-col">
+              <span class="detail-source-tag" id="detail-source-tag">PLAYLIST</span>
+              <h1 class="detail-title" id="detail-title">Playlist Title</h1>
+              <div class="detail-meta-line" id="detail-subtitle">0 tracks</div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-tracks-list" id="detail-tracks-container"></div>
+      </section>
+
+    </main>
+
+    <!-- ================= FLOATING MINI PLAYER DOCK ================= -->
+    <div id="mini-player" class="mini-player-dock" style="display:none;" onclick="App.expandFullPlayer()" role="region" aria-label="Mini Player">
+      <div class="mini-progress" aria-hidden="true"><div class="mini-progress-fill" id="mini-progress-fill"></div></div>
+      <img id="mini-player-art" class="mini-art-img" src="assets/logo.png" alt="Cover" onerror="this.src='assets/logo.png'">
+      <div class="mini-info-col">
+        <span class="mini-song-title" id="mini-song-title">Song Title</span>
+        <div class="mini-meta-line">
+          <span class="mini-artist-name" id="mini-artist-name">Artist</span>
+          <span class="mini-source-badge" id="mini-source-badge" style="display:none;"></span>
+        </div>
+      </div>
+      <div class="mini-actions-row">
+        <button class="icon-btn-mini" id="btn-mini-like" onclick="event.stopPropagation(); App.toggleFavoriteCurrent();" aria-label="Favorite">
+          <span class="material-symbols-outlined" id="mini-like-icon">favorite_border</span>
+        </button>
+        <button class="icon-btn-mini" id="btn-mini-prev" onclick="event.stopPropagation(); App.animateToPrevious();" aria-label="Previous Track">
+          <span class="material-symbols-outlined fill-icon">skip_previous</span>
+        </button>
+        <button class="icon-btn-mini" id="btn-mini-play" onclick="event.stopPropagation(); Player.togglePlay();" aria-label="Play or Pause">
+          <span class="material-symbols-outlined fill-icon" id="mini-play-icon">play_arrow</span>
+        </button>
+        <button class="icon-btn-mini" id="btn-mini-next" onclick="event.stopPropagation(); App.animateToNext();" aria-label="Next Track">
+          <span class="material-symbols-outlined fill-icon">skip_next</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= FLOATING BOTTOM NAVIGATION BAR ================= -->
+    <nav class="floating-bottom-nav" id="floating-bottom-nav" role="navigation" aria-label="Main Navigation">
+      <div class="nav-brand">
+        <button class="fl-topbar-btn" onclick="App.toggleRail()" aria-label="Menu" title="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <span class="nav-brand-text">MusicFlow</span>
+      </div>
+      <button class="nav-tab active" data-target="home" onclick="App.navigate('home')" aria-label="Home">
+        <span class="material-symbols-outlined nav-icon">home</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-tab" data-target="explore" onclick="App.navigate('explore')" aria-label="Browse">
+        <span class="material-symbols-outlined nav-icon">explore</span>
+        <span class="nav-label">Browse</span>
+      </button>
+      <button class="nav-tab" data-target="radio" onclick="App.navigate('radio')" aria-label="Radio">
+        <span class="material-symbols-outlined nav-icon">radio</span>
+        <span class="nav-label">Radio</span>
+      </button>
+      <button class="nav-tab" data-target="search" onclick="App.navigate('search')" aria-label="Search">
+        <span class="material-symbols-outlined nav-icon">search</span>
+        <span class="nav-label">Search</span>
+      </button>
+      <div class="nav-section">Collection</div>
+      <button class="nav-tab" data-target="library" onclick="App.navigate('library')" aria-label="My music">
+        <span class="material-symbols-outlined nav-icon">library_music</span>
+        <span class="nav-label">My music</span>
+      </button>
+      <div class="nav-spacer"></div>
+      <button class="nav-extra" onclick="App.expandFullPlayer()" aria-label="Now playing">
+        <span class="material-symbols-outlined nav-icon">equalizer</span>
+        <span class="nav-label">Now playing</span>
+      </button>
+      <button class="nav-extra" onclick="App.openSettings()" aria-label="Settings">
+        <span class="material-symbols-outlined nav-icon">settings</span>
+        <span class="nav-label">Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ================= FLOATING RADIO TOAST BANNER ================= -->
+  <!-- ================= WELCOME (first launch only) ================= -->
+  <div id="welcome-screen" class="welcome-screen" style="display:none;" role="dialog" aria-label="Welcome to MusicFlow">
+    <div class="welcome-bg"></div>
+    <div class="welcome-top">
+      <div class="welcome-brand"><img src="assets/logo.png" alt=""><span>MusicFlow</span></div>
+      <button class="welcome-skip" onclick="App.dismissWelcome()">Skip</button>
+    </div>
+    <div class="welcome-mosaic" id="welcome-mosaic" aria-hidden="true">
+      <img class="welcome-cover welcome-cover-1" src="assets/logo.png" alt="" onerror="this.src='assets/logo.png'">
+      <img class="welcome-cover welcome-cover-2" src="assets/logo.png" alt="" onerror="this.src='assets/logo.png'">
+      <img class="welcome-cover welcome-cover-3" src="assets/logo.png" alt="" onerror="this.src='assets/logo.png'">
+    </div>
+    <div class="welcome-bottom">
+      <span class="welcome-chip">Music app</span>
+      <h1 class="welcome-title">Smarter Music<br>Starts Here</h1>
+      <p class="welcome-sub">Set things up in seconds and enjoy a smarter, smoother, more intuitive experience right away.</p>
+      <button class="welcome-cta" onclick="App.dismissWelcome()">Get Started</button>
+    </div>
+  </div>
+
+  <!-- ================= AMBIENT / LOCK-SCREEN MODE (AmbientScreen) ================= -->
+  <div id="ambient-screen" class="ambient-screen" aria-hidden="true" role="dialog" aria-label="Ambient lock screen">
+    <div class="ambient-bg" id="ambient-bg"></div>
+    <div class="ambient-bg-dim"></div>
+    <header class="ambient-top">
+      <button class="icon-btn-glass" onclick="AmbientScreen.close()" aria-label="Close ambient screen"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
+      <div class="ambient-music-label">Music</div>
+      <button class="icon-btn-glass" onclick="AmbientScreen.toggleExpand()" aria-label="Toggle wallpaper view"><span class="material-symbols-outlined">wallpaper</span></button>
+    </header>
+    <div class="ambient-clock">
+      <div class="ambient-time" id="ambient-time">00:00</div>
+      <div class="ambient-date" id="ambient-date"></div>
+    </div>
+    <div class="ambient-art-wrap" onclick="AmbientScreen.toggleExpand()">
+      <img class="ambient-art" id="ambient-art" src="assets/logo.png" alt="" onerror="this.src='assets/logo.png'">
+    </div>
+    <div class="ambient-spacer"></div>
+    <div class="ambient-meta">
+      <button class="ambient-side-btn" onclick="App.openQueueSheet()" aria-label="Queue"><span class="material-symbols-outlined">queue_music</span></button>
+      <div class="ambient-titles">
+        <div class="ambient-title" id="ambient-title">Song</div>
+        <div class="ambient-artist" id="ambient-artist">Artist</div>
+      </div>
+      <button class="ambient-side-btn" onclick="App.toggleFavoriteCurrent()" aria-label="Favorite"><span class="material-symbols-outlined" id="ambient-like-icon">favorite_border</span></button>
+    </div>
+    <div class="ambient-progress" id="ambient-progress" onclick="AmbientScreen.seekFromEvent(event)" role="slider" aria-label="Seek">
+      <div class="ambient-progress-track"><div class="ambient-progress-fill" id="ambient-progress-fill"></div></div>
+      <div class="ambient-times"><span id="ambient-time-cur">0:00</span><span id="ambient-time-total">0:00</span></div>
+    </div>
+    <div class="ambient-controls">
+      <button class="ambient-ctrl" onclick="Player.previous()" aria-label="Previous"><span class="material-symbols-outlined fill-icon">fast_rewind</span></button>
+      <button class="ambient-ctrl ambient-ctrl-main" onclick="Player.togglePlay()" aria-label="Play or pause"><span class="material-symbols-outlined fill-icon" id="ambient-play-icon">pause</span></button>
+      <button class="ambient-ctrl" onclick="Player.next()" aria-label="Next"><span class="material-symbols-outlined fill-icon">fast_forward</span></button>
+    </div>
+    <div class="ambient-bottom">
+      <button class="ambient-pill" onclick="App.openSleepTimerDialog()" aria-label="Sleep timer"><span class="material-symbols-outlined">bedtime</span></button>
+      <div class="ambient-ring" aria-hidden="true"></div>
+      <button class="ambient-pill" onclick="Player.toggleRepeat()" aria-label="Repeat"><span class="material-symbols-outlined">repeat</span></button>
+    </div>
+  </div>
+
+  <!-- Long-press on a lyric line -->
+  <div class="bottom-sheet-backdrop" id="sheet-lyric-actions" onclick="App.closeBottomSheet('sheet-lyric-actions')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+      <p class="lyric-sheet-quote" id="lyric-sheet-quote">…</p>
+      <div class="sheet-actions-list">
+        <button class="sheet-action-item" onclick="Motion.lyricAction('play')">
+          <span class="material-symbols-outlined">play_arrow</span>
+          <span>Play from here</span>
+        </button>
+        <button class="sheet-action-item" onclick="Motion.lyricAction('copy')">
+          <span class="material-symbols-outlined">content_copy</span>
+          <span>Copy lyric</span>
+        </button>
+        <button class="sheet-action-item" onclick="Motion.lyricAction('share')">
+          <span class="material-symbols-outlined">share</span>
+          <span>Share lyric</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="radio-toast" class="radio-toast" style="display:none;" role="status">
+    <span class="material-symbols-outlined fill-icon radio-pulse-icon">radio</span>
+    <span id="radio-toast-text">Starting Artist Radio...</span>
+  </div>
+
+  <!-- ================= FULL PLAYER SHEET (Design 1 Replica - PlayerScreen.kt) ================= -->
+  <div id="full-player" class="full-player-sheet" role="dialog" aria-label="Music Player">
+    <div class="player-dominant-glow" id="player-dominant-glow"></div>
+    
+    <!-- Top Header for Player -->
+    <header class="player-top-bar" id="player-main-top-bar">
+      <button class="icon-btn-glass" id="btn-player-collapse" onclick="App.handlePlayerBack()" aria-label="Collapse Player">
+        <span class="material-symbols-outlined" id="player-back-icon">keyboard_arrow_down</span>
+      </button>
+      <div class="player-context-col">
+        <span class="player-context-tag" id="player-context-tag">Playing from</span>
+        <span class="player-context-title" id="player-context-title">Top Hits</span>
+      </div>
+      <button class="icon-btn-glass" id="btn-player-more-top" onclick="App.openCurrentSongMenu()" aria-label="More options">
+        <span class="material-symbols-outlined">more_horiz</span>
+      </button>
+    </header>
+
+
+    <!-- Center Content (Artwork, Video, or Live Synced Lyrics) -->
+    <div class="player-center-body" id="player-center-body">
+      <!-- 1. Artwork View / 3D Interactive Deck -->
+      <div class="player-art-view" id="player-art-view">
+        <div class="player-3d-deck-container" id="player-3d-deck-container">
+          <!-- Previous Card (Underneath / Prepared Left-Back) -->
+          <div class="player-deck-card player-deck-card-prev" id="player-deck-prev">
+            <img class="full-art-img" id="player-art-prev" src="assets/logo.png" alt="Previous Album Art" onerror="this.src='assets/logo.png'">
+          </div>
+          <!-- Next Card (Underneath / Prepared Right-Back) -->
+          <div class="player-deck-card player-deck-card-next player-deck-card-back-1" id="player-deck-next">
+            <img class="full-art-img" id="player-art-next" src="assets/logo.png" alt="Next Album Art" onerror="this.src='assets/logo.png'">
+          </div>
+          <!-- Current Interactive Front Card -->
+          <div class="player-deck-card player-deck-card-front player-art-card" id="player-art-card">
+            <img id="full-player-art" class="full-art-img" src="assets/logo.png" alt="Current Album Art" onerror="this.src='assets/logo.png'">
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 2. Live Synced Lyrics View (LyricsView in PlayerScreen.kt) -->
+      <div class="player-lyrics-view" id="player-lyrics-view" style="display:none;">
+        <div class="lyrics-scroll-container" id="lyrics-scroll-container">
+          <p class="lyrics-line active">Loading synchronized lyrics...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Song Info Row: Title, Artist, Badges & Like / More Actions -->
+    <div class="player-meta-row">
+      <div class="player-meta-col">
+        <h2 class="player-song-title" id="full-player-title">Song Title</h2>
+        <div class="player-artist-line" id="full-player-artist-container">
+          <span class="player-artist-name clickable-link" id="full-player-artist" onclick="event.stopPropagation(); App.navigateToArtist()">Artist</span>
+        </div>
+        <div class="player-badges-row">
+          <span class="lossless-badge-pill" id="player-lossless-badge">
+            <span class="material-symbols-outlined" style="font-size:13px; margin-right:3px;">graphic_eq</span>LOSSLESS
+          </span>
+          <span class="bitrate-badge-pill" id="player-quality-badge" onclick="App.openQualityDialog()">320 KBPS</span>
+          <span class="lossless-badge" id="player-source-badge" style="display:none;"></span>
+        </div>
+      </div>
+      <div class="player-meta-actions">
+        <button class="player-circle-action-btn" id="btn-player-favorite" onclick="App.toggleFavoriteCurrent()" aria-label="Favorite Track">
+          <span class="material-symbols-outlined" id="player-heart-icon">favorite_border</span>
+        </button>
+        <button class="player-circle-action-btn" id="btn-player-song-more" onclick="App.openCurrentSongMenu()" aria-label="More Song Options" style="display:none;">
+          <span class="material-symbols-outlined">more_vert</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- YouTube Music 6-Button Action Strip -->
+    <div class="ytm-action-strip" id="ytm-player-action-strip">
+      <button class="ytm-action-btn" id="btn-player-dislike" onclick="App.dislikeCurrentTrack()" aria-label="Dislike track" title="Dislike">
+        <span class="material-symbols-outlined" id="player-dislike-icon">thumb_down</span>
+      </button>
+      <button class="ytm-action-btn" id="btn-player-like" onclick="App.toggleFavoriteCurrent()" aria-label="Like track" title="Like">
+        <span class="material-symbols-outlined" id="player-like-icon">thumb_up</span>
+      </button>
+      <button class="ytm-action-btn" id="btn-player-song-radio" onclick="App.startSongRadio()" aria-label="Start Radio from this song" title="Start Radio">
+        <span class="material-symbols-outlined">podcasts</span>
+      </button>
+      <button class="ytm-action-btn" id="btn-player-comments" onclick="App.openCommentsSheet()" aria-label="Comments" title="Comments" style="display:none;">
+        <span class="material-symbols-outlined">chat_bubble_outline</span>
+      </button>
+      <button class="ytm-action-btn" id="btn-player-save" onclick="App.openAddToPlaylistModal()" aria-label="Save to playlist" title="Save">
+        <span class="material-symbols-outlined">playlist_add</span>
+      </button>
+      <button class="ytm-action-btn" id="btn-player-share" onclick="App.shareCurrentTrack()" aria-label="Share track" title="Share">
+        <span class="material-symbols-outlined">share</span>
+      </button>
+      <button class="ytm-action-btn" id="btn-player-download" onclick="App.downloadCurrentTrack()" aria-label="Download track" title="Download">
+        <span class="material-symbols-outlined" id="player-download-icon">download</span>
+        <span id="player-download-label" style="display:none;">Download</span>
+      </button>
+    </div>
+
+    <!-- Touch & Pointer Optimized Custom Scrubber with Wavy Animation -->
+    <div class="player-progress-wrap">
+      <div class="player-custom-seek-bar" id="player-seek-bar" role="slider" aria-label="Seek track position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <canvas id="player-seek-wave" class="player-seek-wave"></canvas>
+        <div class="player-seek-track" id="player-seek-track">
+          <div class="player-seek-fill" id="player-seek-fill" style="width: 0%;"></div>
+          <div class="player-seek-thumb" id="player-seek-thumb" style="left: 0%;"></div>
+        </div>
+      </div>
+      <div class="player-times-row">
+        <span id="player-time-current">0:00</span>
+        <span id="player-time-total">0:00</span>
+      </div>
+    </div>
+
+    <!-- 5-Button Transport Controls -->
+    <div class="player-transport-row">
+      <button class="transport-sub-btn" id="btn-player-shuffle" onclick="Player.toggleShuffle()" aria-label="Shuffle Off">
+        <span class="material-symbols-outlined" id="player-shuffle-icon">shuffle</span>
+      </button>
+      <button class="transport-sub-btn" id="btn-player-prev" onclick="App.animateToPrevious()" aria-label="Previous Track">
+        <span class="material-symbols-outlined fill-icon" style="font-size:30px;">skip_previous</span>
+      </button>
+      <button class="transport-main-play-btn" id="btn-player-play" onclick="Player.togglePlay()" aria-label="Play or Pause">
+        <span class="material-symbols-outlined fill-icon" id="player-main-play-icon" style="font-size:36px; color:#FFFFFF;">play_arrow</span>
+      </button>
+      <button class="transport-sub-btn" id="btn-player-next" onclick="App.animateToNext()" aria-label="Next Track">
+        <span class="material-symbols-outlined fill-icon" style="font-size:30px;">skip_next</span>
+      </button>
+      <button class="transport-sub-btn" id="btn-player-repeat" onclick="Player.toggleRepeat()" aria-label="Repeat Off">
+        <span class="material-symbols-outlined" id="player-repeat-icon">repeat</span>
+      </button>
+    </div>
+
+    <!-- Secondary Utilities Row for backward compatibility -->
+    <div class="player-utility-card" id="player-utility-row">
+        <button class="utility-btn" id="btn-toggle-lyrics" onclick="App.switchDrawerTab('lyrics')" title="Lyrics" aria-label="Lyrics">
+          <span class="material-symbols-outlined">lyrics</span>
+        </button>
+        <button class="utility-btn" id="btn-player-output" onclick="App.openAudioOutputSheet()" title="Audio output" aria-label="Audio output">
+          <span class="material-symbols-outlined">cast</span>
+        </button>
+        <button class="utility-btn" id="btn-player-queue" onclick="App.switchDrawerTab('queue')" title="Up next" aria-label="Up next">
+          <span class="material-symbols-outlined">queue_music</span>
+        </button>
+      </div>
+
+    <!-- Backdrop to close drawer when tapping outside -->
+    <div class="drawer-backdrop" id="player-drawer-backdrop" onclick="App.collapsePlayerDrawer()"></div>
+
+    <!-- YouTube Music 3-Tab Bottom Pull-up Sliding Drawer -->
+    <div class="ytm-player-drawer" id="player-sliding-drawer">
+      <div class="drawer-drag-bar" onclick="App.togglePlayerDrawer()" title="Tap to toggle drawer">
+        <div class="drawer-pill-handle"></div>
+        <button class="drawer-close-btn" id="btn-collapse-drawer" onclick="event.stopPropagation(); App.collapsePlayerDrawer();" aria-label="Collapse drawer" title="Collapse">
+          <span class="material-symbols-outlined">keyboard_arrow_down</span>
+        </button>
+      </div>
+      <div class="drawer-tabs-nav">
+        <div class="drawer-tabs-group">
+          <button class="drawer-tab-btn active" id="drawer-tab-queue" onclick="App.switchDrawerTab('queue')">UP NEXT</button>
+          <button class="drawer-tab-btn" id="drawer-tab-lyrics" onclick="App.switchDrawerTab('lyrics')">LYRICS</button>
+          <button class="drawer-tab-btn" id="drawer-tab-related" onclick="App.switchDrawerTab('related')">RELATED</button>
+        </div>
+      </div>
+      <div class="drawer-body-container" id="drawer-body-container">
+        <!-- Tab 1: UP NEXT Queue -->
+        <div class="drawer-pane active" id="drawer-pane-queue">
+          <div class="drawer-queue-header">
+            <div class="drawer-autoplay-row">
+              <span class="drawer-autoplay-label">Autoplay</span>
+              <label class="switch-wrap">
+                <input type="checkbox" id="autoplay-switch" checked onchange="App.toggleAutoplay(this.checked)">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div class="drawer-queue-actions">
+              <button class="drawer-action-chip" onclick="App.saveQueueAsPlaylistAction()">
+                <span class="material-symbols-outlined" style="font-size:14px;">playlist_add</span>
+                <span>Save</span>
+              </button>
+              <button class="drawer-action-chip" onclick="Player.clearQueue()">Clear</button>
+            </div>
+          </div>
+          <div class="queue-tracks-list" id="drawer-queue-tracks-container"></div>
+        </div>
+
+        <!-- Tab 2: LYRICS -->
+        <div class="drawer-pane" id="drawer-pane-lyrics">
+          <div class="drawer-lyrics-container" id="drawer-lyrics-scroll">
+            <p class="lyrics-line active">Loading synchronized lyrics...</p>
+          </div>
+          <div class="drawer-lyrics-source" id="drawer-lyrics-source">Source: Musixmatch / LRCLIB</div>
+        </div>
+
+        <!-- Tab 3: RELATED -->
+        <div class="drawer-pane" id="drawer-pane-related">
+          <div class="drawer-related-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:0 2px;">
+              <div>
+                <h4 class="drawer-section-title" style="margin:0; font-size:15px; font-weight:800; color:#fff;">You might also like</h4>
+                <span style="font-size:11.5px; color:var(--text-secondary); display:block; margin-top:2px;">Endless similar songs &amp; artist mix</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button class="drawer-action-chip" id="btn-play-all-related" onclick="App.playAllRelated()" style="background:var(--accent); color:#FFFFFF; border:none; font-weight:800; display:flex; align-items:center; gap:5px; padding:6px 12px; border-radius:14px; cursor:pointer; font-size:12px; box-shadow:0 2px 10px rgba(255,0,0,0.35);" title="Play related songs as queue">
+                  <span class="material-symbols-outlined" style="font-size:16px;">play_arrow</span>
+                  <span>Play Related</span>
+                </button>
+                <button class="drawer-action-chip" id="btn-queue-all-related" onclick="App.queueAllRelated()" style="background:rgba(255,255,255,0.08); color:#FFFFFF; border:1px solid rgba(255,255,255,0.12); font-weight:700; display:flex; align-items:center; gap:4px; padding:6px 10px; border-radius:14px; cursor:pointer; font-size:12px;" title="Add all related tracks to queue">
+                  <span class="material-symbols-outlined" style="font-size:15px;">playlist_add</span>
+                  <span>Add All</span>
+                </button>
+              </div>
+            </div>
+            <div class="drawer-related-list" id="drawer-related-tracks">
+              <div class="loading-shimmer-card" style="height:56px; border-radius:12px; margin-bottom:8px;"></div>
+              <div class="loading-shimmer-card" style="height:56px; border-radius:12px; margin-bottom:8px;"></div>
+            </div>
+          </div>
+          <div class="drawer-related-section">
+            <h4 class="drawer-section-title">Similar artists</h4>
+            <div class="cards-horizontal-shelf" id="drawer-related-artists"></div>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Feature Grid Section -->
-  <section class="features-section" id="features">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Feature Suite</span>
-        <h2 class="section-title">Built for Serious Audiophiles</h2>
-        <p class="section-desc">Every element engineered from scratch for unmatched fidelity, instant response, and stunning glassmorphism.</p>
+  <!-- YouTube Music Comments Bottom Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-comments" onclick="App.closeBottomSheet('sheet-comments')" style="display:none !important;">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()" style="max-height:80vh; display:flex; flex-direction:column;">
+      <div class="sheet-drag-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h3 class="screen-title" style="font-size:18px; margin-bottom:0;">Comments</h3>
+          <span style="font-size:12px; color:var(--text-secondary);" id="comments-count-label">Comments</span>
+        </div>
+        <button onclick="App.closeBottomSheet('sheet-comments')" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer;" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="comments-list" id="comments-list-container" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px;">
+        <!-- Comments populated dynamically -->
+      </div>
+      <div class="comment-input-row" id="comment-input-row" style="display:flex; align-items:center; gap:10px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); margin-top:8px;">
+        <input type="text" id="input-new-comment" placeholder="Add a comment..." style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:10px 16px; color:#fff; font-size:13px; outline:none;" onkeydown="if(event.key==='Enter')App.postUserComment()">
+        <button id="btn-post-comment" onclick="App.postUserComment()" style="background:var(--accent, #FF0033); color:#fff; border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;" aria-label="Send comment">
+          <span class="material-symbols-outlined" style="font-size:18px;">send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- YouTube Music Radio Builder Bottom Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-radio-builder" onclick="App.closeBottomSheet('sheet-radio-builder')">
+    <div class="bottom-sheet-panel radio-builder-sheet-panel" onclick="event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+      
+      <!-- Header -->
+      <div class="radio-builder-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="radio-builder-badge-icon">
+            <span class="material-symbols-outlined">graphic_eq</span>
+          </div>
+          <div>
+            <h3 class="radio-builder-main-title">Create a radio</h3>
+            <span class="radio-builder-sub" id="radio-builder-step-label">Select up to 10 artists (0 selected)</span>
+          </div>
+        </div>
+        <button class="icon-btn-mini" onclick="App.closeBottomSheet('sheet-radio-builder')" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
 
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">🎧</div>
-          <h3 class="feature-card-title">320kbps Lossless Audio</h3>
-          <p class="feature-card-desc">Studio-grade Bitrate streaming with support for adaptive qualities (320kbps, 160kbps, 96kbps, 48kbps Data Saver).</p>
+      <!-- Artist Seed Picker Grid (scrollable) -->
+      <div class="radio-builder-artists-scroll">
+        <div class="radio-artist-grid" id="radio-artist-grid">
+          <!-- Populated dynamically by RadioBuilder.open() -->
+        </div>
+      </div>
+
+      <!-- Tuner Controls -->
+      <div class="radio-tuner-section">
+        <!-- Variety Selector -->
+        <div class="radio-tuner-row">
+          <span class="radio-tuner-label">Artist variety:</span>
+          <div class="radio-tune-chips-wrap">
+            <button class="radio-tune-chip active" data-variety="familiar" onclick="RadioBuilder.setVariety('familiar')">Familiar</button>
+            <button class="radio-tune-chip" data-variety="blend" onclick="RadioBuilder.setVariety('blend')">Blend</button>
+            <button class="radio-tune-chip" data-variety="discover" onclick="RadioBuilder.setVariety('discover')">Discover</button>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">🌊</div>
-          <h3 class="feature-card-title">Live Reactive Visualizer</h3>
-          <p class="feature-card-desc">24-band live frequency analyzer rendered dynamically under the artwork with neon cyan & crimson glass reflections.</p>
+        <!-- Mood Selector -->
+        <div class="radio-tuner-row">
+          <span class="radio-tuner-label">Music mood:</span>
+          <div class="radio-tune-chips-wrap">
+            <button class="radio-tune-chip active" data-mood="all" onclick="RadioBuilder.setMood('all')">All</button>
+            <button class="radio-tune-chip" data-mood="chill" onclick="RadioBuilder.setMood('chill')">Chill</button>
+            <button class="radio-tune-chip" data-mood="upbeat" onclick="RadioBuilder.setMood('upbeat')">Upbeat</button>
+            <button class="radio-tune-chip" data-mood="party" onclick="RadioBuilder.setMood('party')">Party</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Launch Action -->
+      <div class="radio-builder-action-bar">
+        <button class="radio-launch-btn" id="btn-launch-radio" onclick="RadioBuilder.launch()">
+          <span class="material-symbols-outlined" style="font-size:20px;">play_arrow</span>
+          <span>Tune Radio</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODALS & BOTTOM SHEETS ================= -->
+  
+  <!-- 1. Song Context Menu Bottom Sheet (SongContextMenu in MFComponents.kt) -->
+  <div class="bottom-sheet-backdrop" id="sheet-song-menu" onclick="App.closeBottomSheet('sheet-song-menu')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-song-header" id="sheet-song-header">
+        <img id="sheet-song-img" class="sheet-song-img" src="assets/logo.png" alt="">
+        <div class="sheet-song-info">
+          <span class="sheet-song-title" id="sheet-song-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; display:block;">Song Name</span>
+        </div>
+      </div>
+      <div class="sheet-actions-list">
+        <button class="sheet-action-item" onclick="App.sheetAction('play-next')">
+          <span class="material-symbols-outlined">playlist_play</span>
+          <span>Play next</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('add-queue')">
+          <span class="material-symbols-outlined">queue_music</span>
+          <span>Add to queue</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('start-radio')">
+          <span class="material-symbols-outlined">radio</span>
+          <span>Start Radio</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('download')">
+          <span class="material-symbols-outlined">download</span>
+          <span>Download (320kbps MP3)</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('go-artist')">
+          <span class="material-symbols-outlined">person</span>
+          <span>Go to artist</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('go-album')">
+          <span class="material-symbols-outlined">album</span>
+          <span>Go to album</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('add-playlist')">
+          <span class="material-symbols-outlined">playlist_add</span>
+          <span>Add to playlist</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('open-equalizer')">
+          <span class="material-symbols-outlined">equalizer</span>
+          <span>Equalizer &amp; Sound Effects</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('sleep-timer')">
+          <span class="material-symbols-outlined">bedtime</span>
+          <span>Sleep Timer</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('ambient')">
+          <span class="material-symbols-outlined">lock_clock</span>
+          <span>Ambient Screen</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('toggle-like')">
+          <span class="material-symbols-outlined" id="sheet-like-icon">favorite_border</span>
+          <span id="sheet-like-label">Like</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.sheetAction('share')">
+          <span class="material-symbols-outlined">share</span>
+          <span>Share Track Link</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.1 Dedicated Multi-Artist Selection Bottom Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-artist-picker" onclick="App.closeBottomSheet('sheet-artist-picker')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()" style="max-height:75vh; display:flex; flex-direction:column;">
+      <div class="sheet-drag-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="material-symbols-outlined" style="color:var(--accent); font-size:22px;">person</span>
+          <h3 class="screen-title" style="font-size:18px; margin-bottom:0;">Go to artist</h3>
+        </div>
+        <button onclick="App.closeBottomSheet('sheet-artist-picker')" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer;" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="sheet-actions-list" id="artist-picker-list" style="overflow-y:auto; flex:1;">
+        <!-- Dynamically populated with legitimate artists -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Artist Options Bottom Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-artist-menu" onclick="App.closeBottomSheet('sheet-artist-menu')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-song-header">
+        <img id="sheet-artist-menu-img" class="sheet-song-img" src="assets/logo.png" alt="" style="border-radius:50%;">
+        <div class="sheet-song-info">
+          <span class="sheet-song-title" id="sheet-artist-menu-title">Artist Name</span>
+          <span class="sheet-song-artist">Artist Profile</span>
+        </div>
+      </div>
+      <div class="sheet-actions-list">
+        <button class="sheet-action-item" onclick="App.artistMenuAction('start-radio')">
+          <span class="material-symbols-outlined">radio</span>
+          <span>Start Artist Radio</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.artistMenuAction('follow')">
+          <span class="material-symbols-outlined">thumb_up</span>
+          <span>Follow / Like Artist</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.artistMenuAction('share')">
+          <span class="material-symbols-outlined">share</span>
+          <span>Share Artist Profile</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Now Playing Queue Sheet with Scrollable List & Delete Track Buttons -->
+  <div class="bottom-sheet-backdrop" id="sheet-queue" onclick="App.closeBottomSheet('sheet-queue')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()" style="max-height:85vh; display:flex; flex-direction:column;">
+      <div class="sheet-drag-handle"></div>
+      <div class="queue-sheet-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="player-top-action-btn" onclick="App.closeBottomSheet('sheet-queue')" aria-label="Back" style="width:36px; height:36px; background:rgba(255,255,255,0.08); border-radius:50%; border:none; color:#FFFFFF; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:20px;">arrow_back</span>
+          </button>
+          <div>
+            <h3 class="screen-title" style="font-size:18px;">Now Playing Queue</h3>
+            <span style="font-size:12px; color:var(--text-secondary);" id="queue-tracks-count">0 tracks</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button class="lib-action-pill-btn" onclick="App.saveQueueAsPlaylistAction()" style="font-size:11px; padding:4px 10px;" title="Save current queue as playlist">
+            <span class="material-symbols-outlined" style="font-size:14px;">playlist_add</span>
+            <span>Save as Playlist</span>
+          </button>
+          <button class="search-clear-all-btn" onclick="Player.clearQueue()">Clear Queue</button>
+        </div>
+      </div>
+      <div class="queue-tracks-list" id="queue-tracks-container"></div>
+    </div>
+  </div>
+
+  <!-- 4. Audio Effects & Professional Equalizer Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-equalizer" onclick="App.closeBottomSheet('sheet-equalizer')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()" style="max-height:88vh; overflow-y:auto; padding-bottom:30px;">
+      <div class="sheet-drag-handle"></div>
+      
+      <!-- Top Header Row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="player-top-action-btn" onclick="App.closeEqualizer()" aria-label="Back" style="width:36px; height:36px; background:rgba(255,255,255,0.08); border-radius:50%; border:none; color:#FFFFFF; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:20px;">arrow_back</span>
+          </button>
+          <span class="material-symbols-outlined" style="color:var(--accent); font-size:24px;">equalizer</span>
+          <h3 class="screen-title" style="font-size:20px; margin-bottom:0;">Audio Effects &amp; EQ</h3>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; font-weight:700; color:var(--text-secondary);" id="eq-master-label">OFF</span>
+          <label class="switch-wrap">
+            <input type="checkbox" id="eq-switch" onchange="App.toggleEq(this.checked)">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Real-Time Processing Status Indicator -->
+      <div id="eq-status-indicator" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 14px; margin-bottom:16px; font-size:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="material-symbols-outlined" id="eq-status-icon" style="font-size:18px; color:var(--text-secondary);">check_circle</span>
+          <span id="eq-status-text" style="color:var(--text-secondary); font-weight:600;">Equalizer: OFF (Transparent bit-perfect audio)</span>
+        </div>
+        <span id="eq-status-badge" class="lossless-badge-pill" style="font-size:9px; padding:2px 8px; color:var(--text-secondary); border-color:rgba(255,255,255,0.15);">OFF</span>
+      </div>
+
+      <!-- 1. 3D Spatial Audio & Surround Virtualizer -->
+      <div class="audio-effects-card" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined" style="color:var(--accent); font-size:20px;">spatial_audio</span>
+            <span style="font-size:14px; font-weight:800; color:#FFFFFF; letter-spacing:0.3px;">3D / Spatial Audio</span>
+          </div>
+          <span id="eq-spatial-val-badge" class="lossless-badge-pill" style="color:var(--accent); border-color:var(--accent-border);">OFF</span>
+        </div>
+        <!-- Spatial Level Buttons: OFF, LOW, MEDIUM, HIGH -->
+        <div class="eq-segmented-group" id="eq-spatial-levels" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-bottom:10px;">
+          <button class="eq-seg-btn active" data-level="OFF" onclick="App.setSpatialLevel('OFF')">OFF</button>
+          <button class="eq-seg-btn" data-level="LOW" onclick="App.setSpatialLevel('LOW')">LOW</button>
+          <button class="eq-seg-btn" data-level="MEDIUM" onclick="App.setSpatialLevel('MEDIUM')">MEDIUM</button>
+          <button class="eq-seg-btn" data-level="HIGH" onclick="App.setSpatialLevel('HIGH')">HIGH</button>
+        </div>
+        <!-- Stereo Field Visualizer Bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; color:var(--text-secondary); margin-top:6px;">
+          <span>LEFT (L)</span>
+          <span style="letter-spacing:2px; font-size:11px; color:rgba(255,255,255,0.5);" id="eq-stereo-meter">◀──●──▶</span>
+          <span>RIGHT (R)</span>
+        </div>
+      </div>
+
+      <!-- 2. Sound Presets -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span class="settings-sec-head" style="margin-bottom:0;">Sound Presets</span>
+        <button onclick="App.promptSaveCustomPreset()" style="background:transparent; border:none; color:var(--accent); font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:16px;">bookmark_add</span>
+          <span>Save Preset</span>
+        </button>
+      </div>
+
+      <!-- Preset Category Tabs -->
+      <div class="eq-segmented-group" id="eq-preset-category-tabs" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px; margin-bottom:10px;">
+        <button class="eq-seg-btn active" id="eq-cat-tab-standard" onclick="App.setPresetCategory('standard')">Standard</button>
+        <button class="eq-seg-btn" id="eq-cat-tab-pro" onclick="App.setPresetCategory('pro')">✦ Pro Presets (19)</button>
+      </div>
+      <div class="eq-presets-scroll" id="eq-presets-container" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:16px;"></div>
+
+      <!-- 3. 7-Band Graphic Equalizer -->
+      <span class="settings-sec-head" style="margin-bottom:8px; display:block;">7-Band Master Graphic EQ (±12 dB)</span>
+      <div class="eq-bands-grid" id="eq-bands-container" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:14px 6px; margin-bottom:16px;"></div>
+
+      <!-- 4. Studio Sound Sculpting (Bass, Treble, Vocal Clarity) -->
+      <span class="settings-sec-head" style="margin-bottom:8px;">Sound Enhancements</span>
+      
+      <!-- Studio Bass Boost -->
+      <div class="eq-bass-wrap" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:12px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:#FFFFFF; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined" style="color:var(--accent); font-size:18px;">headphones</span>
+            <span>Studio Bass Boost (80 Hz)</span>
+          </div>
+          <span id="eq-bass-val" style="color:var(--accent); font-weight:800;">0 dB</span>
+        </div>
+        <input type="range" class="player-seek-slider" id="eq-bass-slider" min="0" max="12" step="1" value="0" oninput="App.updateBassBoost(this.value)">
+      </div>
+
+      <!-- Crisp Treble Boost -->
+      <div class="eq-bass-wrap" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:12px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:#FFFFFF; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined" style="color:var(--accent); font-size:18px;">graphic_eq</span>
+            <span>Crisp Treble (10 kHz)</span>
+          </div>
+          <span id="eq-treble-val" style="color:var(--accent); font-weight:800;">0 dB</span>
+        </div>
+        <input type="range" class="player-seek-slider" id="eq-treble-slider" min="-6" max="12" step="1" value="0" oninput="App.updateTrebleBoost(this.value)">
+      </div>
+
+      <!-- Vocal Clarity Boost -->
+      <div class="eq-bass-wrap" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:12px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:#FFFFFF; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined" style="color:var(--accent); font-size:18px;">record_voice_over</span>
+            <span>Vocal Clarity (2.8 kHz)</span>
+          </div>
+          <span id="eq-vocal-val" style="color:var(--accent); font-weight:800;">0 dB</span>
+        </div>
+        <input type="range" class="player-seek-slider" id="eq-vocal-slider" min="0" max="8" step="1" value="0" oninput="App.updateVocalBoost(this.value)">
+      </div>
+
+      <!-- 5. Loudness Normalization & Crossfade Transitions -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <!-- Loudness Normalization -->
+        <div class="eq-bass-wrap" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="display:block; font-size:12.5px; font-weight:800; color:#fff;">Loudness</span>
+              <span style="font-size:10.5px; color:var(--text-secondary);">Peak Protection</span>
+            </div>
+            <label class="switch-wrap" style="transform:scale(0.85);">
+              <input type="checkbox" id="eq-norm-switch" checked onchange="App.toggleNormalization(this.checked)">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">📻</div>
-          <h3 class="feature-card-title">Smart AI Artist Radio</h3>
-          <p class="feature-card-desc">Instant infinite queue generation based on artist acoustic signatures, mood analysis, and trending popularity.</p>
+        <!-- Crossfade Selector -->
+        <div class="eq-bass-wrap" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:12px;">
+          <span style="display:block; font-size:12.5px; font-weight:800; color:#fff;">Crossfade</span>
+          <select id="eq-crossfade-select" onchange="App.selectCrossfade(this.value)" style="width:100%; margin-top:4px; height:28px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.12); color:#fff; font-size:11.5px; border-radius:8px; padding:2px 6px;">
+            <option value="0">OFF</option>
+            <option value="2">2 seconds</option>
+            <option value="4">4 seconds</option>
+            <option value="6">6 seconds</option>
+            <option value="8">8 seconds</option>
+            <option value="10">10 seconds</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 6. Bottom Action Controls -->
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="sheet-action-item" onclick="App.resetAudioEffects()" style="flex:1; justify-content:center; border-radius:12px; background:rgba(255,255,255,0.06); font-size:13px; font-weight:700;">
+          <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+          <span>Reset Defaults</span>
+        </button>
+        <button class="sheet-action-item" onclick="App.closeEqualizer()" style="flex:1; justify-content:center; border-radius:12px; background:var(--accent); color:var(--accent-text); font-size:13px; font-weight:700;">
+          <span class="material-symbols-outlined" style="font-size:18px;">done</span>
+          <span>Apply &amp; Done</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Sleep Timer Dialog with Preset Chips & Custom Duration -->
+  <div class="dialog-backdrop" id="dialog-sleep-timer" onclick="App.closeDialog('dialog-sleep-timer')">
+    <div class="dialog-panel" onclick="event.stopPropagation()">
+      <div class="dialog-title-row" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="material-symbols-outlined" style="color:var(--accent);">timer</span>
+          <h3 class="dialog-title">Sleep Timer</h3>
+        </div>
+        <button onclick="App.closeDialog('dialog-sleep-timer')" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center;" aria-label="Close sleep timer">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="dialog-sleep-timer-body">
+        <!-- Dynamically rendered by UI.renderSleepTimerDialog() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Music Languages Selection Dialog (MusicLanguageSelectionDialog in Android SettingsScreen.kt) -->
+  <div class="dialog-backdrop" id="dialog-language-picker" onclick="App.closeDialog('dialog-language-picker')">
+    <div class="dialog-panel" onclick="event.stopPropagation()" style="max-height:80vh; display:flex; flex-direction:column;">
+      <div class="dialog-title-row" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="material-symbols-outlined" style="color:var(--accent);">translate</span>
+          <h3 class="dialog-title">Music Languages</h3>
+        </div>
+        <button onclick="App.closeDialog('dialog-language-picker')" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="lang-selection-list" id="lang-selection-list" style="flex:1; overflow-y:auto; margin-bottom:16px;"></div>
+      <button class="detail-play-btn" onclick="App.saveLanguagesAndRefresh()" style="width:100%;">
+        <span class="material-symbols-outlined fill-icon" style="font-size:18px;">check</span>
+        <span>Save Languages</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 7. Playlist Selection & Create Modal Dialog (PlaylistSelectionDialog in MFComponents.kt) -->
+  <div class="dialog-backdrop" id="dialog-playlist-picker" onclick="App.closeDialog('dialog-playlist-picker')">
+    <div class="dialog-panel" onclick="event.stopPropagation()">
+      <div class="dialog-title-row" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="material-symbols-outlined" style="color:var(--accent);">playlist_add</span>
+          <h3 class="dialog-title">Add to Playlist</h3>
+        </div>
+        <button onclick="App.closeDialog('dialog-playlist-picker')" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <button class="sheet-action-item" onclick="App.promptCreatePlaylistAndAdd()" style="background:var(--accent-soft); color:var(--accent); font-weight:700; width:100%; border-radius:12px; justify-content:center;">
+          <span class="material-symbols-outlined" style="color:var(--accent);">add</span>
+          <span>Create New Playlist</span>
+        </button>
+      </div>
+      <div class="dialog-playlists-list" id="dialog-playlists-list" style="max-height:220px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- 8. Audio Quality Selector Dialog (AudioQualityDialog in MFComponents.kt) -->
+  <div class="dialog-backdrop" id="dialog-quality" onclick="App.closeDialog('dialog-quality')">
+    <div class="dialog-panel" onclick="event.stopPropagation()">
+      <div class="dialog-title-row" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="material-symbols-outlined" style="color:var(--accent);">high_quality</span>
+          <h3 class="dialog-title">Streaming Audio Quality</h3>
+        </div>
+        <button onclick="App.closeDialog('dialog-quality')" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center;">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="dialog-options-list" id="quality-options-list"></div>
+    </div>
+  </div>
+
+  <!-- 8.4. Appearance & Theme Picker Dialog (Material You Style) -->
+  <!-- 8.4b. Download Quality & Save Location Picker Dialog -->
+  <div class="dialog-backdrop" id="dialog-download-quality" onclick="App.closeDownloadQualityDialog()">
+    <div class="dialog-panel" onclick="event.stopPropagation()" style="max-height:85vh; display:flex; flex-direction:column;">
+      <div class="dialog-title-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="material-symbols-outlined" style="color:var(--accent); font-size:24px;">download</span>
+          <h3 class="dialog-title" style="margin:0; font-size:18px;">Download Music</h3>
+        </div>
+        <button onclick="App.closeDownloadQualityDialog()" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center;" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div style="flex:1; overflow-y:auto; padding-right:4px;">
+        <!-- Track Preview Card -->
+        <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:16px; margin-bottom:16px; background:rgba(255,255,255,0.04); border:1px solid var(--neu-border-subtle);">
+          <img id="dl-dialog-track-art" src="assets/logo.png" style="width:48px; height:48px; border-radius:12px; object-fit:cover;" alt="Cover">
+          <div style="flex:1; min-width:0;">
+            <div id="dl-dialog-track-title" style="font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--neu-text-primary);">Song Title</div>
+            <div id="dl-dialog-track-artist" style="font-size:12px; color:var(--neu-text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Artist</div>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">🌙</div>
-          <h3 class="feature-card-title">Sleep Timer Natural Decay</h3>
-          <p class="feature-card-desc">Volume automatically decays linearly over the final 60 seconds so you drift off peacefully without abrupt cutoffs.</p>
+        <span class="settings-sec-head" style="margin-bottom:8px; display:block;">Select Audio Quality</span>
+        <div class="download-quality-grid" id="dl-quality-options-grid">
+          <div class="download-quality-card active" data-quality="320kbps" onclick="App.selectDownloadDialogQuality('320kbps')">
+            <span class="material-symbols-outlined quality-icon" style="color:var(--accent);">graphic_eq</span>
+            <span class="quality-title">320 KBPS</span>
+            <span class="quality-sub">Lossless Studio (~9 MB)</span>
+          </div>
+          <div class="download-quality-card" data-quality="256kbps" onclick="App.selectDownloadDialogQuality('256kbps')">
+            <span class="material-symbols-outlined quality-icon">high_quality</span>
+            <span class="quality-title">256 KBPS</span>
+            <span class="quality-sub">High Fidelity (~6 MB)</span>
+          </div>
+          <div class="download-quality-card" data-quality="160kbps" onclick="App.selectDownloadDialogQuality('160kbps')">
+            <span class="material-symbols-outlined quality-icon">music_note</span>
+            <span class="quality-title">160 KBPS</span>
+            <span class="quality-sub">Standard (~4 MB)</span>
+          </div>
+          <div class="download-quality-card" data-quality="96kbps" onclick="App.selectDownloadDialogQuality('96kbps')">
+            <span class="material-symbols-outlined quality-icon">speed</span>
+            <span class="quality-title">96 KBPS</span>
+            <span class="quality-sub">Data Saver (~2 MB)</span>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">📱</div>
-          <h3 class="feature-card-title">9:16 Instagram Story Exporter</h3>
-          <p class="feature-card-desc">Generate frosted glass story cards with album art and track metadata ready to share directly to Instagram & WhatsApp.</p>
+        <!-- Phone Download Folder Storage Banner -->
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,0.03); border:1px solid var(--neu-border-subtle); margin-bottom:14px;">
+          <span class="material-symbols-outlined" style="color:var(--accent); font-size:22px;">folder</span>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:700; color:var(--neu-text-primary);">Save Location: Phone Downloads Folder</div>
+            <div style="font-size:10.5px; color:var(--neu-text-secondary);">Saved to Downloads/MusicFlow folder &amp; in-app library</div>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon-wrapper">🎵</div>
-          <h3 class="feature-card-title">Synced Karaoke Lyrics</h3>
-          <p class="feature-card-desc">Zero-latency word-by-word synced scrolling lyrics powered by LRCLIB with instant offline database caching.</p>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:4px;">
+          <span style="font-size:12px; color:var(--neu-text-secondary);">Remember choice for future downloads</span>
+          <input type="checkbox" id="dl-dialog-remember-choice" style="width:18px; height:18px; accent-color:var(--accent);">
+        </div>
+
+        <button class="sheet-action-item" onclick="App.confirmDownloadQualityDialog()" style="width:100%; border-radius:14px; background:var(--accent); color:var(--accent-text, #ffffff); justify-content:center; font-weight:800; font-size:14px; padding:12px;">
+          <span class="material-symbols-outlined" style="font-size:20px;">download</span>
+          <span>Download to Phone</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8.5. Real Audio Output & Bluetooth / Cast Bottom Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-audio-output" onclick="App.closeBottomSheet('sheet-audio-output')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()" style="max-height:85vh; overflow-y:auto;">
+      <div class="sheet-drag-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="player-top-action-btn" onclick="App.closeBottomSheet('sheet-audio-output')" aria-label="Back" style="width:36px; height:36px; background:rgba(255,255,255,0.08); border-radius:50%; border:none; color:#FFFFFF; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:20px;">arrow_back</span>
+          </button>
+          <span class="material-symbols-outlined" style="color:var(--accent); font-size:24px;">speaker_group</span>
+          <h3 class="screen-title" style="font-size:19px; margin-bottom:0;">Audio Output &amp; Devices</h3>
+        </div>
+        <button class="icon-btn-glass" onclick="AudioOutputManager.refreshDevices(); AudioOutputManager.renderOutputSheet();" title="Refresh Devices" aria-label="Refresh">
+          <span class="material-symbols-outlined" style="font-size:18px;">refresh</span>
+        </button>
+      </div>
+
+      <!-- Quick Cast Banner -->
+      <div class="audio-output-cast-card" onclick="AudioOutputManager.promptCastSession()">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="audio-output-cast-icon-wrap">
+            <span class="material-symbols-outlined" style="font-size:22px; color:var(--accent);">cast</span>
+          </div>
+          <div>
+            <span style="font-size:14px; font-weight:700; color:#FFFFFF; display:block;">Google Cast / Wireless Display</span>
+            <span style="font-size:11.5px; color:var(--text-secondary); display:block;">Stream lossless audio to TV or smart speaker</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined" style="color:var(--text-secondary); font-size:20px;">chevron_right</span>
+      </div>
+
+      <!-- Section Title -->
+      <span class="settings-sec-head" style="margin: 14px 0 8px 0; display:block;">Connected Audio Devices</span>
+      
+      <!-- Live Dynamic Output Devices List -->
+      <div class="audio-output-list" id="audio-output-devices-list"></div>
+
+      <!-- Bluetooth Pair & System Switcher Buttons -->
+      <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+        <button class="sheet-action-item" onclick="AudioOutputManager.openBluetoothOrExternalScan()" style="background:var(--accent-soft); color:var(--accent); font-weight:700; width:100%; border-radius:14px; justify-content:center; padding:12px 14px;">
+          <span class="material-symbols-outlined" style="color:var(--accent);">bluetooth_searching</span>
+          <span>Pair or Connect Bluetooth Device</span>
+        </button>
+        <button class="sheet-action-item" onclick="AudioOutputManager.openSystemAudioSwitcher()" style="background:rgba(255,255,255,0.06); color:#FFFFFF; font-weight:600; width:100%; border-radius:14px; justify-content:center; padding:10px 14px; font-size:13px;">
+          <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.7); font-size:18px;">tune</span>
+          <span>System Output Switcher</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Full Comprehensive Android Settings Sheet -->
+  <div class="bottom-sheet-backdrop" id="sheet-settings" onclick="App.closeBottomSheet('sheet-settings')">
+    <div class="bottom-sheet-panel" onclick="event.stopPropagation()" style="max-height:85vh; overflow-y:auto;">
+      <div class="sheet-drag-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="player-top-action-btn" onclick="App.closeBottomSheet('sheet-settings')" aria-label="Back" style="width:38px; height:38px; background:rgba(255,255,255,0.08); border-radius:50%; border:none; color:#FFFFFF; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:20px;">arrow_back</span>
+          </button>
+          <h3 class="screen-title" style="font-size:22px; margin-bottom:0;">Settings</h3>
+        </div>
+        <button class="player-top-action-btn" onclick="App.closeBottomSheet('sheet-settings')" aria-label="Close" style="width:38px; height:38px; background:rgba(255,255,255,0.08); border-radius:50%; border:none; color:#FFFFFF; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+        </button>
+      </div>
+
+      <!-- User Profile Header Card -->
+      <div class="user-profile-header-card" style="display:flex; align-items:center; gap:16px; background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:16px; margin-bottom:20px;">
+        <div class="user-avatar-wrap" style="width:52px; height:52px; padding:2px; cursor:pointer;" onclick="App.promptChangeAvatar()" title="Tap to change avatar">
+          <img id="settings-card-avatar" src="assets/logo.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="Avatar">
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <h4 id="settings-card-name" style="font-size:17px; font-weight:800; color:#FFFFFF; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Add your name</h4>
+          </div>
+          <span style="font-size:12px; color:var(--text-secondary); margin-top:2px; display:block;">Account &amp; preferences</span>
+        </div>
+      </div>
+      
+      <!-- Account & Profile Section -->
+      <div class="settings-section">
+        <span class="settings-sec-head">Profile</span>
+        <div class="settings-row" onclick="App.promptChangeName()">
+          <div class="settings-row-col">
+            <span class="settings-label">Your Name</span>
+            <span class="settings-sub">Greeting display name</span>
+          </div>
+          <span class="settings-value-pill" id="settings-name-val">Not set</span>
+        </div>
+        <div class="settings-row" onclick="App.promptChangeAvatar()">
+          <div class="settings-row-col">
+            <span class="settings-label">Profile Avatar</span>
+            <span class="settings-sub">Customize avatar photo URL</span>
+          </div>
+          <img id="settings-avatar-img" class="user-avatar-wrap" style="width:36px; height:36px;" src="assets/logo.png" alt="">
+        </div>
+      </div>
+
+      <!-- Languages & Content -->
+      <div class="settings-section">
+        <span class="settings-sec-head">Music</span>
+        <div class="settings-row" onclick="App.openLanguagesDialog()">
+          <div class="settings-row-col">
+            <span class="settings-label">Music Languages</span>
+            <span class="settings-sub" id="settings-languages-summary">Hindi, English, Punjabi</span>
+          </div>
+          <span class="material-symbols-outlined" style="color:var(--text-secondary);">chevron_right</span>
+        </div>
+      </div>
+
+      <!-- Audio & Playback Section -->
+      <div class="settings-section">
+        <span class="settings-sec-head">Audio</span>
+        <div class="settings-row" onclick="App.openQualityDialog()">
+          <div class="settings-row-col">
+            <span class="settings-label">Audio Quality</span>
+            <span class="settings-sub">Lossless &amp; Master Bitrate</span>
+          </div>
+          <span class="settings-value-pill" id="settings-quality-val">Lossless &amp; Studio Master (320 kbps)</span>
+        </div>
+        <div class="settings-row" onclick="App.openEqualizer()">
+          <div class="settings-row-col">
+            <span class="settings-label">Equalizer &amp; Sound FX</span>
+            <span class="settings-sub">5-band graphic EQ, bass boost &amp; 3D spatial</span>
+          </div>
+          <span class="material-symbols-outlined" style="color:var(--text-secondary);">chevron_right</span>
+        </div>
+      </div>
+      <!-- Appearance: System / Light / Dark (the only look-related choice) -->
+      <div class="settings-section" id="settings-appearance-section">
+        <span class="settings-sec-head">Appearance</span>
+        <div class="settings-row" style="cursor:default;">
+          <div class="settings-row-col">
+            <span class="settings-label">Appearance</span>
+            <span class="settings-sub" id="settings-appearance-sub">Follows your phone</span>
+          </div>
+          <div class="seg-control" id="settings-appearance-seg" role="radiogroup" aria-label="Appearance">
+            <button class="seg-btn active" data-mode="system" onclick="App.setAppearance('system')">Auto</button>
+            <button class="seg-btn" data-mode="light" onclick="App.setAppearance('light')">Light</button>
+            <button class="seg-btn" data-mode="dark" onclick="App.setAppearance('dark')">Dark</button>
+          </div>
+        </div>
+        <div class="settings-row" style="cursor:default;">
+          <div class="settings-row-col">
+            <span class="settings-label">Accent colour</span>
+            <span class="settings-sub">Highlights, the progress line and buttons</span>
+          </div>
+          <div class="accent-swatches" id="settings-accent-swatches" role="radiogroup" aria-label="Accent colour">
+            <button class="accent-swatch" data-accent="#0078D4" style="background:#0078D4;" onclick="App.setAccent('#0078D4')" aria-label="Blue" title="Blue"></button>
+            <button class="accent-swatch" data-accent="#107C10" style="background:#107C10;" onclick="App.setAccent('#107C10')" aria-label="Green" title="Green"></button>
+            <button class="accent-swatch" data-accent="#881798" style="background:#881798;" onclick="App.setAccent('#881798')" aria-label="Purple" title="Purple"></button>
+            <button class="accent-swatch" data-accent="#E81123" style="background:#E81123;" onclick="App.setAccent('#E81123')" aria-label="Red" title="Red"></button>
+            <button class="accent-swatch" data-accent="#F7630C" style="background:#F7630C;" onclick="App.setAccent('#F7630C')" aria-label="Orange" title="Orange"></button>
+            <button class="accent-swatch" data-accent="#038387" style="background:#038387;" onclick="App.setAccent('#038387')" aria-label="Teal" title="Teal"></button>
+            <button class="accent-swatch" data-accent="#86C33E" style="background:#86C33E;" onclick="App.setAccent('#86C33E')" aria-label="Leaf" title="Leaf"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lock Screen (MusicFlow's own controls over the system lock screen) -->
+      <div class="settings-section" id="settings-lockscreen-section">
+        <span class="settings-sec-head">Lock Screen</span>
+        <div class="settings-row">
+          <div class="settings-row-col">
+            <span class="settings-label">MusicFlow lock screen</span>
+            <span class="settings-sub">Show MusicFlow's own player when the phone is locked</span>
+          </div>
+          <label class="switch-wrap">
+            <input type="checkbox" id="settings-lockscreen-switch" checked onchange="App.toggleLockScreenControls(this.checked)">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="settings-row" id="settings-lockscreen-overlay-row" onclick="App.requestLockScreenOverlay()">
+          <div class="settings-row-col">
+            <span class="settings-label">Allow over other apps</span>
+            <span class="settings-sub" id="settings-lockscreen-overlay-sub">Needed on some phones when the app is closed</span>
+          </div>
+          <span class="settings-value-pill" id="settings-lockscreen-overlay-val">Check</span>
+        </div>
+        <div class="settings-row" onclick="App.previewLockScreen()">
+          <div class="settings-row-col">
+            <span class="settings-label">Preview lock screen</span>
+            <span class="settings-sub">See how it looks while a song plays</span>
+          </div>
+          <span class="material-symbols-outlined">chevron_right</span>
+        </div>
+      </div>
+
+      <!-- Downloads -->
+      <div class="settings-section">
+        <span class="settings-sec-head">Downloads</span>
+        <div class="settings-row" onclick="App.openDownloadQualitySettingsDialog()">
+          <div class="settings-row-col">
+            <span class="settings-label">Download Quality</span>
+            <span class="settings-sub" id="settings-dl-quality-sub">Lossless &amp; Studio Master (320 kbps)</span>
+          </div>
+          <span class="settings-value-pill" id="settings-dl-quality-val">320 KBPS</span>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-col">
+            <span class="settings-label">Save to Phone's Download Folder</span>
+            <span class="settings-sub">Save MP3 directly to phone's public Downloads/MusicFlow folder</span>
+          </div>
+          <label class="switch-wrap">
+            <input type="checkbox" id="settings-save-phone-folder-switch" checked onchange="App.toggleSaveToPhoneFolder(this.checked)">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-col">
+            <span class="settings-label">Smart Downloads</span>
+            <span class="settings-sub">Automatically save recommended tracks offline</span>
+          </div>
+          <label class="switch-wrap">
+            <input type="checkbox" id="settings-smart-dl-switch" onchange="App.toggleSmartDownloads(this.checked)">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-col">
+            <span class="settings-label">Download over Wi-Fi Only</span>
+            <span class="settings-sub">Prevent automatic downloads on mobile data</span>
+          </div>
+          <label class="switch-wrap">
+            <input type="checkbox" id="settings-wifi-only-switch" checked onchange="App.toggleDownloadWifiOnly(this.checked)">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Storage & Cache Section -->
+      <div class="settings-section">
+        <span class="settings-sec-head">Storage &amp; Data</span>
+        <div class="settings-row" onclick="App.clearListeningHistory()">
+          <div class="settings-row-col">
+            <span class="settings-label">Clear Listening History</span>
+            <span class="settings-sub">Reset recent plays</span>
+          </div>
+          <span class="material-symbols-outlined" style="color:var(--accent);">delete</span>
+        </div>
+        <div class="settings-row" onclick="App.clearSearchData()">
+          <div class="settings-row-col">
+            <span class="settings-label">Clear Search History</span>
+            <span class="settings-sub">Remove cached search terms</span>
+          </div>
+          <span class="material-symbols-outlined" style="color:var(--accent);">delete</span>
+        </div>
+      </div>
+
+      <!-- About & In-App Updates Section -->
+      <div class="settings-section" style="border-bottom:none;">
+        <span class="settings-sec-head">About &amp; Updates</span>
+        <div class="settings-row" id="settings-get-app-row" style="display:none;" onclick="App.openDownloadPage()">
+          <div class="settings-row-col">
+            <span class="settings-label">Get the Android app</span>
+            <span class="settings-sub">Offline downloads, lock-screen controls and background play</span>
+          </div>
+          <span class="material-symbols-outlined">download</span>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-col">
+            <span class="settings-label">MusicFlow Version</span>
+            <span class="settings-sub" id="settings-platform-sub">Sideloaded Build (Lossless Audio Engine)</span>
+          </div>
+          <span class="settings-value-pill" id="settings-version-val">v2.7.2</span>
+        </div>
+        <div class="settings-row" style="cursor:default;">
+          <div class="settings-row-col">
+            <span class="settings-label">Updates</span>
+            <span class="settings-sub" id="settings-update-status">✓ You're up to date</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="settings-action-btn" id="btn-whats-new" onclick="App.showImprovementsPanel()" style="padding:6px 12px; border-radius:var(--radius-full); background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text-primary); font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:15px; color:#00F2FE;">auto_awesome</span>
+              <span>What's New</span>
+            </button>
+            <button class="settings-action-btn" id="btn-check-updates" onclick="App.checkUpdatesManual()" style="padding:6px 14px; border-radius:var(--radius-full); background:var(--accent-soft); border:1px solid var(--accent-border); color:var(--accent); font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <span class="material-symbols-outlined" id="icon-update-spin" style="font-size:15px;">sync</span>
+              <span id="text-update-btn">Check</span>
+            </button>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:6px; padding:0 4px;" id="settings-update-time">
+          Last checked: Never
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Download Hub Section -->
-  <section class="download-section" id="download">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Install MusicFlow</span>
-        <h2 class="section-title">Direct Package Downloads</h2>
-        <p class="section-desc">Download authentic, verified builds with zero malware, zero ads, and zero analytics.</p>
-      </div>
-
-      <div class="download-cards-grid">
-        <!-- Android Card -->
-        <div class="platform-download-card recommended" id="card-android">
-          <div class="card-recommended-badge">Recommended for Android</div>
-          <div class="platform-logo">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4128 13.8533 8.0822 12 8.0822s-3.5902.3306-5.1367.8675L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/></svg>
-          </div>
-          <h3 class="platform-title">Android Package</h3>
-          <p class="platform-version">v2.7.3 • Android 8.0 (Oreo) or later</p>
-
-          <div class="file-spec-row">
-            <div class="file-spec-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-              <span>Universal APK</span>
-            </div>
-            <div class="file-spec-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              <span>Arm64-v8a / Universal</span>
-            </div>
-          </div>
-
-          <a href="downloads/MusicFlow.apk" download="MusicFlow.apk" class="btn btn-primary download-action-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4128 13.8533 8.0822 12 8.0822s-3.5902.3306-5.1367.8675L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/></svg>
-            <span>Download APK Direct</span>
-          </a>
-        </div>
-
-        <!-- iOS Card -->
-        <div class="platform-download-card" id="card-ios">
-          <div class="card-recommended-badge">Recommended for iOS</div>
-          <div class="platform-logo">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
-          </div>
-          <h3 class="platform-title">iOS Package</h3>
-          <p class="platform-version">v2.7.3 • iOS 14.0 or later (iPhone & iPad)</p>
-
-          <div class="file-spec-row">
-            <div class="file-spec-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-              <span>3.8 MB</span>
-            </div>
-            <div class="file-spec-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              <span>Sideloadable IPA</span>
-            </div>
-          </div>
-
-          <a href="downloads/MusicFlow.ipa" download="MusicFlow.ipa" class="btn btn-glass download-action-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
-            <span>Download IPA Direct</span>
-          </a>
+  <!-- ================= UNIVERSAL SONG ACTION SHEET ================= -->
+  <div id="sheet-song-actions" class="modal-bottom-sheet" style="display:none;" onclick="if(event.target===this)App.closeSongMenu()">
+    <div class="bottom-sheet-content">
+      <div class="bottom-sheet-drag-handle"></div>
+      <div class="song-action-header">
+        <img id="song-action-img" src="assets/logo.png" class="song-action-art" alt="">
+        <div class="song-action-meta">
+          <span class="song-action-title" id="song-action-title">Song Title</span>
+          <span class="song-action-sub" id="song-action-sub">Artist</span>
         </div>
       </div>
+      <div class="sheet-action-list">
+        <div class="sheet-action-item" id="btn-song-act-play"><span class="material-symbols-outlined fill-icon">play_arrow</span><span>Play</span></div>
+        <div class="sheet-action-item" id="btn-song-act-radio"><span class="material-symbols-outlined">radio</span><span>Start Radio</span></div>
+        <div class="sheet-action-item" id="btn-song-act-play-next"><span class="material-symbols-outlined">queue_play_next</span><span>Play Next</span></div>
+        <div class="sheet-action-item" id="btn-song-act-queue"><span class="material-symbols-outlined">add_to_queue</span><span>Add to Queue</span></div>
+        <div class="sheet-action-item" id="btn-song-act-fav"><span class="material-symbols-outlined" id="song-act-fav-icon">favorite</span><span id="song-act-fav-text">Favorite</span></div>
+        <div class="sheet-action-item" id="btn-song-act-add-pl"><span class="material-symbols-outlined">playlist_add</span><span>Add to Playlist</span></div>
+        <div class="sheet-action-item" id="btn-song-act-download"><span class="material-symbols-outlined">download</span><span>Download</span></div>
+        <div class="sheet-action-item" id="btn-song-act-artist"><span class="material-symbols-outlined">person</span><span>Go to Artist</span></div>
+        <div class="sheet-action-item" id="btn-song-act-remove-pl" style="display:none; color:var(--accent);"><span class="material-symbols-outlined">remove_circle_outline</span><span>Remove from Playlist</span></div>
+      </div>
+    </div>
+  </div>
 
-      <!-- Sideloading Guides Hub -->
-      <div class="sideload-guide-box" id="sideload">
-        <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center;">Installation & Sideloading Guide</h3>
+  <!-- ================= PLAYLIST ACTION SHEET ================= -->
+  <div id="sheet-playlist-actions" class="modal-bottom-sheet" style="display:none;" onclick="if(event.target===this)App.closePlaylistMenu()">
+    <div class="bottom-sheet-content">
+      <div class="bottom-sheet-drag-handle"></div>
+      <div class="song-action-header">
+        <div class="playlist-icon-square"><span class="material-symbols-outlined">queue_music</span></div>
+        <div class="song-action-meta">
+          <span class="song-action-title" id="pl-action-title">Playlist Title</span>
+          <span class="song-action-sub" id="pl-action-sub">0 tracks</span>
+        </div>
+      </div>
+      <div class="sheet-action-list">
+        <div class="sheet-action-item" id="btn-pl-act-play"><span class="material-symbols-outlined fill-icon">play_arrow</span><span>Play All</span></div>
+        <div class="sheet-action-item" id="btn-pl-act-shuffle"><span class="material-symbols-outlined">shuffle</span><span>Shuffle</span></div>
+        <div class="sheet-action-item" id="btn-pl-act-play-next"><span class="material-symbols-outlined">queue_play_next</span><span>Play Next</span></div>
+        <div class="sheet-action-item" id="btn-pl-act-queue"><span class="material-symbols-outlined">add_to_queue</span><span>Add to Queue</span></div>
+        <div class="sheet-action-item" id="btn-pl-act-edit"><span class="material-symbols-outlined">edit</span><span>Edit Playlist</span></div>
+        <div class="sheet-action-item" id="btn-pl-act-duplicate"><span class="material-symbols-outlined">content_copy</span><span>Duplicate Playlist</span></div>
+        <div class="sheet-action-item" id="btn-pl-act-delete" style="color:var(--accent);"><span class="material-symbols-outlined">delete</span><span>Delete Playlist</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= UNIVERSAL ADD TO PLAYLIST MODAL ================= -->
+  <div id="modal-add-to-playlist" class="modal-dialog-backdrop" style="display:none;" onclick="if(event.target===this)App.closeAddToPlaylistModal()">
+    <div class="modal-glass-card">
+      <div class="modal-head-row">
+        <h3 class="modal-title">Add to Playlist</h3>
+        <button class="icon-btn-glass" onclick="App.closeAddToPlaylistModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-new-pl-row">
+        <input type="text" id="input-modal-new-pl-name" class="modal-text-input" placeholder="New playlist name...">
+        <button class="modal-primary-btn" onclick="App.createAndAddSongToPlaylist()"><span class="material-symbols-outlined" style="font-size:16px;">add</span> Create &amp; Add</button>
+      </div>
+      <div class="modal-pl-list" id="modal-playlists-container"></div>
+    </div>
+  </div>
+
+  <!-- ================= CREATE / EDIT PLAYLIST MODAL ================= -->
+  <div id="modal-create-playlist" class="modal-dialog-backdrop" style="display:none;" onclick="if(event.target===this)App.closeCreatePlaylistModal()">
+    <div class="modal-glass-card">
+      <div class="modal-head-row">
+        <h3 class="modal-title" id="modal-playlist-editor-title">Create Playlist</h3>
+        <button class="icon-btn-glass" onclick="App.closeCreatePlaylistModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+        <label class="modal-field-label">Playlist Name *</label>
+        <input type="text" id="input-edit-pl-name" class="modal-text-input" placeholder="e.g. Late Night Vibes" required>
+        <label class="modal-field-label">Description (Optional)</label>
+        <textarea id="input-edit-pl-desc" class="modal-text-input modal-textarea" placeholder="Add an optional description..."></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button class="modal-secondary-btn" onclick="App.closeCreatePlaylistModal()">Cancel</button>
+          <button class="modal-primary-btn" id="btn-save-playlist-modal" onclick="App.submitPlaylistEditor()">Save Playlist</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= IMPORT YOUTUBE PLAYLIST / SONG MODAL ================= -->
+  <div id="modal-import-yt-playlist" class="modal-dialog-backdrop" style="display:none;" onclick="if(event.target===this)App.closeImportYouTubePlaylistModal()">
+    <div class="modal-glass-card" style="max-width:480px; width:92%;">
+      <div class="modal-head-row">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="material-symbols-outlined" style="color:#FF0000; font-size:24px;">smart_display</span>
+          <h3 class="modal-title">Import from YouTube</h3>
+        </div>
+        <button class="icon-btn-glass" onclick="App.closeImportYouTubePlaylistModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+        <label class="modal-field-label">Paste a YouTube / YouTube Music song or playlist URL</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="input-import-yt-url" class="modal-text-input" placeholder="https://music.youtube.com/playlist?list=... or watch?v=..." style="flex:1;">
+          <button class="modal-primary-btn" id="btn-submit-yt-fetch" onclick="App.submitYouTubePlaylistImport()" style="white-space:nowrap; padding:0 16px;">
+            <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+            <span>Fetch</span>
+          </button>
+        </div>
         
-        <div class="guide-tabs-header">
-          <button class="tab-btn active" data-target="guide-android">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4128 13.8533 8.0822 12 8.0822s-3.5902.3306-5.1367.8675L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/></svg>
-            <span>Android (APK)</span>
-          </button>
-          <button class="tab-btn" data-target="guide-altstore">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
-            <span>iOS (AltStore)</span>
-          </button>
-          <button class="tab-btn" data-target="guide-sideloadly">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
-            <span>iOS (Sideloadly)</span>
-          </button>
-          <button class="tab-btn" data-target="guide-scarlet">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.57-.69.96-1.65.85-2.61-.83.03-1.84.55-2.43 1.24-.52.6-.97 1.57-.85 2.5.93.07 1.86-.44 2.43-1.13z"/></svg>
-            <span>iOS (Scarlet / TrollStore)</span>
-          </button>
+        <!-- Shimmer loading state -->
+        <div id="import-yt-loading" style="display:none; text-align:center; padding:20px 0;">
+          <div class="loading-shimmer-row" style="margin-bottom:8px;"></div>
+          <span style="font-size:12.5px; color:var(--text-secondary);">Analyzing playlist & matching audio streams...</span>
         </div>
 
-        <div class="tab-content">
-          <!-- Android Pane -->
-          <div class="tab-pane active" id="guide-android">
-            <ul class="steps-list">
-              <li class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-content">
-                  <h4>Download the APK</h4>
-                  <p>Click the "Download Android APK" button above to download the <code>MusicFlow.apk</code> file to your device.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-content">
-                  <h4>Allow Unknown Sources</h4>
-                  <p>When prompted by Android, enable "Install unknown apps" or "Allow from this source" in Settings.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">3</div>
-                <div class="step-content">
-                  <h4>Open & Enjoy</h4>
-                  <p>Tap <strong>Install</strong>. Once completed, open MusicFlow and start enjoying lossless music immediately.</p>
-                </div>
-              </li>
-            </ul>
+        <!-- Import Summary & Track List preview -->
+        <div id="import-yt-results" style="display:none; flex-direction:column; gap:10px;">
+          <div class="import-stats-banner" style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:12px; font-size:12px;">
+            <div><span style="color:var(--text-secondary);">Found:</span> <strong id="stat-yt-found" style="color:#fff;">0</strong></div>
+            <div><span style="color:#00F2FE;">Matched:</span> <strong id="stat-yt-matched" style="color:#00F2FE;">0</strong></div>
+            <div><span style="color:var(--accent);">Unavailable:</span> <strong id="stat-yt-unmatched" style="color:var(--accent);">0</strong></div>
           </div>
 
-          <!-- AltStore Pane -->
-          <div class="tab-pane" id="guide-altstore">
-            <ul class="steps-list">
-              <li class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-content">
-                  <h4>Download the IPA</h4>
-                  <p>Download <code>MusicFlow.ipa</code> directly on your iPhone or transfer it from your computer.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-content">
-                  <h4>Open in AltStore</h4>
-                  <p>Open the AltStore app on your iPhone, go to <strong>My Apps</strong>, tap the <strong>+</strong> icon in the top left, and choose <code>MusicFlow.ipa</code>.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">3</div>
-                <div class="step-content">
-                  <h4>Launch MusicFlow</h4>
-                  <p>AltStore will sign and install the app. Once installed, MusicFlow appears on your Home Screen.</p>
-                </div>
-              </li>
-            </ul>
-          </div>
+          <div id="import-yt-tracks-preview" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding-right:4px;"></div>
 
-          <!-- Sideloadly Pane -->
-          <div class="tab-pane" id="guide-sideloadly">
-            <ul class="steps-list">
-              <li class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-content">
-                  <h4>Connect iPhone to PC/Mac</h4>
-                  <p>Launch Sideloadly and connect your iOS device via USB or Wi-Fi.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-content">
-                  <h4>Drag & Drop IPA</h4>
-                  <p>Drag the <code>MusicFlow.ipa</code> file into Sideloadly, enter your Apple ID, and click <strong>Start</strong>.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">3</div>
-                <div class="step-content">
-                  <h4>Trust Developer Certificate</h4>
-                  <p>On your iPhone, navigate to <em>Settings → General → VPN & Device Management</em> and tap <strong>Trust</strong>.</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Scarlet / TrollStore Pane -->
-          <div class="tab-pane" id="guide-scarlet">
-            <ul class="steps-list">
-              <li class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-content">
-                  <h4>Direct On-Device Install</h4>
-                  <p>If you have Scarlet or TrollStore installed on your iPhone, download <code>MusicFlow.ipa</code> in Safari.</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-content">
-                  <h4>Install in 1-Click</h4>
-                  <p>Share or import the IPA into TrollStore or Scarlet to instantly sign and install permanently without revokes.</p>
-                </div>
-              </li>
-            </ul>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+            <button class="modal-secondary-btn" onclick="App.closeImportYouTubePlaylistModal()">Cancel</button>
+            <button class="modal-primary-btn" id="btn-save-imported-pl" onclick="App.saveImportedPlaylist()">
+              <span class="material-symbols-outlined" style="font-size:16px;">playlist_add_check</span>
+              <span>Save to My Music</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- FAQ Section -->
-  <section class="features-section" id="faq" style="background: var(--bg-surface);">
-    <div class="container" style="max-width: 860px;">
-      <div class="section-header">
-        <span class="section-tag">Common Questions</span>
-        <h2 class="section-title">Frequently Asked Questions</h2>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <div class="glass-card">
-          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #FFFFFF;">Is MusicFlow completely free?</h4>
-          <p style="color: var(--text-muted); font-size: 14px;">Yes! MusicFlow is 100% free with zero in-app purchases, zero subscription paywalls, and zero ads.</p>
+  <!-- ================= IN-APP UPDATE MODAL DIALOG ================= -->
+  <div id="modal-update-dialog" class="modal-bottom-sheet" style="display:none;" onclick="if(event.target===this && !App.isUpdateMandatory)App.closeUpdateDialog()">
+    <div class="bottom-sheet-content update-modal-card">
+      <div class="bottom-sheet-drag-handle"></div>
+      
+      <div class="update-dialog-header">
+        <div class="update-icon-glow">
+          <span class="material-symbols-outlined" style="font-size:28px; color:#00F2FE;">system_update</span>
         </div>
-
-        <div class="glass-card">
-          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #FFFFFF;">Can I play music in the background and with the screen locked?</h4>
-          <p style="color: var(--text-muted); font-size: 14px;">Yes! MusicFlow uses native background audio sessions with full lock screen media controls (album art, seekbar, next/previous, play/pause).</p>
-        </div>
-
-        <div class="glass-card">
-          <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #FFFFFF;">Does the app remember where I left off when I close it?</h4>
-          <p style="color: var(--text-muted); font-size: 14px;">Yes! MusicFlow has persistent cold-start restoration. When you reopen the app, your last song and playback position are restored instantly.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="brand-logo">
-            <div class="logo-icon-box">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-            </div>
-            <span>MusicFlow</span>
-          </div>
-          <p>The premier open lossless music streaming player for Android and iOS devices.</p>
-        </div>
-
-        <div class="footer-col">
-          <h5>Downloads</h5>
-          <ul class="footer-links">
-            <li><a href="downloads/MusicFlow.apk" download="MusicFlow.apk">Android APK (25.3 MB)</a></li>
-            <li><a href="downloads/MusicFlow.ipa" download="MusicFlow.ipa">iOS IPA (3.8 MB)</a></li>
-            <li><a href="#sideload">Sideloading Guide</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h5>Features</h5>
-          <ul class="footer-links">
-            <li><a href="#features">7-Band EQ & 3D Spatial</a></li>
-            <li><a href="#features">320kbps Lossless</a></li>
-            <li><a href="#features">Synced Karaoke Lyrics</a></li>
-            <li><a href="#features">Precision Sleep Timer</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h5>Platform</h5>
-          <ul class="footer-links">
-            <li><a href="#faq">Compatibility</a></li>
-            <li><a href="#faq">Privacy & Zero Ads</a></li>
-            <li><a href="#preview">Web Demo</a></li>
-          </ul>
+        <div class="update-header-meta">
+          <div class="update-dialog-badge" id="update-dialog-badge">Update Available</div>
+          <h2 class="update-dialog-title" id="update-dialog-title">MusicFlow Update</h2>
         </div>
       </div>
 
-      <div class="footer-bottom">
-        <span>© 2026 MusicFlow. Built for high-fidelity music lovers.</span>
-        <span>Version 2.7.3 (Latest Release) • Verified Clean</span>
+      <div class="update-version-row">
+        <div class="version-stat-box">
+          <span class="version-stat-label">Current</span>
+          <span class="version-stat-num" id="update-curr-version">v2.7.2</span>
+        </div>
+        <span class="material-symbols-outlined" style="color:var(--text-secondary); font-size:18px;">arrow_forward</span>
+        <div class="version-stat-box highlight">
+          <span class="version-stat-label">Latest</span>
+          <span class="version-stat-num" id="update-new-version">v2.7.2</span>
+        </div>
+      </div>
+
+      <div class="update-notes-container">
+        <div class="update-notes-heading">What's New</div>
+        <ul class="update-notes-list" id="update-notes-list">
+          <li>Major improvements to discovery and playback.</li>
+        </ul>
+      </div>
+
+      <div class="update-dialog-actions">
+        <button class="update-primary-btn" id="btn-update-now" onclick="App.openUpdateDownload()">
+          <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+          <span id="btn-update-now-text">Update Now</span>
+        </button>
+        <button class="update-release-btn" onclick="App.openWebsite()">
+          <span class="material-symbols-outlined" style="font-size:16px;">language</span>
+          <span>Official Website</span>
+        </button>
+        <button class="update-later-btn" id="btn-update-later" onclick="App.dismissUpdateDialog()">Later</button>
       </div>
     </div>
-  </footer>
+  </div>
 
-  <script src="app.js"></script>
+  <!-- ================= IN-APP SUBTLE UPDATE BANNER ================= -->
+  <div id="update-banner" class="update-banner-card" style="display:none;">
+    <div class="update-banner-icon">
+      <span class="material-symbols-outlined" style="font-size:20px; color:#00F2FE;">system_update</span>
+    </div>
+    <div class="update-banner-info">
+      <div class="update-banner-title" id="update-banner-title">MusicFlow Update Available</div>
+      <div class="update-banner-sub" id="update-banner-sub">Better discovery, radio and player improvements.</div>
+    </div>
+    <div class="update-banner-actions">
+      <button class="update-banner-btn-update" onclick="App.openUpdateDownload()">Update</button>
+      <button class="update-banner-btn-dismiss" onclick="App.dismissUpdateBanner()">
+        <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= UNIFIED MUSICFLOW CONFIRMATION MODAL ================= -->
+  <div id="modal-confirm-dialog" class="mf-custom-modal-overlay" onclick="if(event.target===this)App.closeConfirmModal(false)">
+    <div class="mf-custom-modal-card">
+      <div class="mf-modal-icon-badge" id="modal-confirm-badge">
+        <span class="material-symbols-outlined" id="modal-confirm-icon" style="font-size:28px;">help_outline</span>
+      </div>
+      <h3 class="mf-modal-title" id="modal-confirm-title">Confirm Action</h3>
+      <p class="mf-modal-message" id="modal-confirm-msg">Are you sure you want to proceed?</p>
+      <div class="mf-modal-btn-row">
+        <button class="btn-mf-modal-cancel" id="btn-modal-confirm-cancel" onclick="App.closeConfirmModal(false)">Cancel</button>
+        <button class="btn-mf-modal-confirm" id="btn-modal-confirm-ok" onclick="App.closeConfirmModal(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= UNIFIED MUSICFLOW INPUT / PROMPT MODAL ================= -->
+  <div id="modal-prompt-dialog" class="mf-custom-modal-overlay" onclick="if(event.target===this)App.closePromptModal(null)">
+    <div class="mf-custom-modal-card">
+      <div class="mf-modal-icon-badge" id="modal-prompt-badge">
+        <span class="material-symbols-outlined" id="modal-prompt-icon" style="font-size:28px;">edit</span>
+      </div>
+      <h3 class="mf-modal-title" id="modal-prompt-title">Edit Name</h3>
+      <p class="mf-modal-message" id="modal-prompt-msg" style="display:none;"></p>
+      <input type="text" class="mf-modal-input-field" id="modal-prompt-input" placeholder="Enter name..." maxlength="60" onkeydown="if(event.key==='Enter')App.submitPromptModal()">
+      <div class="mf-modal-btn-row">
+        <button class="btn-mf-modal-cancel" id="btn-modal-prompt-cancel" onclick="App.closePromptModal(null)">Cancel</button>
+        <button class="btn-mf-modal-confirm" id="btn-modal-prompt-ok" onclick="App.submitPromptModal()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Inputs for Local Audio Import -->
+  <input type="file" id="local-file-input" multiple accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus" style="display:none;" onchange="App.handleLocalFilesImport(event)">
+  <input type="file" id="local-folder-input" webkitdirectory directory multiple accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus" style="display:none;" onchange="App.handleLocalFolderImport(event)">
+
+  <!-- Hidden DOM Audio Element for Playback -->
+  <audio id="app-audio" preload="auto" playsinline webkit-playsinline></audio>
+
+  <!-- Modular Scripts -->
+  <script src="js/apiConfig.js"></script>
+  <script src="js/ytStreamResolver.js"></script>
+  <script src="js/themeManager.js"></script>
+  <script src="js/performanceManager.js"></script>
+  <script src="js/dataNormalizer.js"></script>
+  <script src="js/musicProvider.js"></script>
+  <script src="js/jioSaavnProvider.js"></script>
+  <script src="js/youtubeMusicService.js"></script>
+  <script src="js/youtubeMusicProvider.js"></script>
+  <script src="js/id3Parser.js"></script>
+  <script src="js/indexedDbStorage.js"></script>
+  <script src="js/queryNormalizer.js"></script>
+  <script src="js/stringSimilarity.js"></script>
+  <script src="js/trackDeduplicator.js"></script>
+  <script src="js/audioFeatureExtractor.js"></script>
+  <script src="js/featureStore.js"></script>
+  <script src="js/musicFlowEmbedder.js"></script>
+  <script src="js/embeatAdapter.js"></script>
+  <script src="js/offlineManager.js"></script>
+  <script src="js/searchEngine.js"></script>
+  <script src="js/recommendationEngine.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/updateManager.js"></script>
+  <script src="js/typesenseClient.js"></script>
+  <script src="js/downloadManager.js"></script>
+  <script src="js/smartDownloads.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/homeDataLayer.js"></script>
+  <script src="js/exploreDataLayer.js"></script>
+  <script src="js/audioPresetsLibrary.js"></script>
+  <script src="js/audioEffectsEngine.js"></script>
+  <script src="js/playbackResolver.js"></script>
+  <script src="js/nativeMedia.js"></script>
+  <script src="js/station.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/ambientScreen.js"></script>
+  <script src="js/lyrics.js"></script>
+  <script src="js/audioOutputManager.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/samplesFeed.js"></script>
+  <script src="js/radioBuilder.js"></script>
+  <script src="js/radioScreen.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/motion.js"></script>
 </body>
 </html>

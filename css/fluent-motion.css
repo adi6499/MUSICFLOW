@@ -1,0 +1,81 @@
+/* ============================================================================
+   MUSICFLOW — MOTION & INTERACTION LAYER (Fluent)
+   Interactive Now Playing sheet, lyrics interactions, queue swipes. Flat.
+   ============================================================================ */
+
+/* Collapsing titles are not used in this design */
+body.theme-fluent .inline-title-bar { display: none !important; }
+
+/* ---- Interactive Now Playing sheet ------------------------------------ */
+body.theme-fluent .full-player-sheet.is-dragging,
+body.theme-fluent .full-player-sheet.is-dragging * { pointer-events: none; }
+body.theme-fluent .full-player-sheet.is-dragging { box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.35); }
+body.theme-fluent .mini-player-dock { touch-action: pan-x; }
+
+/* ---- Lyrics --------------------------------------------------------------- */
+body.theme-fluent .lyrics-line { transition: color 0.3s ease; transform-origin: left center; }
+body.theme-fluent .lyrics-line.active { animation: none; }
+body.theme-fluent .lyrics-breather { font-size: 20px !important; letter-spacing: 6px; color: var(--fl-text-3) !important; padding-left: 12px !important; }
+body.theme-fluent .lyrics-breather.active { color: var(--fl-text) !important; animation: flBreather 1.6s ease-in-out infinite !important; }
+@keyframes flBreather { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+body.theme-fluent .drawer-pane,
+body.theme-fluent .player-lyrics-view { position: relative; }
+
+body.theme-fluent .lyrics-now-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 16px);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 14px 0 10px;
+  border-radius: 2px;
+  border: none;
+  background: var(--accent);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--fl-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 5;
+  cursor: pointer;
+}
+
+body.theme-fluent .lyrics-now-pill .material-symbols-outlined { font-size: 18px; }
+body.theme-fluent .lyrics-now-pill.visible { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+body.theme-fluent .lyric-sheet-quote { font-size: 16px; font-weight: 400; line-height: 1.35; color: var(--fl-text); padding: 6px 4px 14px 4px; border-bottom: 1px solid var(--fl-line); margin-bottom: 4px; }
+
+/* ---- Queue swipe actions ----------------------------------------------- */
+body.theme-fluent .queue-swipe-wrap { position: relative; overflow: hidden; border-radius: 0; margin-bottom: 0; }
+body.theme-fluent .queue-swipe-wrap::before,
+body.theme-fluent .queue-swipe-wrap::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  font-family: 'Material Symbols Rounded';
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'opsz' 24;
+  font-size: 22px;
+  color: #FFFFFF;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+body.theme-fluent .queue-swipe-wrap::before { content: 'playlist_play'; left: 0; justify-content: flex-start; padding-left: 16px; background: var(--accent); }
+body.theme-fluent .queue-swipe-wrap::after { content: 'delete'; right: 0; justify-content: flex-end; padding-right: 16px; background: #C42B1C; }
+body.theme-fluent .queue-swipe-wrap.swiping-right::before { opacity: 1; }
+body.theme-fluent .queue-swipe-wrap.swiping-left::after { opacity: 1; }
+body.theme-fluent .queue-swipe-wrap .queue-track-item { position: relative; z-index: 1; background: var(--fl-surface) !important; will-change: transform; }
+body.theme-fluent .queue-swipe-wrap .queue-track-del { display: none !important; }
+
+/* ---- Detail covers: flat shadow ----------------------------------------- */
+body.theme-fluent #screen-detail .detail-cover-img { box-shadow: var(--fl-shadow); transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.theme-fluent .lyrics-breather.active { animation: none !important; }
+}

@@ -1,0 +1,321 @@
+/* ============================================================================
+   MUSICFLOW — AMBIENT / LOCK-SCREEN MODE
+   Clock + circular artwork + glass transport, morphing into a full-bleed
+   artwork wallpaper ("expanded"). Reads --beat for the artwork glow.
+   ============================================================================ */
+
+.ambient-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #FFFFFF;
+  background: #000000;
+  font-family: var(--font-main, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif);
+  padding: max(18px, max(18px, var(--safe-top))) 20px max(22px, max(22px, var(--safe-bottom))) 20px;
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(18px) scale(0.985);
+  transition: opacity 0.42s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.42s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0s linear 0.42s;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ambient-screen.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.42s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.42s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0s;
+}
+
+/* Background: blurred artwork in clock mode, sharp full-bleed in expanded mode */
+.ambient-bg {
+  position: absolute;
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(34px) saturate(1.25) brightness(0.55);
+  transform: scale(1.08);
+  transition: filter 0.9s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.9s cubic-bezier(0.2, 0.9, 0.3, 1);
+  z-index: 0;
+}
+
+.ambient-bg-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.10) 35%, rgba(0, 0, 0, 0.55) 75%, rgba(0, 0, 0, 0.78) 100%);
+  transition: opacity 0.9s ease;
+}
+
+.ambient-screen.expanded .ambient-bg {
+  filter: blur(0) saturate(1.1) brightness(0.92);
+  transform: scale(1.0);
+}
+
+/* Top bar */
+.ambient-top {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ambient-top .icon-btn-glass {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.ambient-music-label {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.ambient-screen.expanded .ambient-music-label { opacity: 1; transform: none; }
+
+/* Clock */
+.ambient-clock {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  margin-top: clamp(10px, 4vh, 36px);
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.ambient-time {
+  font-size: clamp(52px, 17vw, 72px);
+  font-weight: 300;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.45);
+}
+
+.ambient-date {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.72;
+  letter-spacing: 0.2px;
+}
+
+.ambient-screen.expanded .ambient-clock { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+
+/* Circular artwork, morphs out when expanded */
+.ambient-art-wrap {
+  position: relative;
+  z-index: 3;
+  width: min(62vw, 250px);
+  height: min(62vw, 250px);
+  margin: clamp(14px, 4vh, 34px) auto 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.6),
+    0 0 0 0.5px rgba(255, 255, 255, 0.25),
+    0 0 calc(8px + var(--beat, 0) * 26px) rgba(255, 255, 255, calc(0.12 + var(--beat, 0) * 0.35));
+  transition: transform 0.85s cubic-bezier(0.32, 1.1, 0.4, 1), opacity 0.6s ease, border-radius 0.85s ease;
+}
+
+.ambient-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ambient-screen.is-playing .ambient-art-wrap { transform: scale(calc(1 + var(--beat, 0) * 0.025)); }
+
+.ambient-screen.expanded .ambient-art-wrap {
+  transform: scale(3.2);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Spacer pushes the meta/controls towards the bottom in expanded mode */
+.ambient-spacer { flex: 1 1 auto; min-height: 10px; }
+
+/* Title row */
+.ambient-meta {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(14px, 3vh, 28px);
+}
+
+.ambient-titles { flex: 1; min-width: 0; text-align: center; }
+
+.ambient-title {
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ambient-artist {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ambient-side-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ambient-side-btn .material-symbols-outlined { font-size: 20px; }
+.ambient-side-btn .is-on { color: var(--accent, #FA2D48); font-variation-settings: 'FILL' 1; }
+
+/* Progress */
+.ambient-progress {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 12px;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.ambient-progress-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+
+.ambient-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #FFFFFF;
+  border-radius: 2px;
+  transition: width 0.25s linear;
+}
+
+.ambient-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Three large glass transport buttons */
+.ambient-controls {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ambient-ctrl {
+  flex: 1;
+  height: 64px;
+  border-radius: 18px;
+  border: 0.5px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 12px 30px rgba(0, 0, 0, 0.35);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ambient-ctrl:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.3); }
+.ambient-ctrl .material-symbols-outlined { font-size: 28px; }
+.ambient-ctrl-main .material-symbols-outlined { font-size: 34px; }
+
+/* Bottom row: small round pills around a decorative ring (like the reference) */
+.ambient-bottom {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.ambient-pill {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.ambient-pill .material-symbols-outlined { font-size: 20px; }
+
+.ambient-ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 calc(4px + var(--beat, 0) * 16px) rgba(255, 255, 255, calc(0.2 + var(--beat, 0) * 0.5));
+}
+
+.ambient-screen.expanded .ambient-bottom { opacity: 0; pointer-events: none; }
+.ambient-bottom { transition: opacity 0.4s ease; }
+
+/* Button in Now Playing that opens this mode */
+#btn-player-ambient .material-symbols-outlined { font-size: 20px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-screen, .ambient-bg, .ambient-art-wrap, .ambient-clock { transition: none !important; }
+}
+
+/* Stronger readability gradient over sharp artwork in wallpaper mode */
+.ambient-screen.expanded .ambient-bg-dim {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.06) 28%, rgba(0, 0, 0, 0.50) 58%, rgba(0, 0, 0, 0.90) 100%);
+}

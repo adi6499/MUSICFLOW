@@ -1,39 +1,50 @@
 {
   "updateAvailable": false,
   "updateRequired": false,
-  "currentVersion": "2.7.3",
-  "latestVersion": "2.7.3",
-  "versionCode": 30,
-  "minimumVersion": "1.0.0",
+  "currentVersion": "5.0.0",
+  "latestVersion": "5.0.0",
+  "versionCode": 44,
+  "minimumVersion": "2.7.4",
   "platform": "android",
-  "title": "MusicFlow v2.7.3",
+  "title": "MusicFlow v5.0.0",
   "message": "MusicFlow is up to date",
   "releaseNotes": [
-    "Next-generation Recommendation Engine with deep multi-signal taste profile and dynamic affinity matching",
-    "Optimized high-fidelity audio pipeline with studio equalizer and enhanced spatial audio",
-    "Instant zero-latency search responsiveness with automatic stream caching and pre-buffering",
-    "Enhanced album discography resilience, seamless back navigation, and playlist view optimizations",
-    "Continuous radio autoplay queue recovery and persistent playback state"
+    "New Fluent design: navigation menu, large page titles, pivots, a full-width player bar with the progress line on top",
+    "Now Playing page with the scrubber, time left and full transport under the artwork",
+    "Accent colour of your choice in Settings (Blue, Green, Purple, Red, Orange, Teal, Leaf); Light, Dark or Auto",
+    "Station engine: autoplay, radio and Related never repeat a song and stay in the song's language and artist circle",
+    "Search rebuilt: one entry per recording, the original album first, artists and albums as top results",
+    "MusicFlow's own lock-screen controls, Android status-bar fixes and faster start-up",
+    "Web app for iPhone and Safari: open the site's web app and add it to your home screen"
   ],
-  "releaseUrl": "https://adi6499.github.io/MUSICFLOW/",
+  "releaseUrl": "https://adi6499.github.io/MUSICFLOW/download/",
   "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "apkUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "fileName": "MusicFlow.apk",
-  "fileSize": 25280917,
+  "fileSize": 29494516,
   "assetAvailable": true,
   "mandatory": false,
+  "signing": "release-key",
+  "signingNote": "Versions 2.7.3 and older were signed with a different key: uninstall them before installing 5.0.0.",
   "android": {
     "available": true,
-    "version": "2.7.3",
+    "version": "5.0.0",
+    "versionCode": 44,
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
     "fileName": "MusicFlow.apk",
-    "size": 25280917
+    "size": 29494516
   },
   "ios": {
     "available": true,
     "version": "2.7.3",
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.ipa",
     "fileName": "MusicFlow.ipa",
-    "size": 5656242
+    "size": 5656242,
+    "note": "Sideload only. On iPhone, open the site itself in Safari and Add to Home Screen."
+  },
+  "web": {
+    "available": true,
+    "version": "5.0.0",
+    "url": "https://adi6499.github.io/MUSICFLOW/"
   }
 }
