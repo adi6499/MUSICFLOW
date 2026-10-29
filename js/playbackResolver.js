@@ -559,7 +559,7 @@ const PlaybackResolver = (() => {
       uri: '',
       error: ErrorCode.SOURCE_UNAVAILABLE,
       message: isYtOrigin
-        ? 'No full copy of this YouTube song is available (YouTube allows only a short preview outside its own app)'
+        ? 'This song is only on YouTube and YouTube blocks playback outside its own app'
         : "Couldn't play this song"
     };
   }

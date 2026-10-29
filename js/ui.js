@@ -1636,7 +1636,7 @@ const UI = (() => {
               <img class="vertical-track-img" src="${API.thumb(song.image || 'assets/logo.png')}" onerror="this.src='assets/logo.png'" alt="${escapeAttr(song.name)}">
               <div class="vertical-track-info">
                 <div class="vertical-track-title ${isCurrentlyPlaying ? 'text-primary' : ''}">${escapeHtml(song.name)}</div>
-                <div class="vertical-track-artist">${artistLinks}</div>
+                <div class="vertical-track-artist">${artistLinks}${song.youtubeOnly ? ' <span class="yt-only-tag" title="No catalog copy; YouTube blocks playback outside its app">YouTube only</span>' : ''}</div>
               </div>
               <span class="vertical-track-duration" style="font-size:12px; color:var(--text-secondary); margin-right:4px;">${dur}</span>
               <div style="display:flex; align-items:center; gap:2px;">

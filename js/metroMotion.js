@@ -45,8 +45,8 @@ const MetroMotion = (() => {
   // ---- fly-in ---------------------------------------------------------------
   // Web Animations with fill "backwards": the element's own style never changes, so if the
   // animation is paused (background tab), cancelled or interrupted, the element is simply visible.
-  function flyIn(elements, stagger, distance) {
-    const list = Array.from(elements).filter(el => el && el.nodeType === 1 && !seen.has(el)).slice(0, MAX_ANIMATED);
+  function flyIn(elements, stagger, distance, force) {
+    const list = Array.from(elements).filter(el => el && el.nodeType === 1 && (force || !seen.has(el))).slice(0, MAX_ANIMATED);
     if (typeof Element === 'undefined' || typeof Element.prototype.animate !== 'function') return 0;
     list.forEach((el, i) => {
       seen.add(el);
@@ -80,7 +80,24 @@ const MetroMotion = (() => {
     const screen = document.querySelector('.screen.active');
     if (!screen) return;
     lastPageAnimation = Date.now();
-    flyIn(pageSections(screen), PAGE_STAGGER_MS, 80);
+    slideIn(screen, 90, 360);
+    flyIn(pageSections(screen), PAGE_STAGGER_MS, 80, true);
+  }
+
+  // the Windows 8 page transition: the whole page glides in from the right
+  function slideIn(el, distance, duration) {
+    if (!el || typeof el.animate !== 'function') return;
+    try {
+      const anim = el.animate([{ transform: `translateX(${distance}px)`, opacity: 0.4 }, { transform: 'none', opacity: 1 }], { duration, easing: EASE, fill: 'backwards' });
+      anim.onfinish = () => { try { anim.cancel(); } catch (_) {} };
+      setTimeout(() => { try { anim.cancel(); } catch (_) {} }, duration + 1200);
+    } catch (_) {}
+  }
+
+  // pivots the user switches by hand always animate (Collection tabs, Radio, detail lists, the drawer panes)
+  const PIVOT_CONTAINERS = '#library-tab-content, .library-tab-content, #radio-screen-body, .detail-tracks-list, #drawer-related-tracks, .queue-tracks-list, .artist-section-wrap';
+  function pivotRoot(container) {
+    return container.closest(PIVOT_CONTAINERS);
   }
 
   // ---- content arriving later (shelves filling, pivots switching) ----------
@@ -118,9 +135,21 @@ const MetroMotion = (() => {
       groups.get(key).push(el);
     });
     const pageJustAnimated = now - lastPageAnimation < 120;   // items already move with their section
+    const pivotsDone = new Set();
     groups.forEach((list, container) => {
       const last = containerAnimatedAt.get(container) || 0;
       const onHome = !!container.closest('#screen-home');
+      const pivot = onHome ? null : pivotRoot(container);
+      if (pivot && !pageJustAnimated && enabled() && !document.hidden) {
+        list.forEach(el => seen.add(el));
+        containerAnimatedAt.set(container, now);
+        if (!pivotsDone.has(pivot)) {
+          pivotsDone.add(pivot);
+          slideIn(pivot, 60, 320);
+          flyIn(list.filter(el => el.offsetParent !== null), ITEM_STAGGER_MS, 40, true);
+        }
+        return;
+      }
       const refill = last && (onHome || now - last < REFILL_QUIET_MS);
       if (pageJustAnimated || refill || !enabled() || document.hidden) {
         list.forEach(el => seen.add(el));

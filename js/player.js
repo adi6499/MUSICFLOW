@@ -727,7 +727,7 @@ const Player = (() => {
     const id = String((track && track.id) || '');
     const isYt = id.startsWith('yt_') || (track && (track.provider === 'youtube_music' || track.videoId || track.sourceYtVideoId));
     return isYt
-      ? `"${trackTitle}": no full copy found (YouTube only allows a preview), skipping...`
+      ? `"${trackTitle}" is YouTube-only (no catalog copy), skipping`
       : `"${trackTitle}" unavailable, skipping...`;
   }
 

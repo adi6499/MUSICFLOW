@@ -76,6 +76,7 @@ const App = (() => {
     // 3. Render immediate UI shell from local data / cache (P0)
     UI.renderHomeGreeting();
     showWelcomeIfFirstLaunch();
+    try { showIosFullscreenHint(); } catch (_) {}
     renderAccentSetting();
     try {
       const titleObserver = new MutationObserver(() => {
@@ -1312,6 +1313,26 @@ const App = (() => {
     const next = document.getElementById('fl-pivot-next');
     const target = next && next.dataset.target;
     if (target) navigate(target);
+  }
+
+  // iPhone in the Safari browser view keeps Safari's status bar and bottom bar; only an installed
+  // (Add to Home Screen) app fills the screen. Say so once.
+  const IOS_HINT_KEY = 'mf_ios_hint_dismissed';
+  function showIosFullscreenHint() {
+    const ua = navigator.userAgent || '';
+    const isIos = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let standalone = window.navigator.standalone === true;
+    try { standalone = standalone || window.matchMedia('(display-mode: standalone)').matches; } catch (_) {}
+    const native = (typeof ApiConfig !== 'undefined' && typeof ApiConfig.isNativeApp === 'function') ? ApiConfig.isNativeApp() : false;
+    if (!isIos || standalone || native) return;
+    try { if (localStorage.getItem(IOS_HINT_KEY)) return; } catch (_) {}
+    const el = document.getElementById('ios-fullscreen-hint');
+    if (el) el.style.display = 'flex';
+  }
+  function dismissIosHint() {
+    try { localStorage.setItem(IOS_HINT_KEY, '1'); } catch (_) {}
+    const el = document.getElementById('ios-fullscreen-hint');
+    if (el) el.style.display = 'none';
   }
 
   function openDownloadPage() {
@@ -6247,6 +6268,7 @@ const App = (() => {
     toggleRail,
     closeRail,
     navigatePivotNext,
+    dismissIosHint,
     renderRailPlaylists,
     railSearch,
     setAccent,

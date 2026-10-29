@@ -39,11 +39,11 @@
       } catch (_) {}
     })();
   </script>
-  <link rel="stylesheet" href="css/app.css?v=5.2.0">
-  <link rel="stylesheet" href="css/fluent.css?v=5.2.0">
-  <link rel="stylesheet" href="css/fluent-motion.css?v=5.2.0">
-  <link rel="stylesheet" href="css/xbox-music.css?v=5.2.0">
-  <link rel="stylesheet" href="css/ambient.css?v=5.2.0">
+  <link rel="stylesheet" href="css/app.css?v=5.2.1">
+  <link rel="stylesheet" href="css/fluent.css?v=5.2.1">
+  <link rel="stylesheet" href="css/fluent-motion.css?v=5.2.1">
+  <link rel="stylesheet" href="css/xbox-music.css?v=5.2.1">
+  <link rel="stylesheet" href="css/ambient.css?v=5.2.1">
 </head>
 <body class="theme-fluent">
   <!-- Global Top Progress Loading Bar -->
@@ -820,6 +820,12 @@
     </main>
 
     <!-- ================= FLOATING MINI PLAYER DOCK ================= -->
+    <!-- iPhone (Safari browser view): how to get the full screen -->
+    <div id="ios-fullscreen-hint" class="ios-hint" style="display:none;" role="status">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+      <div class="ios-hint-text"><strong>Full screen on iPhone</strong><span>Tap Share, then "Add to Home Screen". Opened from the home icon, Safari's bars disappear and MusicFlow fills the screen.</span></div>
+      <button class="ios-hint-close" onclick="App.dismissIosHint()" aria-label="Dismiss">&#x2715;</button>
+    </div>
     <div id="mini-player" class="mini-player-dock" style="display:none;" onclick="App.expandFullPlayer()" role="region" aria-label="Mini Player">
       <div class="mini-progress" aria-hidden="true"><div class="mini-progress-fill" id="mini-progress-fill"></div></div>
       <img id="mini-player-art" class="mini-art-img" src="assets/logo.png" alt="Cover" onerror="this.src='assets/logo.png'">

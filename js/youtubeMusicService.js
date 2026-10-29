@@ -1309,6 +1309,7 @@ const YouTubeMusicService = {
         } catch (_) {}
         ytTrack.playbackAvailable = true;
         ytTrack.isPlayable = true;
+        ytTrack.youtubeOnly = true;   // no catalog copy: plays only where YouTube allows it
       }
     } catch (_) {}
 
@@ -1437,9 +1438,10 @@ const YouTubeMusicService = {
           }
         } catch (_) {}
 
-        // Fallback: Keep track as valid playable YouTube Music track
+        // Fallback: keep the YouTube track itself, marked so the UI can say it is YouTube-only
         ytTrack.playbackAvailable = true;
         ytTrack.isPlayable = true;
+        ytTrack.youtubeOnly = true;
         return { matched: true, song: ytTrack, original: ytTrack };
       });
 

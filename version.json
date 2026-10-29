@@ -1,39 +1,39 @@
 {
   "updateAvailable": false,
   "updateRequired": false,
-  "currentVersion": "5.2.0",
-  "latestVersion": "5.2.0",
-  "versionCode": 47,
+  "currentVersion": "5.2.1",
+  "latestVersion": "5.2.1",
+  "versionCode": 48,
   "minimumVersion": "2.7.4",
   "platform": "android",
-  "title": "MusicFlow v5.2.0",
+  "title": "MusicFlow v5.2.1",
   "message": "MusicFlow is up to date",
   "releaseNotes": [
+    "Pages and pivots slide in on every visit (Windows 8 transition)",
+    "iPhone: a one-time hint explains that only an installed app (Share, Add to Home Screen) fills the screen without Safari's bars",
+    "YouTube-only tracks are tagged in playlists and skipped with a short message (YouTube blocks playback outside its app)",
     "Xbox Music look (Windows 8.1): black canvas, Xbox green, big lowercase titles, flat square tiles, panorama page header on the phone",
     "Left pane with search, your playlists and the now-playing tile; pages are Collection, Radio, Explore, Browse, Search",
     "Home shows a now-playing tile and a featured tile; the player bar is a Windows Phone app bar with circle buttons",
     "Now Playing on wide screens: artwork and controls on the left, Up Next / Lyrics / Related on the right",
-    "No more flicker on Home; the 'More like...' shelf never shows empty tiles twice",
-    "The whole phone screen is used (same colour under the status bar and toolbar)",
-    "YouTube: a track is matched to the catalog only when title, version and artist or length agree, so it never plays a different song; honest message when YouTube allows only a preview",
-    "Audio quality: 320 kbps catalog streams confirmed; YouTube streams pick the best format the phone can play"
+    "No more flicker on Home; YouTube tracks are matched to the catalog only when title, version and artist or length agree"
   ],
   "releaseUrl": "https://adi6499.github.io/MUSICFLOW/download/",
   "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "apkUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "fileName": "MusicFlow.apk",
-  "fileSize": 27475383,
+  "fileSize": 27476863,
   "assetAvailable": true,
   "mandatory": false,
   "signing": "release-key",
   "signingNote": "Versions 2.7.3 and older were signed with a different key: uninstall them before installing 5.0.0.",
   "android": {
     "available": true,
-    "version": "5.2.0",
-    "versionCode": 47,
+    "version": "5.2.1",
+    "versionCode": 48,
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
     "fileName": "MusicFlow.apk",
-    "size": 27475383
+    "size": 27476863
   },
   "ios": {
     "available": true,
@@ -45,7 +45,7 @@
   },
   "web": {
     "available": true,
-    "version": "5.2.0",
+    "version": "5.2.1",
     "url": "https://adi6499.github.io/MUSICFLOW/"
   }
 }
