@@ -2,7 +2,7 @@
 <html lang="en" class="theme-fluent">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -124,6 +124,21 @@
         body.theme-fluent:has(#mini-player[style*="display: flex"]) .ios-hint,
         body.theme-fluent:has(#mini-player[style*="display:flex"]) .ios-hint { bottom: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + 8px); }
         body.theme-fluent #mf-toast { bottom: calc(var(--fl-bar-h) + 14px + max(var(--safe-bottom), env(safe-area-inset-bottom))) !important; }
+
+        /* 5. iPhone home-screen app: WebKit can lay the page out in a viewport that is shorter than the screen
+           by the status bar while still drawing from the top edge, leaving a strip at the bottom. app.js measures
+           that difference into --ios-gap (0 everywhere else) and the fixed layers stretch down to the real bottom. */
+        body.theme-fluent .app-container,
+        body.theme-fluent .full-player-sheet,
+        body.theme-fluent .floating-bottom-nav { bottom: calc(-1 * var(--ios-gap, 0px)); }
+        body.theme-fluent .mini-player-dock {
+          bottom: calc(-1 * var(--ios-gap, 0px));
+          height: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px));
+          padding-bottom: calc(max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px));
+        }
+        body.theme-fluent .main-content { padding-bottom: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px) + 16px); }
+        body.theme-fluent .full-player-sheet { padding-bottom: calc(72px + max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px)); }
+        body.theme-fluent .ytm-player-drawer { padding-bottom: calc(max(var(--safe-bottom), env(safe-area-inset-bottom)) + var(--ios-gap, 0px)); }
       }
     }
   </style>

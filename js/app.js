@@ -60,6 +60,8 @@ const App = (() => {
     const getNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
     const t0 = getNow();
     console.log('[PERF] app start');
+    try { fixIosViewportGap(); } catch (_) {}
+    try { showScreenDiagnostics(); } catch (_) {}
 
     if (typeof ThemeManager !== 'undefined') {
       ThemeManager.apply();
@@ -1333,6 +1335,51 @@ const App = (() => {
     try { localStorage.setItem(IOS_HINT_KEY, '1'); } catch (_) {}
     const el = document.getElementById('ios-fullscreen-hint');
     if (el) el.style.display = 'none';
+  }
+
+  // ---- iPhone home-screen app: the real screen vs. the layout viewport ---------------------------
+  // WebKit can lay the page out in a viewport that is shorter than the screen by the status bar while it still
+  // draws from the top edge; the strip at the bottom is that difference. It is measured here into --ios-gap and
+  // the phone layer stretches the fixed layers by it. Only an installed (standalone) app on an iPhone/iPad qualifies.
+  function isIosDevice() {
+    return /iPhone|iPad|iPod/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function fixIosViewportGap() {
+    if (!isIosDevice() || window.navigator.standalone !== true) return;
+    const apply = () => {
+      const landscape = window.innerWidth > window.innerHeight;
+      const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+      let gap = Math.round(full - window.innerHeight);
+      if (!(gap > 0 && gap < 120)) gap = 0;
+      document.documentElement.style.setProperty('--ios-gap', gap + 'px');
+    };
+    apply();
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', () => setTimeout(apply, 350));
+  }
+  // Open the app with ?diag=1 to see the numbers behind the layout (for screenshots from a real phone).
+  function showScreenDiagnostics() {
+    if (!/[?&#]diag=1/.test(location.search + location.hash)) return;
+    const el = document.createElement('pre');
+    el.id = 'screen-diag';
+    el.style.cssText = 'position:fixed;left:8px;right:8px;top:50%;transform:translateY(-50%);z-index:100000;background:#107C10;color:#fff;font:12px/1.5 monospace;padding:12px;white-space:pre-wrap;border:2px solid #fff;margin:0;';
+    const rect = (sel) => { const e = document.querySelector(sel); if (!e) return '-'; const b = e.getBoundingClientRect(); return `${Math.round(b.top)}..${Math.round(b.bottom)} (h ${Math.round(b.height)})`; };
+    const render = () => {
+      const cs = getComputedStyle(document.documentElement);
+      const vv = window.visualViewport;
+      el.textContent = [
+        'standalone ' + window.navigator.standalone + '   displayMode ' + (window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'),
+        'inner ' + window.innerWidth + 'x' + window.innerHeight + '   screen ' + screen.width + 'x' + screen.height,
+        'client ' + document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight + '   visual ' + (vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) + ' @' + Math.round(vv.offsetTop) : '-'),
+        'safe-top ' + cs.getPropertyValue('--safe-top').trim() + '   safe-bottom ' + cs.getPropertyValue('--safe-bottom').trim() + '   ios-gap ' + (cs.getPropertyValue('--ios-gap').trim() || '0px'),
+        'app ' + rect('.app-container') + '   main ' + rect('#main-scroll-container'),
+        'topbar ' + rect('#fl-topbar') + '   mini ' + rect('#mini-player'),
+        'ua ' + String(navigator.userAgent).slice(0, 110)
+      ].join('\n');
+    };
+    document.body.appendChild(el);
+    render();
+    setInterval(render, 1000);
   }
 
   function openDownloadPage() {
