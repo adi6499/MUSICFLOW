@@ -1348,22 +1348,25 @@ const App = (() => {
   }
   function fixIosViewportGap() {
     if (!isIosDevice() || window.navigator.standalone !== true) return;
+    // Measure the real top inset with a probe (a CSS variable can still read 0 this early in start-up).
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none;';
+    document.body.appendChild(probe);
     const apply = () => {
       const root = document.documentElement;
-      const cs = getComputedStyle(root);
-      const envTop = parseFloat(cs.getPropertyValue('--safe-top')) || 0;        // env(safe-area-inset-top) on iOS
-      const envBottom = parseFloat(cs.getPropertyValue('--safe-bottom')) || 0;
+      const envTop = probe.offsetHeight || 0;
       const landscape = window.innerWidth > window.innerHeight;
       const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
       let gap = Math.round(full - window.innerHeight);
-      // Only when the page really starts under the status bar (envTop > 0) can a short viewport leave a strip
-      // at the bottom; otherwise the viewport simply starts below the status bar and ends at the screen edge.
+      // iOS draws the page from the top edge (envTop > 0) but lays it out short by the status bar: stretch down by it.
       if (!(envTop > 0) || !(gap > 0 && gap < 160)) gap = 0;
       root.style.setProperty('--ios-gap', gap + 'px');
-      // the home-indicator zone must stay clear even when the viewport did not cover it (env bottom = 0)
-      if (gap > 0 && envBottom === 0) root.style.setProperty('--safe-bottom', '34px');
     };
     apply();
+    [150, 600, 1500, 3000].forEach(ms => setTimeout(apply, ms));
+    window.addEventListener('load', apply);
+    window.addEventListener('pageshow', apply);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) apply(); });
     window.addEventListener('resize', apply);
     window.addEventListener('orientationchange', () => setTimeout(apply, 350));
   }
