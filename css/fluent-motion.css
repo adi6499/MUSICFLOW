@@ -79,3 +79,54 @@ body.theme-fluent #screen-detail .detail-cover-img { box-shadow: var(--fl-shadow
 @media (prefers-reduced-motion: reduce) {
   body.theme-fluent .lyrics-breather.active { animation: none !important; }
 }
+
+/* ---- Metro motion (Windows 8.1 / Xbox Music) ---------------------------- */
+@keyframes metroFlyIn {
+  from { opacity: 0; transform: translateX(var(--metro-x, 80px)); }
+  to { opacity: 1; transform: none; }
+}
+
+/* album / artist pages swing in around their left edge (turnstile) */
+body.theme-fluent .screen-detail.active { animation: metroTurnstile 0.42s cubic-bezier(0.1, 0.9, 0.2, 1); transform-origin: 0 50%; }
+@keyframes metroTurnstile {
+  from { opacity: 0; transform: perspective(1200px) rotateY(-55deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ordinary pages: a short slide from the right; their sections then fly in one by one */
+@keyframes flIn { from { transform: translateX(28px); } to { transform: none; } }
+
+/* tilt while pressed */
+body.theme-fluent .metro-tilting { transition: transform 0.08s ease-out !important; will-change: transform; }
+body.theme-fluent .metro-tilting:active { transform: none; }
+body.theme-fluent .music-square-card,
+body.theme-fluent .listen-again-item,
+body.theme-fluent .quick-pick-item,
+body.theme-fluent .vertical-track-row,
+body.theme-fluent .search-cat-card,
+body.theme-fluent .radio-station,
+body.theme-fluent .daily-mix-card,
+body.theme-fluent .nav-tab,
+body.theme-fluent .nav-extra,
+body.theme-fluent .lib-row,
+body.theme-fluent .settings-row { transition: transform 0.22s cubic-bezier(0.1, 0.9, 0.2, 1), background 0.12s ease; }
+body.theme-fluent .music-square-card:active,
+body.theme-fluent .listen-again-item:active,
+body.theme-fluent .quick-pick-item:active,
+body.theme-fluent .vertical-track-row:active,
+body.theme-fluent .search-cat-card:active,
+body.theme-fluent .radio-station:active { transform: none; }
+
+/* Now Playing artwork crossfade */
+body.theme-fluent .metro-art-in { animation: metroArtIn 0.45s cubic-bezier(0.1, 0.9, 0.2, 1); }
+@keyframes metroArtIn {
+  from { opacity: 0.35; transform: scale(1.04); }
+  to { opacity: 1; transform: none; }
+}
+
+body.theme-fluent.perf-lite .screen-detail.active,
+body.theme-fluent.perf-lite .metro-art-in { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  body.theme-fluent .screen-detail.active,
+  body.theme-fluent .metro-art-in { animation: none !important; }
+}

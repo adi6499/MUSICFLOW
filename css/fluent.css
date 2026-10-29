@@ -445,7 +445,7 @@ body.theme-fluent .inline-title-bar { display: none !important; }
 /* ---------------------------------------------------------------------------
    PAGES
    --------------------------------------------------------------------------- */
-body.theme-fluent .screen.active { animation: flIn 0.22s ease; }
+body.theme-fluent .screen.active { animation: flIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
 @keyframes flIn { from { transform: translateY(6px); } to { transform: none; } }   /* no opacity: a stalled animation must never leave a page invisible */
 
 body.theme-fluent .screen-header { padding: 14px var(--fl-gutter) 8px var(--fl-gutter); }
@@ -770,7 +770,7 @@ body.theme-fluent .full-player-sheet {
   padding-top: var(--safe-top);
   padding-left: 0;
   padding-right: 0;
-  padding-bottom: calc(var(--safe-bottom) + 8px);
+  padding-bottom: calc(72px + var(--safe-bottom));   /* room for the collapsed Up Next drawer */
   justify-content: flex-start;
   overflow-y: auto;
 }
@@ -787,7 +787,10 @@ body.theme-fluent .full-player-sheet::before {
 }
 
 body.theme-fluent .full-player-sheet::after { content: ''; position: absolute; inset: 0; background: var(--fl-dim); z-index: 0; pointer-events: none; }
-body.theme-fluent .full-player-sheet > * { position: relative; z-index: 1; }
+body.theme-fluent .full-player-sheet > *:not(.ytm-player-drawer):not(.drawer-backdrop):not(.player-dominant-glow) { position: relative; z-index: 1; }
+body.theme-fluent .ytm-player-drawer { position: absolute; bottom: 0; left: 0; right: 0; z-index: 50; }
+body.theme-fluent .ytm-player-drawer.expanded { z-index: 100; }
+body.theme-fluent .drawer-backdrop { position: absolute; z-index: 90; }
 body.theme-fluent .player-dominant-glow { display: none; }
 
 body.theme-fluent .player-top-bar { height: 48px; min-height: 48px; margin: 0; padding: 0 4px; align-items: center; }
@@ -801,7 +804,7 @@ body.theme-fluent .player-context-title { display: block; width: 100%; font-size
 
 body.theme-fluent .player-center-body { padding: 8px var(--fl-gutter) 0 var(--fl-gutter); }
 body.theme-fluent .player-art-view { transition: none; transform: none !important; }
-body.theme-fluent .player-3d-deck-container { max-width: min(74vw, 300px); max-height: min(74vw, 300px); }
+body.theme-fluent .player-3d-deck-container { max-width: min(calc(100vw - 40px), 340px, 40vh); max-height: min(calc(100vw - 40px), 340px, 40vh); }
 body.theme-fluent .player-deck-card,
 body.theme-fluent .player-art-card { border-radius: 2px; border: none; box-shadow: var(--fl-shadow); }
 body.theme-fluent .player-deck-card-prev,
