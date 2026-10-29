@@ -11,6 +11,7 @@
 html.theme-fluent { background: #0E0E0E; --accent: #107C10; }   /* ThemeManager overrides --accent inline */
 html.theme-fluent.appearance-light { background: #FFFFFF; }
 html.theme-fluent, body.theme-fluent { min-height: 100%; }
+html.theme-fluent { -webkit-text-size-adjust: 100%; }
 body.theme-fluent { min-height: 100vh; min-height: -webkit-fill-available; min-height: 100dvh; }
 
 body.theme-fluent {
@@ -373,8 +374,4 @@ body.theme-fluent .ios-hint-close { width: 32px; height: 32px; flex-shrink: 0; b
 
 body.theme-fluent .yt-only-tag { display: inline-block; margin-left: 6px; padding: 0 5px; font-size: 10px; line-height: 16px; letter-spacing: 0.3px; color: var(--fl-text-2); border: 1px solid var(--fl-line); vertical-align: middle; }
 
-/* ---- iPhone home-screen app: 100dvh / 100vh are under-reported there (the page stopped ~56 pt above the
-   bottom edge). Fixed layers anchor to all four edges instead, which always spans the whole screen. ---- */
-body.theme-fluent .app-container { height: auto; max-height: none; inset: 0; }
-body.theme-fluent .full-player-sheet { height: auto; max-height: none; inset: 0; }
-body.theme-fluent .main-content { height: 100%; min-height: 0; }
+/* iPhone home-screen edge anchoring lives in the phone layer (<style id="phone-layer"> in index.html) */

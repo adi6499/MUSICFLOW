@@ -6,13 +6,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MusicFlow">
+  <meta name="apple-mobile-web-app-title" content="musicflow">
   <meta name="theme-color" content="#0E0E0E">
   <meta name="description" content="MusicFlow — Ultimate lossless music streaming matching native Android app">
 
   <title>MusicFlow</title>
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -44,6 +44,89 @@
   <link rel="stylesheet" href="css/fluent-motion.css?v=5.2.1">
   <link rel="stylesheet" href="css/xbox-music.css?v=5.2.1">
   <link rel="stylesheet" href="css/ambient.css?v=5.2.1">
+  <!-- PHONE LAYER: edge to edge on phones (<= 640 px); the laptop layout is untouched. Every rule lives inside
+       @media (max-width: 640px) and test_phone_layer.js enforces that. Keep this the last style in <head>. -->
+  <style id="phone-layer">
+    @media (max-width: 640px) {
+      /* 1. the page itself never scrolls sideways; rows scroll inside their own strip */
+      html, body { overflow-x: hidden; max-width: 100vw; }
+      body.theme-fluent .app-container,
+      body.theme-fluent .main-content,
+      body.theme-fluent .screen,
+      body.theme-fluent .home-feed-sections,
+      body.theme-fluent .shelf-section { max-width: 100%; min-width: 0; }
+
+      /* 2. fixed layers anchor to all four edges: 100dvh is under-reported by iPhone home-screen apps */
+      body.theme-fluent .app-container,
+      body.theme-fluent .full-player-sheet { height: auto; max-height: none; inset: 0; }
+      body.theme-fluent .main-content { height: 100%; min-height: 0; }
+
+      /* 3. card rows: an edge-to-edge strip with 16 px inside; the last card stays reachable */
+      body.theme-fluent .cards-horizontal-shelf,
+      body.theme-fluent .daily-mixes-shelf,
+      body.theme-fluent .quick-picks-carousel,
+      body.theme-fluent .ytm-listen-again-grid,
+      body.theme-fluent .radio-station-row {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        padding-left: 16px;
+        padding-right: 16px;
+        scroll-padding: 0 16px;
+        scrollbar-width: none;
+      }
+      body.theme-fluent .quick-picks-carousel { scroll-snap-type: x mandatory; }
+      body.theme-fluent .cards-horizontal-shelf::-webkit-scrollbar,
+      body.theme-fluent .daily-mixes-shelf::-webkit-scrollbar,
+      body.theme-fluent .quick-picks-carousel::-webkit-scrollbar,
+      body.theme-fluent .ytm-listen-again-grid::-webkit-scrollbar,
+      body.theme-fluent .radio-station-row::-webkit-scrollbar { display: none; }
+      body.theme-fluent .cards-horizontal-shelf > *,
+      body.theme-fluent .daily-mixes-shelf > *,
+      body.theme-fluent .quick-picks-carousel > *,
+      body.theme-fluent .ytm-listen-again-grid > *,
+      body.theme-fluent .radio-station-row > * { flex: 0 0 auto; scroll-snap-align: start; }
+      /* trailing padding is dropped by some scrollers: a spacer keeps the last card fully visible */
+      body.theme-fluent .cards-horizontal-shelf::after,
+      body.theme-fluent .daily-mixes-shelf::after,
+      body.theme-fluent .quick-picks-carousel::after,
+      body.theme-fluent .ytm-listen-again-grid::after,
+      body.theme-fluent .radio-station-row::after { content: ''; flex: 0 0 2px; }
+
+      /* 4. safe areas: every bar that touches an edge adds the phone's inset (notch, home bar) */
+      @supports (padding: env(safe-area-inset-bottom)) {
+        body.theme-fluent .fl-topbar {
+          padding-top: max(var(--safe-top), env(safe-area-inset-top));
+          height: calc(var(--fl-topbar) + max(var(--safe-top), env(safe-area-inset-top)));
+        }
+        body.theme-fluent .main-content {
+          padding-top: calc(var(--fl-topbar) + max(var(--safe-top), env(safe-area-inset-top)));
+          padding-bottom: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + 16px);
+        }
+        body.theme-fluent .mini-player-dock {
+          height: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)));
+          padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom));
+        }
+        body.theme-fluent .floating-bottom-nav {
+          padding-top: max(var(--safe-top), env(safe-area-inset-top));
+          padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom));
+        }
+        body.theme-fluent .full-player-sheet {
+          padding-top: max(var(--safe-top), env(safe-area-inset-top));
+          padding-bottom: calc(72px + max(var(--safe-bottom), env(safe-area-inset-bottom)));
+        }
+        body.theme-fluent .ytm-player-drawer { padding-bottom: max(var(--safe-bottom), env(safe-area-inset-bottom)); }
+        /* anything floating at the bottom sits above the player bar */
+        body.theme-fluent .ios-hint { bottom: calc(max(var(--safe-bottom), env(safe-area-inset-bottom)) + 12px); }
+        body.theme-fluent:has(#mini-player[style*="display: flex"]) .ios-hint,
+        body.theme-fluent:has(#mini-player[style*="display:flex"]) .ios-hint { bottom: calc(var(--fl-bar-h) + max(var(--safe-bottom), env(safe-area-inset-bottom)) + 8px); }
+        body.theme-fluent #mf-toast { bottom: calc(var(--fl-bar-h) + 14px + max(var(--safe-bottom), env(safe-area-inset-bottom))) !important; }
+      }
+    }
+  </style>
 </head>
 <body class="theme-fluent">
   <!-- Global Top Progress Loading Bar -->
