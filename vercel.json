@@ -14,8 +14,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://spoton-sigma.vercel.app/api/:path*"
+      "source": "/api/((?!yt-proxy)(?!update\\.json).*)",
+      "destination": "https://spoton-sigma.vercel.app/api/$1"
     }
   ],
   "headers": [
@@ -72,5 +72,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/yt-proxy.js": {
+      "maxDuration": 25
+    }
+  }
 }

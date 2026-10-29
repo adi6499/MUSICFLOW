@@ -131,6 +131,46 @@ if (typeof window !== 'undefined') {
  * Cross-platform fetch helper that uses native bridges on iOS/Android to bypass CORS.
  * On desktop, uses standard fetch.
  */
+// ---------------------------------------------------------------------------
+// Website helper: in a browser (no native bridge) YouTube's endpoints are blocked by CORS, so the
+// request is handed to the site's own /api/yt-proxy function (Vercel), which performs it server-side.
+// Remembered as unavailable after the first 404 (GitHub Pages, plain static hosts).
+// ---------------------------------------------------------------------------
+let _webProxyState = null;   // null = unknown, true = works, false = not there
+function isPlainBrowser() {
+  if (typeof window === 'undefined' || !window.document) return false;
+  if (window.AndroidMediaBridge && typeof window.AndroidMediaBridge.executeHttpRequest === 'function') return false;
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.nativeMedia) return false;
+  return true;
+}
+function isProxyableHost(targetUrl) {
+  try {
+    const h = new URL(targetUrl, window.location.href).hostname;
+    if (h === window.location.hostname) return false;
+    return /youtube\.com$|ytimg\.com$|invidious|piped|nadeko\.net$|nerdvpn\.de$|artemislena\.eu$|jing\.rocks$|privacyredirect\.com$|yewtu\.be$/i.test(h);
+  } catch (_) { return false; }
+}
+async function webProxyFetchJSON(targetUrl, method, headers, body, timeoutMs) {
+  if (!isPlainBrowser() || _webProxyState === false || !isProxyableHost(targetUrl)) return undefined;
+  try {
+    const res = await fetch('/api/yt-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: targetUrl, method: method || 'GET', headers: headers || {}, body: body || '' }),
+      signal: (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(timeoutMs || 15000) : undefined
+    });
+    if (res.status === 404 || res.status === 405) { _webProxyState = false; return undefined; }
+    const resObj = await res.json().catch(() => null);
+    if (!resObj || typeof resObj.data !== 'string') return undefined;
+    _webProxyState = true;
+    if (!resObj.success) throw new Error(`HTTP ${resObj.status || 500}`);
+    return JSON.parse(resObj.data);
+  } catch (e) {
+    if (_webProxyState === true) throw e;
+    return undefined;
+  }
+}
+
 async function nativeFetchJSON(fetchUrl, options = {}) {
   const method = (options.method || 'GET').toUpperCase();
   const headers = options.headers || {};
@@ -204,6 +244,10 @@ async function nativeFetchJSON(fetchUrl, options = {}) {
       }
     } catch (_) {}
   }
+
+  // Website helper (browsers): YouTube and its front-ends go through the site's own function
+  const viaProxy = await webProxyFetchJSON(fetchUrl, method, headers, body, timeoutMs);
+  if (viaProxy !== undefined) return viaProxy;
 
   // Standard fetch (Desktop / environments without CORS issues)
   const res = await fetch(fetchUrl, {
@@ -348,6 +392,14 @@ async function callInnertube(endpoint, body) {
       console.warn('[YouTubeMusicService] Local proxy notice:', proxyErr.message);
       return null;
     }
+  }
+
+  // 4. Website helper (Vercel function) for browsers
+  try {
+    const viaProxy = await webProxyFetchJSON(url, 'POST', YTM_HEADERS, JSON.stringify(payload), 15000);
+    if (viaProxy !== undefined) return viaProxy;
+  } catch (proxyErr) {
+    console.warn('[YouTubeMusicService] Website helper notice:', proxyErr.message);
   }
 
   // In browser context, direct fetch to music.youtube.com triggers CORS violations
