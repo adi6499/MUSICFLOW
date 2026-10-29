@@ -43,16 +43,22 @@ const MetroMotion = (() => {
   }
 
   // ---- fly-in ---------------------------------------------------------------
+  // Web Animations with fill "backwards": the element's own style never changes, so if the
+  // animation is paused (background tab), cancelled or interrupted, the element is simply visible.
   function flyIn(elements, stagger, distance) {
     const list = Array.from(elements).filter(el => el && el.nodeType === 1 && !seen.has(el)).slice(0, MAX_ANIMATED);
+    if (typeof Element === 'undefined' || typeof Element.prototype.animate !== 'function') return 0;
     list.forEach((el, i) => {
       seen.add(el);
-      el.style.setProperty('--metro-x', `${distance}px`);
-      el.style.animation = 'none';
-      // restart the animation even if the element already ran it once
-      void el.offsetWidth;
-      el.style.animation = `metroFlyIn 0.42s ${EASE} ${i * stagger}ms both`;
-      el.addEventListener('animationend', () => { el.style.animation = ''; el.style.removeProperty('--metro-x'); }, { once: true });
+      try {
+        const delay = i * stagger;
+        const anim = el.animate(
+          [{ opacity: 0, transform: `translateX(${distance}px)` }, { opacity: 1, transform: 'none' }],
+          { duration: 420, delay, easing: EASE, fill: 'backwards' }
+        );
+        anim.onfinish = () => { try { anim.cancel(); } catch (_) {} };
+        setTimeout(() => { try { anim.cancel(); } catch (_) {} }, 420 + delay + 1500);   // belt and braces
+      } catch (_) {}
     });
     return list.length;
   }
@@ -154,10 +160,11 @@ const MetroMotion = (() => {
     const art = document.getElementById('full-player-art');
     if (!art) return;
     const obs = new MutationObserver(() => {
-      if (!enabled()) return;
-      art.classList.remove('metro-art-in');
-      void art.offsetWidth;
-      art.classList.add('metro-art-in');
+      if (!enabled() || typeof art.animate !== 'function') return;
+      try {
+        const anim = art.animate([{ opacity: 0.35, transform: 'scale(1.04)' }, { opacity: 1, transform: 'none' }], { duration: 450, easing: EASE });
+        anim.onfinish = () => { try { anim.cancel(); } catch (_) {} };
+      } catch (_) {}
     });
     obs.observe(art, { attributes: true, attributeFilter: ['src'] });
   }
@@ -171,6 +178,10 @@ const MetroMotion = (() => {
     watchContent();
     watchTilt();
     watchArtwork();
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) return;
+      try { (document.getAnimations ? document.getAnimations() : []).forEach(a => { try { a.cancel(); } catch (_) {} }); } catch (_) {}
+    });
     setTimeout(animatePage, 0);
   }
 

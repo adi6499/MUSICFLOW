@@ -495,7 +495,12 @@ body.theme-fluent .continue-card-progress-bar { background: rgba(128, 128, 128, 
 body.theme-fluent .continue-card-progress-fill { background: var(--accent); }
 
 body.theme-fluent .quick-picks-carousel { padding: 0 var(--fl-gutter) 4px var(--fl-gutter); gap: 24px; }
-body.theme-fluent .quick-picks-column { gap: 0; width: min(88vw, 360px); padding: 0; }
+body.theme-fluent .quick-picks-carousel { scroll-snap-type: x mandatory; }
+body.theme-fluent .quick-picks-column { gap: 0; width: calc(100vw - var(--fl-gutter) * 2); max-width: 420px; height: auto !important; min-height: 0; justify-content: flex-start; padding: 0; scroll-snap-align: start; }
+body.theme-fluent .shelf-section:has(> .ytm-listen-again-grid:empty),
+body.theme-fluent .shelf-section:has(> .cards-horizontal-shelf:empty),
+body.theme-fluent .shelf-section:has(> .vertical-tracks-shelf:empty),
+body.theme-fluent .shelf-section:has(> .daily-mixes-shelf:empty) { display: none; }
 body.theme-fluent .quick-pick-item { background: transparent; border: none; border-radius: 0; padding: 6px 4px; gap: 12px; border-bottom: 1px solid var(--fl-line); box-shadow: none; }
 body.theme-fluent .quick-pick-item:hover { background: var(--fl-hover); }
 body.theme-fluent .quick-pick-item:active { background: var(--fl-active); transform: none; opacity: 1; }
@@ -1048,7 +1053,7 @@ body.theme-fluent .search-input:focus-visible { outline: none; }
   body.theme-fluent .full-player-sheet { left: var(--fl-rail-w); }
   body.theme-fluent .full-player-sheet { padding-left: 24px; padding-right: 24px; }
   body.theme-fluent .player-3d-deck-container { max-width: 400px; max-height: 400px; }
-  body.theme-fluent .quick-picks-column { width: 360px; }
+  body.theme-fluent .quick-picks-column { width: 360px; max-width: 360px; }
   body.theme-fluent .search-categories-grid { grid-template-columns: repeat(4, 1fr); }
   body.theme-fluent .playlists-cards-grid,
   body.theme-fluent .albums-cards-grid { grid-template-columns: repeat(4, 1fr); }

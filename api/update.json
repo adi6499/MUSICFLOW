@@ -1,14 +1,15 @@
 {
   "updateAvailable": false,
   "updateRequired": false,
-  "currentVersion": "5.1.0",
-  "latestVersion": "5.1.0",
-  "versionCode": 45,
+  "currentVersion": "5.1.1",
+  "latestVersion": "5.1.1",
+  "versionCode": 46,
   "minimumVersion": "2.7.4",
   "platform": "android",
-  "title": "MusicFlow v5.1.0",
+  "title": "MusicFlow v5.1.1",
   "message": "MusicFlow is up to date",
   "releaseNotes": [
+    "Home: Top Picks spans the full phone width, empty shelves are hidden, and entrance animations can never leave content invisible",
     "Metro motion: pages and tiles fly in, tiles tilt when pressed, album pages swing in, artwork crossfades",
     "Now Playing: the Up Next drawer sits at the bottom again and the cover is larger on phones",
     "New MusicFlow icon",
@@ -32,8 +33,8 @@
   "signingNote": "Versions 2.7.3 and older were signed with a different key: uninstall them before installing 5.0.0.",
   "android": {
     "available": true,
-    "version": "5.1.0",
-    "versionCode": 45,
+    "version": "5.1.1",
+    "versionCode": 46,
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
     "fileName": "MusicFlow.apk",
     "size": 27465505
@@ -48,7 +49,7 @@
   },
   "web": {
     "available": true,
-    "version": "5.1.0",
+    "version": "5.1.1",
     "url": "https://adi6499.github.io/MUSICFLOW/"
   }
 }
