@@ -1327,12 +1327,13 @@ const App = (() => {
     try { standalone = standalone || window.matchMedia('(display-mode: standalone)').matches; } catch (_) {}
     const native = (typeof ApiConfig !== 'undefined' && typeof ApiConfig.isNativeApp === 'function') ? ApiConfig.isNativeApp() : false;
     if (!isIos || standalone || native) return;
-    try { if (localStorage.getItem(IOS_HINT_KEY)) return; } catch (_) {}
+    // Safari keeps its own bars; the hint comes back once a day until the app is opened from the home screen.
+    try { const t = Number(localStorage.getItem(IOS_HINT_KEY) || 0); if (t && Date.now() - t < 24 * 3600 * 1000) return; } catch (_) {}
     const el = document.getElementById('ios-fullscreen-hint');
     if (el) el.style.display = 'flex';
   }
   function dismissIosHint() {
-    try { localStorage.setItem(IOS_HINT_KEY, '1'); } catch (_) {}
+    try { localStorage.setItem(IOS_HINT_KEY, String(Date.now())); } catch (_) {}
     const el = document.getElementById('ios-fullscreen-hint');
     if (el) el.style.display = 'none';
   }
