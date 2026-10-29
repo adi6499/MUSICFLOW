@@ -571,7 +571,102 @@ function parseMusicItem(item) {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// CATALOG MATCHING  (a YouTube track -> its copy in the JioSaavn catalog)
+// A wrong match plays a different song, so this is strict: the cleaned titles must agree closely,
+// "version" words (remix, karaoke, cover, slowed, lofi, live ...) must agree on both sides, and the
+// artist or the duration (within 6 s) must confirm the pick. Nothing matches rather than the wrong song.
+// ---------------------------------------------------------------------------
+const MATCH_VERSION_WORDS = ['remix', 'karaoke', 'cover', 'instrumental', 'slowed', 'reverb', 'lofi', 'lo-fi', '8d', 'mashup',
+  'unplugged', 'live', 'acoustic', 'sped up', 'nightcore', 'reprise', 'female version', 'male version', 'duet', 'trap', 'edm',
+  'dj', 'ringtone', 'bgm', 'flute', 'piano', 'violin', 'sad version', 'extended', 'teaser', 'trailer'];
+const MATCH_NOISE = /\b(official|video|audio|lyrics?|lyrical|full song|full video|hd|4k|visuali[sz]er|music video|song|from|feat\.?|ft\.?|ost|soundtrack|topic|new|latest|hindi|punjabi|tamil|telugu|bollywood|movie|film)\b/g;
+
+function matchNormalize(s) {
+  return String(s || '').toLowerCase()
+    .replace(/\(.*?\)|\[.*?\]|\{.*?\}/g, ' ')
+    .replace(/\|.*$/, ' ')
+    .replace(MATCH_NOISE, ' ')
+    .replace(/&/g, ' and ')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+function matchVersionWords(s) {
+  const low = String(s || '').toLowerCase();
+  return new Set(MATCH_VERSION_WORDS.filter(w => new RegExp('(^|[^a-z])' + w.replace(/[-\s]/g, '[-\\s]?') + '([^a-z]|$)').test(low)));
+}
+
+function matchTitleSimilarity(a, b) {
+  // YouTube titles often carry the title first: "Kesariya - Brahmastra | Arijit Singh" -> compare the first segment too
+  const first = (s) => String(s || '').split(/\s[-|•]\s|\s\|\s|\|/)[0];
+  const variants = [[a, b], [first(a), b], [a, first(b)], [first(a), first(b)]];
+  let best = 0;
+  for (const [x, y] of variants) {
+    const ta = matchNormalize(x).split(' ').filter(Boolean);
+    const tb = matchNormalize(y).split(' ').filter(Boolean);
+    if (!ta.length || !tb.length) continue;
+    const A = ta.join(' '), B = tb.join(' ');
+    let sim;
+    if (A === B) sim = 1;
+    else {
+      const setB = new Set(tb);
+      const inter = ta.filter(w => setB.has(w)).length;
+      sim = (2 * inter) / (ta.length + tb.length);
+      const [shortS, longS] = A.length <= B.length ? [A, B] : [B, A];
+      if (longS.includes(shortS) && shortS.length / longS.length >= 0.6) sim = Math.max(sim, 0.85);
+    }
+    if (sim > best) best = sim;
+  }
+  return best;
+}
+
+function matchArtistNames(v) {
+  let list = [];
+  if (Array.isArray(v)) list = v.map(x => (x && typeof x === 'object') ? (x.name || x.title || '') : x);
+  else if (v && typeof v === 'object') list = [...(v.primary || []), ...(v.featured || []), ...(v.all || [])].map(x => (x && typeof x === 'object') ? (x.name || '') : x);
+  else list = String(v || '').split(/,|&|\bfeat\.?\b|\bft\.?\b|\bx\b|\/|;|\+/i);
+  return list.map(s => matchNormalize(String(s || '').replace(/\s*-\s*topic$/i, '').replace(/vevo$/i, ''))).filter(s => s && s.length > 1 && !/^(various|unknown|youtube artist)$/.test(s));
+}
+
+function matchArtistsAgree(src, cand) {
+  const a = matchArtistNames(src), b = matchArtistNames(cand);
+  if (!a.length || !b.length) return false;
+  return a.some(x => b.some(y => x === y || x.includes(y) || y.includes(x)));
+}
+
+function pickCatalogMatch(source, candidates) {
+  if (!source || !Array.isArray(candidates) || !candidates.length) return null;
+  const srcTitle = source.name || source.title || '';
+  const srcArtists = [source.primaryArtist, source.artists, source.primaryArtists, source.author, source.channel].filter(Boolean);
+  const srcDur = Number(source.duration || source.durationSeconds || 0);
+  const srcVersion = matchVersionWords(srcTitle);
+  let best = null;
+  for (const c of candidates) {
+    if (!c) continue;
+    const cTitle = c.name || c.title || '';
+    const sim = matchTitleSimilarity(srcTitle, cTitle);
+    if (sim < 0.72) continue;
+    const cVersion = matchVersionWords(cTitle + ' ' + (c.album && c.album.name ? c.album.name : (typeof c.album === 'string' ? c.album : '')));
+    let versionsAgree = true;
+    cVersion.forEach(w => { if (!srcVersion.has(w)) versionsAgree = false; });
+    srcVersion.forEach(w => { if (!cVersion.has(w)) versionsAgree = false; });
+    if (!versionsAgree) continue;
+    const cDur = Number(c.duration || c.durationSeconds || 0);
+    const haveDur = srcDur > 0 && cDur > 0;
+    const durOk = haveDur && Math.abs(srcDur - cDur) <= 6;
+    if (haveDur && Math.abs(srcDur - cDur) > 25) continue;        // same name, clearly a different recording
+    const artistOk = srcArtists.some(a => matchArtistsAgree(a, c.primaryArtists || c.primaryArtist || c.artists || c.artist));
+    if (!artistOk && !durOk && sim < 0.95) continue;             // nothing confirms the title
+    const score = sim + (artistOk ? 0.2 : 0) + (durOk ? 0.15 : 0);
+    if (!best || score > best.score) best = { item: c, score, sim, artistOk, durOk };
+  }
+  return best;
+}
+
 const YouTubeMusicService = {
+  pickCatalogMatch,
+  matchTitleSimilarity,
   /**
    * Unified Search across YouTube Music catalog
    */
@@ -1138,11 +1233,12 @@ const YouTubeMusicService = {
       const saavnBase = (typeof ApiConfig !== 'undefined' && typeof ApiConfig.getJioSaavnApiBase === 'function')
         ? ApiConfig.getJioSaavnApiBase()
         : 'https://spoton-trpn.vercel.app/api';
-      const saavnRes = await nativeFetchJSON(`${saavnBase}/search/songs?query=${encodeURIComponent(searchQuery)}&limit=3`, { method: 'GET', timeout: 5000 }).catch(() => null);
+      const saavnRes = await nativeFetchJSON(`${saavnBase}/search/songs?query=${encodeURIComponent(searchQuery)}&limit=6`, { method: 'GET', timeout: 6000 }).catch(() => null);
 
       const candidateList = saavnRes?.data?.results || saavnRes?.results || [];
-      if (candidateList.length > 0) {
-        const bestMatch = candidateList[0];
+      const picked = pickCatalogMatch(ytTrack, candidateList);   // strict: never a different song
+      if (picked) {
+        const bestMatch = picked.item;
         const streamUrl = (Array.isArray(bestMatch.downloadUrl) && bestMatch.downloadUrl.length > 0)
           ? (bestMatch.downloadUrl.find(u => (u.quality || '').includes('320'))?.url || bestMatch.downloadUrl[bestMatch.downloadUrl.length - 1]?.url)
           : (bestMatch.url || bestMatch.streamUrl || '');
@@ -1275,11 +1371,12 @@ const YouTubeMusicService = {
             ? ApiConfig.getJioSaavnApiBase()
             : 'https://spoton-trpn.vercel.app/api';
 
-          const saavnRes = await nativeFetchJSON(`${saavnBase}/search/songs?query=${encodeURIComponent(searchQuery)}&limit=3`, { method: 'GET', timeout: 5000 }).catch(() => null);
+          const saavnRes = await nativeFetchJSON(`${saavnBase}/search/songs?query=${encodeURIComponent(searchQuery)}&limit=6`, { method: 'GET', timeout: 6000 }).catch(() => null);
 
           const candidateList = saavnRes?.data?.results || saavnRes?.results || [];
-          if (candidateList.length > 0) {
-            const bestMatch = candidateList[0];
+          const picked = pickCatalogMatch(ytTrack, candidateList);   // strict: never a different song
+          if (picked) {
+            const bestMatch = picked.item;
             const streamUrl = (Array.isArray(bestMatch.downloadUrl) && bestMatch.downloadUrl.length > 0)
               ? (bestMatch.downloadUrl.find(u => (u.quality || '').includes('320'))?.url || bestMatch.downloadUrl[bestMatch.downloadUrl.length - 1]?.url)
               : (bestMatch.url || bestMatch.streamUrl || '');

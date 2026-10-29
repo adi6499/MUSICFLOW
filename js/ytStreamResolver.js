@@ -152,10 +152,12 @@ const YtStreamResolver = (() => {
       const formats = [...(sd.adaptive_formats || []), ...(sd.formats || [])]
         .filter(f => f && f.has_audio && !f.has_video && f.url);
       if (!formats.length) throw new Error('no audio-only formats');
-      // Prefer AAC (mp4a) for the widest device support, then highest bitrate.
+      // Highest bitrate the device can actually play: Opus (WebM) where MediaSource supports it, else AAC.
+      let canOpus = false;
+      try { canOpus = typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported('audio/webm; codecs="opus"'); } catch (_) {}
       formats.sort((a, b) => {
-        const aac = (f) => /mp4a|audio\/mp4/i.test(f.mime_type || '') ? 1 : 0;
-        return (aac(b) - aac(a)) || ((b.bitrate || 0) - (a.bitrate || 0));
+        const ok = (f) => /webm|opus/i.test(f.mime_type || '') ? (canOpus ? 1 : 0) : 1;
+        return (ok(b) - ok(a)) || ((b.bitrate || 0) - (a.bitrate || 0));
       });
       const best = formats[0];
       const result = {

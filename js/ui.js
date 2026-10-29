@@ -5,6 +5,16 @@
 const UI = (() => {
 
   // Format seconds to mm:ss
+  // Writes a container's HTML only when it actually changed. Home renders its cache and, a moment
+  // later, the fresh feed; identical shelves must not be rebuilt (rebuilding read as flicker).
+  function setHTML(container, html) {
+    if (!container) return false;
+    if (container._mfHtml === html && (html === '' || container.firstChild)) return false;
+    container._mfHtml = html;
+    container.innerHTML = html;
+    return true;
+  }
+
   function formatTime(seconds) {
     if (isNaN(seconds) || seconds < 0) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -307,7 +317,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = items.slice(0, 6).map(item => `
+      setHTML(container, items.slice(0, 6).map(item => `
         <div class="listen-again-item" onclick="App.playSongWithQueue('${item.id}')">
           <img class="listen-again-thumb" src="${item.image || 'assets/logo.png'}" alt="" onerror="this.src='assets/logo.png'">
           <div class="listen-again-meta">
@@ -315,7 +325,7 @@ const UI = (() => {
             <span class="listen-again-sub">${item.artists || item.primaryArtist || 'Unknown'}</span>
           </div>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderQuickPicks(songs) {
@@ -328,7 +338,7 @@ const UI = (() => {
         columns.push(songs.slice(i, i + 4));
       }
 
-      container.innerHTML = columns.map(col => `
+      setHTML(container, columns.map(col => `
         <div class="quick-picks-column">
           ${col.map(song => `
             <div class="quick-pick-item" onclick="App.playSongWithQueue('${song.id}')">
@@ -343,7 +353,7 @@ const UI = (() => {
             </div>
           `).join('')}
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderContinueListening(songs) {
@@ -357,7 +367,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = songs.map(song => {
+      setHTML(container, songs.map(song => {
         const prog = song.playbackProgress || 0;
         return `
           <div class="music-square-card" onclick="App.playSongWithQueue('${song.id}')">
@@ -376,7 +386,7 @@ const UI = (() => {
             <div class="square-card-sub">${song.reason || song.artists}</div>
           </div>
         `;
-      }).join('');
+      }).join(''));
     },
 
     renderMadeForYou(songs) {
@@ -390,7 +400,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = songs.map(song => `
+      setHTML(container, songs.map(song => `
         <div class="music-square-card" onclick="App.playSongWithQueue('${song.id}')">
           <div class="square-card-art-wrap">
             <img src="${song.image}" loading="lazy" decoding="async" onerror="this.src='assets/logo.png'" alt="${song.name}">
@@ -401,7 +411,7 @@ const UI = (() => {
           <div class="square-card-title">${song.name}</div>
           <div class="square-card-sub">${song.reason || song.artists}</div>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderBecauseYouListened(seedTitle, songs) {
@@ -420,7 +430,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = songs.map(song => `
+      setHTML(container, songs.map(song => `
         <div class="music-square-card" onclick="App.playSongWithQueue('${song.id}')">
           <div class="square-card-art-wrap">
             <img src="${song.image}" loading="lazy" decoding="async" onerror="this.src='assets/logo.png'" alt="${song.name}">
@@ -431,7 +441,7 @@ const UI = (() => {
           <div class="square-card-title">${song.name}</div>
           <div class="square-card-sub">${song.artists}</div>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderFavoriteArtists(artists) {
@@ -445,7 +455,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = artists.map(artist => {
+      setHTML(container, artists.map(artist => {
         const name = typeof artist === 'string' ? artist : (artist.name || artist.artist || 'Artist');
         const img = artist.image || 'assets/logo.png';
         return `
@@ -457,7 +467,7 @@ const UI = (() => {
             <div class="artist-circle-sub">Artist</div>
           </div>
         `;
-      }).join('');
+      }).join(''));
     },
 
     renderDiscoverNew(songs) {
@@ -471,7 +481,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = songs.map(song => `
+      setHTML(container, songs.map(song => `
         <div class="music-square-card" onclick="App.playSongWithQueue('${song.id}')">
           <div class="square-card-art-wrap">
             <img src="${song.image}" loading="lazy" decoding="async" onerror="this.src='assets/logo.png'" alt="${song.name}">
@@ -482,7 +492,7 @@ const UI = (() => {
           <div class="square-card-title">${song.name}</div>
           <div class="square-card-sub">${song.artists}</div>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderForgottenFavorites(songs) {
@@ -496,7 +506,7 @@ const UI = (() => {
       }
 
       section.style.display = 'block';
-      container.innerHTML = songs.map(song => `
+      setHTML(container, songs.map(song => `
         <div class="music-square-card" onclick="App.playSongWithQueue('${song.id}')">
           <div class="square-card-art-wrap">
             <img src="${song.image}" loading="lazy" decoding="async" onerror="this.src='assets/logo.png'" alt="${song.name}">
@@ -507,14 +517,14 @@ const UI = (() => {
           <div class="square-card-title">${song.name}</div>
           <div class="square-card-sub">${song.artists}</div>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderRecommendedTracks(songs) {
       const container = document.getElementById('shelf-recommended-container');
       if (!container || !songs) return;
 
-      container.innerHTML = songs.map(song => `
+      setHTML(container, songs.map(song => `
         <div class="music-square-card" onclick="App.playSongWithQueue('${song.id}')">
           <div class="square-card-art-wrap">
             <img src="${song.image}" loading="lazy" decoding="async" onerror="this.src='assets/logo.png'" alt="${song.name}">
@@ -525,7 +535,7 @@ const UI = (() => {
           <div class="square-card-title">${song.name}</div>
           <div class="square-card-sub">${song.artists}</div>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderNewReleases(songs, isExpanded = false) {
@@ -544,7 +554,7 @@ const UI = (() => {
       if (label) label.textContent = isExpanded ? 'Show less' : 'See all';
       if (chevron) chevron.textContent = isExpanded ? 'expand_less' : 'chevron_right';
 
-      container.innerHTML = displayList.map(song => `
+      setHTML(container, displayList.map(song => `
         <div class="vertical-track-row" onclick="App.playSongWithQueue('${song.id}')">
           <img class="vertical-track-img" src="${API.thumb(song.image || 'assets/logo.png')}" loading="lazy" decoding="async" onerror="this.src='assets/logo.png'" alt="${song.name || song.title}">
           <div class="vertical-track-info">
@@ -555,14 +565,14 @@ const UI = (() => {
             <span class="material-symbols-outlined">more_vert</span>
           </button>
         </div>
-      `).join('');
+      `).join(''));
     },
 
     renderTrendingCharts(charts) {
       const container = document.getElementById('shelf-trending-container');
       if (!container || !charts) return;
 
-      container.innerHTML = charts.map(item => {
+      setHTML(container, charts.map(item => {
         const titleSafe = (item.title || item.name || '').replace(/'/g, "\\'");
         return `
         <div class="music-square-card" onclick="App.openAlbumOrPlaylist('${item.id}', '${item.type || 'playlist'}', '${titleSafe}')">
@@ -576,7 +586,7 @@ const UI = (() => {
           <div class="square-card-sub">${formatArtists(item.subtitle || item.artists || 'MusicFlow')}</div>
         </div>
       `;
-      }).join('');
+      }).join(''));
     },
 
     renderAlbums(albums) {
@@ -585,13 +595,13 @@ const UI = (() => {
       if (!container) return;
 
       if (!albums || !Array.isArray(albums) || albums.length === 0) {
-        container.innerHTML = '';
+        setHTML(container, '');
         if (section) section.style.display = 'none';
         return;
       }
 
       if (section) section.style.display = '';
-      container.innerHTML = albums.map(item => {
+      setHTML(container, albums.map(item => {
         const titleSafe = (item.title || item.name || '').replace(/'/g, "\\'");
         const artistSafe = (item.artists || item.artist || item.subtitle || '').replace(/'/g, "\\'");
         return `
@@ -606,7 +616,7 @@ const UI = (() => {
           <div class="square-card-sub">${formatArtists(item.artists || item.artist || item.subtitle || item.year || 'Album')}</div>
         </div>
       `;
-      }).join('');
+      }).join(''));
     },
 
     // ========================================================================
@@ -957,6 +967,7 @@ const UI = (() => {
     // LIBRARY SCREEN 2.0 RENDERING (LibraryScreen.kt)
     // ========================================================================
     renderLibraryTab(tab = 'playlists', searchQuery = '', sortMode = 'recent') {
+      try { if (typeof App !== 'undefined' && App.renderRailPlaylists) App.renderRailPlaylists(); } catch (_) {}
       const container = document.getElementById('library-tab-content');
       if (!container) return;
 
@@ -1928,6 +1939,26 @@ const UI = (() => {
 
       if (miniPlayer) miniPlayer.style.display = 'flex';
       if (miniArt) miniArt.src = song.image || 'assets/logo.png';
+      // Xbox Music: the "now playing" tile on Home and the artwork in the navigation rail
+      try {
+        const title = (typeof DataNormalizer !== 'undefined') ? DataNormalizer.getTrackTitle(song) : (song.name || 'Unknown Track');
+        const nowSec = document.getElementById('xbox-now-section');
+        if (nowSec) {
+          const art = document.getElementById('xbox-now-art');
+          const t = document.getElementById('xbox-now-title');
+          const a = document.getElementById('xbox-now-artist');
+          if (art) art.src = song.image || 'assets/logo.png';
+          if (t) t.textContent = title;
+          if (a) a.textContent = formatArtists(song.artists || song.primaryArtist || 'MusicFlow');
+          nowSec.style.display = '';
+        }
+        const railBtn = document.getElementById('rail-now-btn');
+        const railArt = document.getElementById('rail-now-art');
+        if (railArt) { railArt.src = song.image || 'assets/logo.png'; railArt.style.display = ''; }
+        if (railBtn) railBtn.classList.add('has-art');
+        const railTitle = document.getElementById('rail-now-title');
+        if (railTitle) railTitle.textContent = title;
+      } catch (_) {}
       if (miniTitle) {
         miniTitle.textContent = (typeof DataNormalizer !== 'undefined') ? DataNormalizer.getTrackTitle(song) : (song.name || 'Unknown Track');
         miniTitle.classList.remove('track-text-transition');
@@ -2377,8 +2408,10 @@ const UI = (() => {
         shuffleBtn.setAttribute('aria-label', isShuffle ? 'Shuffle On' : 'Shuffle Off');
       }
       if (shuffleIcon) {
-        shuffleIcon.style.color = isShuffle ? 'var(--accent)' : 'rgba(255, 255, 255, 0.7)';
+        shuffleIcon.style.color = isShuffle ? 'var(--accent)' : '';
       }
+      const miniShuffle = document.getElementById('btn-mini-shuffle');
+      if (miniShuffle) miniShuffle.classList.toggle('active', isShuffle);
     },
 
     updateRepeatState(repeatMode) {
@@ -2391,8 +2424,12 @@ const UI = (() => {
       }
       if (repeatIcon) {
         repeatIcon.textContent = repeatMode === 'ONE' ? 'repeat_one' : 'repeat';
-        repeatIcon.style.color = isActive ? 'var(--accent)' : 'rgba(255, 255, 255, 0.7)';
+        repeatIcon.style.color = isActive ? 'var(--accent)' : '';
       }
+      const miniRepeat = document.getElementById('btn-mini-repeat');
+      const miniRepeatIcon = document.getElementById('mini-repeat-icon');
+      if (miniRepeat) miniRepeat.classList.toggle('active', isActive);
+      if (miniRepeatIcon) miniRepeatIcon.textContent = repeatMode === 'ONE' ? 'repeat_one' : 'repeat';
     },
 
     onThemeChange(targetTheme) {
@@ -2895,8 +2932,8 @@ const UI = (() => {
       const perf = (typeof Storage !== 'undefined' && Storage.isPerformanceMode) ? Storage.isPerformanceMode() : false;
 
       // Short labels: the settings row shows the value on the right, Apple style
-      let qualityLabel = 'Lossless · 320 kbps';
-      if (quality.includes('320')) qualityLabel = 'Lossless · 320 kbps';
+      let qualityLabel = 'Highest · 320 kbps';
+      if (quality.includes('320')) qualityLabel = 'Highest · 320 kbps';
       else if (quality.includes('256')) qualityLabel = 'High · 256 kbps';
       else if (quality.includes('160')) qualityLabel = 'Good · 160 kbps';
       else if (quality.includes('128')) qualityLabel = 'Standard · 128 kbps';

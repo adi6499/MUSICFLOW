@@ -167,6 +167,18 @@ const PlaybackResolver = (() => {
    */
   function findPlayableMatch(results, targetSong, preferredQuality) {
     if (!Array.isArray(results) || results.length === 0) return null;
+    const urlOf = (item) => {
+      const u = item.audioUrl || item.streamUrl || ((typeof API !== 'undefined' && API.getDownloadUrl) ? API.getDownloadUrl(item, preferredQuality) : '');
+      return (u && typeof u === 'string' && u.trim().startsWith('http')) ? u.trim() : '';
+    };
+    // Strict matcher shared with the YouTube import: title, version words and artist/duration must agree.
+    const svc = (typeof YouTubeMusicService !== 'undefined') ? YouTubeMusicService
+      : ((typeof window !== 'undefined' && window.YouTubeMusicService) ? window.YouTubeMusicService : null);
+    if (svc && typeof svc.pickCatalogMatch === 'function') {
+      const picked = svc.pickCatalogMatch(targetSong, results.filter(item => item && urlOf(item)));
+      if (!picked) return null;
+      return { item: picked.item, url: urlOf(picked.item), score: picked.score };
+    }
     const targetTitle = safeTrackTitle(targetSong);
     const targetArtist = safeArtistString(targetSong);
 
@@ -195,7 +207,7 @@ const PlaybackResolver = (() => {
       }
 
       // Enforce strict title similarity threshold (0.50). Reject completely different songs!
-      if (score >= 0.55 && finalScore > bestScore) {
+      if (score >= 0.72 && finalScore > bestScore) {
         bestScore = finalScore;
         bestCandidate = item;
         bestUrl = u.trim();
@@ -546,7 +558,9 @@ const PlaybackResolver = (() => {
       type: SourceType.UNKNOWN,
       uri: '',
       error: ErrorCode.SOURCE_UNAVAILABLE,
-      message: "Couldn't play this song"
+      message: isYtOrigin
+        ? 'No full copy of this YouTube song is available (YouTube allows only a short preview outside its own app)'
+        : "Couldn't play this song"
     };
   }
 

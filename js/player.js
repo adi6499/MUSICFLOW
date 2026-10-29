@@ -409,7 +409,7 @@ const Player = (() => {
         // Swift auto-skip failed track (350ms)
         const trackTitle = failedTrack?.name || failedTrack?.title || 'Song';
         if (typeof window !== 'undefined' && window.UI && typeof window.UI.showToast === 'function') {
-          window.UI.showToast(`"${trackTitle}" unavailable, skipping...`);
+          window.UI.showToast(unavailableMessage(getCurrentTrack(), trackTitle));
         }
         setTimeout(() => {
           if (lastStartedRequestId === playbackRequestId) {
@@ -722,6 +722,15 @@ const Player = (() => {
     }
   }
 
+  // What the toast says when a song cannot be played. YouTube songs get the honest reason.
+  function unavailableMessage(track, trackTitle) {
+    const id = String((track && track.id) || '');
+    const isYt = id.startsWith('yt_') || (track && (track.provider === 'youtube_music' || track.videoId || track.sourceYtVideoId));
+    return isYt
+      ? `"${trackTitle}": no full copy found (YouTube only allows a preview), skipping...`
+      : `"${trackTitle}" unavailable, skipping...`;
+  }
+
   function getCurrentTrack() {
     return (currentIndex >= 0 && currentIndex < queue.length) ? queue[currentIndex] : null;
   }
@@ -907,7 +916,7 @@ const Player = (() => {
         const trackTitle = song?.name || song?.title || 'Song';
         console.log(`[Player] Track unavailable; auto-skipping "${trackTitle}"`);
         if (typeof window !== 'undefined' && window.UI && typeof window.UI.showToast === 'function') {
-          window.UI.showToast(`"${trackTitle}" unavailable, skipping...`);
+          window.UI.showToast(unavailableMessage(getCurrentTrack(), trackTitle));
         }
         setTimeout(() => {
           if (currentReqGen === playbackGeneration) next();

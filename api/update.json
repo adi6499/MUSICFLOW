@@ -1,43 +1,39 @@
 {
   "updateAvailable": false,
   "updateRequired": false,
-  "currentVersion": "5.1.1",
-  "latestVersion": "5.1.1",
-  "versionCode": 46,
+  "currentVersion": "5.2.0",
+  "latestVersion": "5.2.0",
+  "versionCode": 47,
   "minimumVersion": "2.7.4",
   "platform": "android",
-  "title": "MusicFlow v5.1.1",
+  "title": "MusicFlow v5.2.0",
   "message": "MusicFlow is up to date",
   "releaseNotes": [
-    "Home: Top Picks spans the full phone width, empty shelves are hidden, and entrance animations can never leave content invisible",
-    "Metro motion: pages and tiles fly in, tiles tilt when pressed, album pages swing in, artwork crossfades",
-    "Now Playing: the Up Next drawer sits at the bottom again and the cover is larger on phones",
-    "New MusicFlow icon",
-    "YouTube playlist import works on the website too",
-    "New Fluent design: navigation menu, large page titles, pivots, a full-width player bar with the progress line on top",
-    "Now Playing page with the scrubber, time left and full transport under the artwork",
-    "Accent colour of your choice in Settings (Blue, Green, Purple, Red, Orange, Teal, Leaf); Light, Dark or Auto",
-    "Station engine: autoplay, radio and Related never repeat a song and stay in the song's language and artist circle",
-    "Search rebuilt: one entry per recording, the original album first, artists and albums as top results",
-    "MusicFlow's own lock-screen controls, Android status-bar fixes and faster start-up",
-    "Web app for iPhone and Safari: open the site's web app and add it to your home screen"
+    "Xbox Music look (Windows 8.1): black canvas, Xbox green, big lowercase titles, flat square tiles, panorama page header on the phone",
+    "Left pane with search, your playlists and the now-playing tile; pages are Collection, Radio, Explore, Browse, Search",
+    "Home shows a now-playing tile and a featured tile; the player bar is a Windows Phone app bar with circle buttons",
+    "Now Playing on wide screens: artwork and controls on the left, Up Next / Lyrics / Related on the right",
+    "No more flicker on Home; the 'More like...' shelf never shows empty tiles twice",
+    "The whole phone screen is used (same colour under the status bar and toolbar)",
+    "YouTube: a track is matched to the catalog only when title, version and artist or length agree, so it never plays a different song; honest message when YouTube allows only a preview",
+    "Audio quality: 320 kbps catalog streams confirmed; YouTube streams pick the best format the phone can play"
   ],
   "releaseUrl": "https://adi6499.github.io/MUSICFLOW/download/",
   "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "apkUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "fileName": "MusicFlow.apk",
-  "fileSize": 27465505,
+  "fileSize": 27475383,
   "assetAvailable": true,
   "mandatory": false,
   "signing": "release-key",
   "signingNote": "Versions 2.7.3 and older were signed with a different key: uninstall them before installing 5.0.0.",
   "android": {
     "available": true,
-    "version": "5.1.1",
-    "versionCode": 46,
+    "version": "5.2.0",
+    "versionCode": 47,
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
     "fileName": "MusicFlow.apk",
-    "size": 27465505
+    "size": 27475383
   },
   "ios": {
     "available": true,
@@ -49,7 +45,7 @@
   },
   "web": {
     "available": true,
-    "version": "5.1.1",
+    "version": "5.2.0",
     "url": "https://adi6499.github.io/MUSICFLOW/"
   }
 }

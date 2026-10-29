@@ -137,6 +137,7 @@ const App = (() => {
         AudioOutputManager.init();
       }
       try { setupEndlessHomeFeed(); } catch (_) {}
+      try { renderRailPlaylists(); } catch (_) {}
 
       if (typeof UpdateManager !== 'undefined' && UpdateManager.init) {
         UpdateManager.init();
@@ -1266,12 +1267,51 @@ const App = (() => {
   }
 
   // Fluent shell: the navigation rail is an overlay on phones
-  const FL_TITLES = { home: 'Home', explore: 'Browse', radio: 'Radio', search: 'Search', library: 'My music', samples: 'Samples', detail: 'Album', artist: 'Artist', genre: 'Genre' };
+  const FL_TITLES = { home: 'Explore', explore: 'Browse', radio: 'Radio', search: 'Search', library: 'Collection', samples: 'Samples', detail: 'Album', artist: 'Artist', genre: 'Genre' };
   function toggleRail() { document.body.classList.toggle('rail-open'); }
   function closeRail() { document.body.classList.remove('rail-open'); }
+  // Panorama header on the phone: the page title with the next page's title peeking in (Xbox Music)
+  const PIVOT_ORDER = ['home', 'explore', 'radio', 'library'];
   function setTopbarTitle(screen) {
     const el = document.getElementById('fl-topbar-title');
     if (el && FL_TITLES[screen]) el.textContent = FL_TITLES[screen];
+    const next = document.getElementById('fl-pivot-next');
+    if (next) {
+      const i = PIVOT_ORDER.indexOf(screen);
+      const nextScreen = i >= 0 ? PIVOT_ORDER[(i + 1) % PIVOT_ORDER.length] : '';
+      next.textContent = nextScreen ? FL_TITLES[nextScreen] : '';
+      next.dataset.target = nextScreen;
+      next.style.display = nextScreen ? '' : 'none';
+    }
+  }
+  // Left pane (Xbox Music): the user's playlists under "+ new playlist", and the search box
+  function renderRailPlaylists() {
+    const host = document.getElementById('rail-playlists');
+    if (!host) return;
+    let pls = [];
+    try { pls = (typeof Storage !== 'undefined' && Storage.getPlaylists) ? (Storage.getPlaylists() || []) : []; } catch (_) { pls = []; }
+    const esc = (s) => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const html = pls.slice(0, 14).map(pl => `<button class="nav-extra rail-playlist" onclick="App.openPlaylist('${esc(pl.id)}')" title="${esc(pl.name)}"><span class="material-symbols-outlined nav-icon">queue_music</span><span class="nav-label">${esc(pl.name)}</span></button>`).join('');
+    if (host._mfHtml === html) return;
+    host._mfHtml = html;
+    host.innerHTML = html;
+  }
+  function railSearch(ev) {
+    if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+    const box = document.getElementById('rail-search-input');
+    const q = box ? box.value.trim() : '';
+    navigate('search');
+    if (q) {
+      const inp = document.getElementById('search-input');
+      if (inp) inp.value = q;
+      try { performSearch(q, 'All', true); } catch (_) {}
+    }
+    return false;
+  }
+  function navigatePivotNext() {
+    const next = document.getElementById('fl-pivot-next');
+    const target = next && next.dataset.target;
+    if (target) navigate(target);
   }
 
   function openDownloadPage() {
@@ -1292,6 +1332,7 @@ const App = (() => {
     if (!targetScreen) return;
     closeRail();
     setTopbarTitle(targetScreen);
+    try { renderRailPlaylists(); } catch (_) {}
     // Re-tapping the current tab scrolls it back to the top (Apple Music behaviour)
     const tabScreenShowing = !!document.getElementById(`screen-${targetScreen}`)?.classList.contains('active');
     if (addToHistory && targetScreen === activeTab && tabScreenShowing && ['home', 'explore', 'radio', 'library', 'search'].includes(targetScreen)
@@ -2221,7 +2262,7 @@ const App = (() => {
   // quick-pick artists; similar-song and artist-hit lookups fill the shelf;
   // anything already on screen or recently played is skipped.
   // ==========================================================================
-  const endlessFeed = { shelves: 0, loading: false, seedIndex: 0, shownIds: new Set(), maxShelves: 12 };
+  const endlessFeed = { shelves: 0, loading: false, seedIndex: 0, shownIds: new Set(), usedArtists: new Set(), maxShelves: 12 };
 
   function endlessCollectShownIds() {
     const ids = endlessFeed.shownIds;
@@ -2243,6 +2284,7 @@ const App = (() => {
         : String(s.primaryArtist || s.artists || '').split(/[,;&/•+]/)[0].trim();
       if (!artist || /^(unknown|various)/i.test(artist)) return;
       if (seeds.some(x => x.artist.toLowerCase() === artist.toLowerCase())) return;
+      if (endlessFeed.usedArtists.has(artist.toLowerCase())) return;   // one shelf per artist
       seeds.push({ song: s, artist, why });
     };
     try { (Storage.getHistory() || []).slice(0, 12).forEach(s => push(s, 'played')); } catch (_) {}
@@ -2263,6 +2305,8 @@ const App = (() => {
     endlessFeed.loading = true;
     const seed = seeds[endlessFeed.seedIndex % seeds.length];
     endlessFeed.seedIndex++;
+    endlessFeed.usedArtists.add(seed.artist.toLowerCase());
+    const withTimeout = (promise, ms) => Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
 
     const placeholder = document.createElement('section');
     placeholder.className = 'shelf-section endless-shelf';
@@ -2274,10 +2318,10 @@ const App = (() => {
     try {
       let pool = [];
       if (seed.song && seed.song.id && typeof API !== 'undefined' && API.getSimilarSongs) {
-        try { const sim = await API.getSimilarSongs(seed.song.id, 20); if (Array.isArray(sim)) pool.push(...sim); } catch (_) {}
+        try { const sim = await withTimeout(API.getSimilarSongs(seed.song.id, 20), 10000); if (Array.isArray(sim)) pool.push(...sim); } catch (_) {}
       }
       if (pool.length < 12 && typeof API !== 'undefined' && API.searchSongs) {
-        try { const hits = await API.searchSongs(`${seed.artist} hits`, 1, 20); if (Array.isArray(hits)) pool.push(...hits); } catch (_) {}
+        try { const hits = await withTimeout(API.searchSongs(`${seed.artist} hits`, 1, 20), 10000); if (Array.isArray(hits)) pool.push(...hits); } catch (_) {}
       }
       const TD = (typeof TrackDeduplicator !== 'undefined') ? TrackDeduplicator : null;
       if (TD && TD.deduplicate) pool = TD.deduplicate(pool);
@@ -6202,6 +6246,9 @@ const App = (() => {
     dismissWelcome,
     toggleRail,
     closeRail,
+    navigatePivotNext,
+    renderRailPlaylists,
+    railSearch,
     setAccent,
     openDownloadPage,
     openQualityDialog,

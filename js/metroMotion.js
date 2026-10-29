@@ -84,6 +84,12 @@ const MetroMotion = (() => {
   }
 
   // ---- content arriving later (shelves filling, pivots switching) ----------
+  // A shelf flies in the first time it fills. When its content is merely replaced a moment later
+  // (Home renders its cache first, then the fresh feed; a pivot is re-rendered) it must NOT fly in
+  // again: that re-run read as flicker. Each container therefore animates once, and again only
+  // after it has been quiet for a while. Home shelves never re-animate on a refresh.
+  const REFILL_QUIET_MS = 20000;
+  const containerAnimatedAt = new WeakMap();
   let pending = new Set();
   let flushTimer = null;
 
@@ -101,14 +107,30 @@ const MetroMotion = (() => {
   function flushAdded() {
     flushTimer = null;
     const nodes = Array.from(pending); pending = new Set();
-    if (!enabled() || !nodes.length) return;
-    // items inside a page that is itself flying in right now already move with their section
-    if (Date.now() - lastPageAnimation < 120) return;
-    const visible = nodes.filter(el => el.isConnected && el.offsetParent !== null);
+    if (!nodes.length) return;
+    const now = Date.now();
     // group by container so each shelf staggers on its own
     const groups = new Map();
-    visible.forEach(el => { const key = el.parentElement; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(el); });
-    groups.forEach(list => flyIn(list, ITEM_STAGGER_MS, 60));
+    nodes.forEach(el => {
+      if (!el.isConnected) return;
+      const key = el.parentElement;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(el);
+    });
+    const pageJustAnimated = now - lastPageAnimation < 120;   // items already move with their section
+    groups.forEach((list, container) => {
+      const last = containerAnimatedAt.get(container) || 0;
+      const onHome = !!container.closest('#screen-home');
+      const refill = last && (onHome || now - last < REFILL_QUIET_MS);
+      if (pageJustAnimated || refill || !enabled() || document.hidden) {
+        list.forEach(el => seen.add(el));
+        if (!last) containerAnimatedAt.set(container, now);
+        return;
+      }
+      const visible = list.filter(el => el.offsetParent !== null);
+      containerAnimatedAt.set(container, now);
+      if (visible.length) flyIn(visible, ITEM_STAGGER_MS, 60);
+    });
   }
 
   function watchContent() {

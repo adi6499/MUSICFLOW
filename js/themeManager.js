@@ -14,11 +14,11 @@ const ThemeManager = (() => {
   const APPEARANCE_KEY = 'mf_appearance';          // 'system' | 'light' | 'dark'
   const ACCENT_KEY = 'mf_accent';                  // '#RRGGBB'
   const APPEARANCES = ['system', 'light', 'dark'];
-  const META_COLOR = { light: '#F3F3F3', dark: '#1F1F1F' };
+  const META_COLOR = { light: '#FFFFFF', dark: '#0E0E0E' };
 
   const PRESETS = [
-    { id: 'blue', name: 'Blue', color: '#0078D4', isDefault: true },
-    { id: 'green', name: 'Green', color: '#107C10' },
+    { id: 'green', name: 'Xbox green', color: '#107C10', isDefault: true },
+    { id: 'blue', name: 'Blue', color: '#0078D4' },
     { id: 'purple', name: 'Purple', color: '#881798' },
     { id: 'red', name: 'Red', color: '#E81123' },
     { id: 'orange', name: 'Orange', color: '#F7630C' },
@@ -31,10 +31,10 @@ const ThemeManager = (() => {
 
   // ---- colour helpers (kept for callers such as the waveform and dynamic glow) ----
   function hexToRgb(hex) {
-    if (!hex || typeof hex !== 'string') return { r: 0, g: 120, b: 212 };
+    if (!hex || typeof hex !== 'string') return { r: 16, g: 124, b: 16 };
     let clean = hex.replace('#', '').trim();
     if (clean.length === 3) clean = clean.split('').map(c => c + c).join('');
-    if (clean.length !== 6 || /[^0-9a-f]/i.test(clean)) return { r: 0, g: 120, b: 212 };
+    if (clean.length !== 6 || /[^0-9a-f]/i.test(clean)) return { r: 16, g: 124, b: 16 };
     const num = parseInt(clean, 16);
     return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
   }

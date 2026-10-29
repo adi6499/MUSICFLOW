@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MusicFlow">
-  <meta name="theme-color" content="#1F1F1F">
+  <meta name="theme-color" content="#0E0E0E">
   <meta name="description" content="MusicFlow — Ultimate lossless music streaming matching native Android app">
 
   <title>MusicFlow</title>
@@ -39,10 +39,11 @@
       } catch (_) {}
     })();
   </script>
-  <link rel="stylesheet" href="css/app.css?v=5.1.1">
-  <link rel="stylesheet" href="css/fluent.css?v=5.1.1">
-  <link rel="stylesheet" href="css/fluent-motion.css?v=5.1.1">
-  <link rel="stylesheet" href="css/ambient.css?v=5.1.1">
+  <link rel="stylesheet" href="css/app.css?v=5.2.0">
+  <link rel="stylesheet" href="css/fluent.css?v=5.2.0">
+  <link rel="stylesheet" href="css/fluent-motion.css?v=5.2.0">
+  <link rel="stylesheet" href="css/xbox-music.css?v=5.2.0">
+  <link rel="stylesheet" href="css/ambient.css?v=5.2.0">
 </head>
 <body class="theme-fluent">
   <!-- Global Top Progress Loading Bar -->
@@ -56,8 +57,9 @@
     <!-- Phone top bar: menu · page title · search -->
     <header class="fl-topbar" id="fl-topbar">
       <button class="fl-topbar-btn" onclick="App.toggleRail()" aria-label="Menu" title="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-      <div class="fl-topbar-title"><span id="fl-topbar-title">Home</span><small>MusicFlow</small></div>
+      <div class="fl-app-name">musicflow</div>
       <button class="fl-topbar-btn" onclick="App.navigate('search')" aria-label="Search" title="Search"><span class="material-symbols-outlined">search</span></button>
+      <div class="fl-topbar-title fl-pivot"><span id="fl-topbar-title">Explore</span><span class="fl-pivot-next" id="fl-pivot-next" data-target="explore" onclick="App.navigatePivotNext()" role="button" aria-label="Next page">Browse</span></div>
     </header>
     <div class="fl-scrim" onclick="App.closeRail()"></div>
     <!-- Inline title bar shown when a Large Title scrolls away (Browse / Radio / Library) -->
@@ -114,6 +116,18 @@
         </div>
 
         <div class="home-feed-sections" id="home-feed-sections">
+          <!-- Xbox Music: the "now playing" tile (shown once something plays) -->
+          <section class="shelf-section xbox-now-section" id="xbox-now-section" style="display:none;">
+            <div class="xbox-now-tile" onclick="App.expandFullPlayer()" role="button" aria-label="Open Now Playing">
+              <img id="xbox-now-art" src="assets/logo.png" alt="" onerror="this.src='assets/logo.png'">
+              <div class="xbox-now-text">
+                <span class="xbox-now-label">now playing</span>
+                <div class="xbox-now-title" id="xbox-now-title"></div>
+                <div class="xbox-now-artist" id="xbox-now-artist"></div>
+              </div>
+              <span class="material-symbols-outlined xbox-now-eq" aria-hidden="true">equalizer</span>
+            </div>
+          </section>
           <!-- Hero: the first Top Pick, written on its artwork, with Play Now -->
           <section class="shelf-section home-hero-section" id="home-hero-section" style="display:none;">
             <div class="home-hero-card" id="home-hero-card" onclick="App.playHeroSong()" role="button" aria-label="Play the featured song">
@@ -600,7 +614,7 @@
       <!-- ================= 4. LIBRARY SCREEN 2.0 (LibraryScreen.kt) ================= -->
       <section id="screen-library" class="screen">
         <header class="library-top-bar">
-          <h1 class="screen-title">My music</h1>
+          <h1 class="screen-title">Collection</h1>
           <div style="display:flex; align-items:center; gap:8px;">
             <button class="icon-btn-glass" id="btn-lib-search-toggle" aria-label="Search Library" title="Search Library">
               <span class="material-symbols-outlined">search</span>
@@ -820,6 +834,9 @@
         <button class="icon-btn-mini" id="btn-mini-like" onclick="event.stopPropagation(); App.toggleFavoriteCurrent();" aria-label="Favorite">
           <span class="material-symbols-outlined" id="mini-like-icon">favorite_border</span>
         </button>
+        <button class="icon-btn-mini" id="btn-mini-shuffle" onclick="event.stopPropagation(); Player.toggleShuffle();" aria-label="Shuffle">
+          <span class="material-symbols-outlined">shuffle</span>
+        </button>
         <button class="icon-btn-mini" id="btn-mini-prev" onclick="event.stopPropagation(); App.animateToPrevious();" aria-label="Previous Track">
           <span class="material-symbols-outlined fill-icon">skip_previous</span>
         </button>
@@ -828,6 +845,12 @@
         </button>
         <button class="icon-btn-mini" id="btn-mini-next" onclick="event.stopPropagation(); App.animateToNext();" aria-label="Next Track">
           <span class="material-symbols-outlined fill-icon">skip_next</span>
+        </button>
+        <button class="icon-btn-mini" id="btn-mini-repeat" onclick="event.stopPropagation(); Player.toggleRepeat();" aria-label="Repeat">
+          <span class="material-symbols-outlined" id="mini-repeat-icon">repeat</span>
+        </button>
+        <button class="icon-btn-mini" id="btn-mini-more" onclick="event.stopPropagation(); App.openCurrentSongMenu();" aria-label="More options">
+          <span class="material-symbols-outlined">more_horiz</span>
         </button>
       </div>
     </div>
@@ -838,31 +861,41 @@
         <button class="fl-topbar-btn" onclick="App.toggleRail()" aria-label="Menu" title="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <span class="nav-brand-text">MusicFlow</span>
       </div>
-      <button class="nav-tab active" data-target="home" onclick="App.navigate('home')" aria-label="Home">
-        <span class="material-symbols-outlined nav-icon">home</span>
-        <span class="nav-label">Home</span>
-      </button>
-      <button class="nav-tab" data-target="explore" onclick="App.navigate('explore')" aria-label="Browse">
-        <span class="material-symbols-outlined nav-icon">explore</span>
-        <span class="nav-label">Browse</span>
+      <form class="rail-search" onsubmit="return App.railSearch(event)" role="search">
+        <span class="material-symbols-outlined rail-search-icon" aria-hidden="true">search</span>
+        <input type="search" id="rail-search-input" class="rail-search-input" placeholder="search" autocomplete="off" aria-label="Search">
+      </form>
+      <button class="nav-tab" data-target="library" onclick="App.navigate('library')" aria-label="Collection">
+        <span class="material-symbols-outlined nav-icon">library_music</span>
+        <span class="nav-label">Collection</span>
       </button>
       <button class="nav-tab" data-target="radio" onclick="App.navigate('radio')" aria-label="Radio">
         <span class="material-symbols-outlined nav-icon">radio</span>
         <span class="nav-label">Radio</span>
       </button>
+      <button class="nav-tab active" data-target="home" onclick="App.navigate('home')" aria-label="Explore">
+        <span class="material-symbols-outlined nav-icon">explore</span>
+        <span class="nav-label">Explore</span>
+      </button>
+      <button class="nav-tab" data-target="explore" onclick="App.navigate('explore')" aria-label="Browse">
+        <span class="material-symbols-outlined nav-icon">grid_view</span>
+        <span class="nav-label">Browse</span>
+      </button>
       <button class="nav-tab" data-target="search" onclick="App.navigate('search')" aria-label="Search">
         <span class="material-symbols-outlined nav-icon">search</span>
         <span class="nav-label">Search</span>
       </button>
-      <div class="nav-section">Collection</div>
-      <button class="nav-tab" data-target="library" onclick="App.navigate('library')" aria-label="My music">
-        <span class="material-symbols-outlined nav-icon">library_music</span>
-        <span class="nav-label">My music</span>
+      <div class="nav-section rail-playlists-head">Playlists</div>
+      <button class="nav-extra rail-new-playlist" onclick="App.openCreatePlaylistModal()" aria-label="New playlist">
+        <span class="material-symbols-outlined nav-icon">add</span>
+        <span class="nav-label">New playlist</span>
       </button>
+      <div class="rail-playlists" id="rail-playlists"></div>
       <div class="nav-spacer"></div>
-      <button class="nav-extra" onclick="App.expandFullPlayer()" aria-label="Now playing">
+      <button class="nav-extra rail-now" id="rail-now-btn" onclick="App.expandFullPlayer()" aria-label="Now playing">
+        <img class="rail-now-art" id="rail-now-art" src="assets/logo.png" alt="" style="display:none;" onerror="this.style.display='none'">
         <span class="material-symbols-outlined nav-icon">equalizer</span>
-        <span class="nav-label">Now playing</span>
+        <span class="rail-now-text"><span class="nav-label">Now playing</span><span class="rail-now-title" id="rail-now-title"></span></span>
       </button>
       <button class="nav-extra" onclick="App.openSettings()" aria-label="Settings">
         <span class="material-symbols-outlined nav-icon">settings</span>
@@ -1866,8 +1899,8 @@
             <span class="settings-sub">Highlights, the progress line and buttons</span>
           </div>
           <div class="accent-swatches" id="settings-accent-swatches" role="radiogroup" aria-label="Accent colour">
+            <button class="accent-swatch" data-accent="#107C10" style="background:#107C10;" onclick="App.setAccent('#107C10')" aria-label="Xbox green" title="Xbox green"></button>
             <button class="accent-swatch" data-accent="#0078D4" style="background:#0078D4;" onclick="App.setAccent('#0078D4')" aria-label="Blue" title="Blue"></button>
-            <button class="accent-swatch" data-accent="#107C10" style="background:#107C10;" onclick="App.setAccent('#107C10')" aria-label="Green" title="Green"></button>
             <button class="accent-swatch" data-accent="#881798" style="background:#881798;" onclick="App.setAccent('#881798')" aria-label="Purple" title="Purple"></button>
             <button class="accent-swatch" data-accent="#E81123" style="background:#E81123;" onclick="App.setAccent('#E81123')" aria-label="Red" title="Red"></button>
             <button class="accent-swatch" data-accent="#F7630C" style="background:#F7630C;" onclick="App.setAccent('#F7630C')" aria-label="Orange" title="Orange"></button>
