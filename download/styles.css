@@ -171,8 +171,9 @@ body {
 .logo-icon-box {
   width: 38px;
   height: 38px;
-  border-radius: 12px;
-  background: var(--primary-gradient);
+  border-radius: 10px;
+  background: transparent;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1250,3 +1251,5 @@ body {
     text-align: center;
   }
 }
+
+.logo-icon-box img { width: 38px !important; height: 38px !important; border-radius: 10px; display: block; }
