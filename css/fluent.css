@@ -495,7 +495,11 @@ body.theme-fluent .continue-card-progress-bar { background: rgba(128, 128, 128, 
 body.theme-fluent .continue-card-progress-fill { background: var(--accent); }
 
 body.theme-fluent .quick-picks-carousel { padding: 0 var(--fl-gutter) 4px var(--fl-gutter); gap: 24px; }
-body.theme-fluent .quick-picks-carousel { scroll-snap-type: x mandatory; }
+body.theme-fluent .quick-picks-carousel { scroll-snap-type: x mandatory; align-items: flex-start; }
+body.theme-fluent .quick-pick-item { height: 54px; box-sizing: border-box; overflow: hidden; }
+body.theme-fluent .quick-pick-info { flex: 1; min-width: 0; }
+body.theme-fluent .quick-pick-title,
+body.theme-fluent .quick-pick-artist { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.theme-fluent .quick-picks-column { gap: 0; width: calc(100vw - var(--fl-gutter) * 2); max-width: 420px; height: auto !important; min-height: 0; justify-content: flex-start; padding: 0; scroll-snap-align: start; }
 body.theme-fluent .shelf-section:has(> .ytm-listen-again-grid:empty),
 body.theme-fluent .shelf-section:has(> .cards-horizontal-shelf:empty),
