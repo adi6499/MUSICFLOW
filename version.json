@@ -1,14 +1,18 @@
 {
   "updateAvailable": false,
   "updateRequired": false,
-  "currentVersion": "5.0.0",
-  "latestVersion": "5.0.0",
-  "versionCode": 44,
+  "currentVersion": "5.1.0",
+  "latestVersion": "5.1.0",
+  "versionCode": 45,
   "minimumVersion": "2.7.4",
   "platform": "android",
-  "title": "MusicFlow v5.0.0",
+  "title": "MusicFlow v5.1.0",
   "message": "MusicFlow is up to date",
   "releaseNotes": [
+    "Metro motion: pages and tiles fly in, tiles tilt when pressed, album pages swing in, artwork crossfades",
+    "Now Playing: the Up Next drawer sits at the bottom again and the cover is larger on phones",
+    "New MusicFlow icon",
+    "YouTube playlist import works on the website too",
     "New Fluent design: navigation menu, large page titles, pivots, a full-width player bar with the progress line on top",
     "Now Playing page with the scrubber, time left and full transport under the artwork",
     "Accent colour of your choice in Settings (Blue, Green, Purple, Red, Orange, Teal, Leaf); Light, Dark or Auto",
@@ -21,18 +25,18 @@
   "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "apkUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
   "fileName": "MusicFlow.apk",
-  "fileSize": 29494516,
+  "fileSize": 27465505,
   "assetAvailable": true,
   "mandatory": false,
   "signing": "release-key",
   "signingNote": "Versions 2.7.3 and older were signed with a different key: uninstall them before installing 5.0.0.",
   "android": {
     "available": true,
-    "version": "5.0.0",
-    "versionCode": 44,
+    "version": "5.1.0",
+    "versionCode": 45,
     "downloadUrl": "https://adi6499.github.io/MUSICFLOW/downloads/MusicFlow.apk",
     "fileName": "MusicFlow.apk",
-    "size": 29494516
+    "size": 27465505
   },
   "ios": {
     "available": true,
@@ -44,7 +48,7 @@
   },
   "web": {
     "available": true,
-    "version": "5.0.0",
+    "version": "5.1.0",
     "url": "https://adi6499.github.io/MUSICFLOW/"
   }
 }
