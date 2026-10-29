@@ -1357,10 +1357,12 @@ const App = (() => {
       const envTop = probe.offsetHeight || 0;
       const landscape = window.innerWidth > window.innerHeight;
       const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-      let gap = Math.round(full - window.innerHeight);
-      // iOS draws the page from the top edge (envTop > 0) but lays it out short by the status bar: stretch down by it.
-      if (!(envTop > 0) || !(gap > 0 && gap < 160)) gap = 0;
-      root.style.setProperty('--ios-gap', gap + 'px');
+      const gap = Math.round(full - window.innerHeight);
+      // The CSS stretches installed iPhone apps by the top inset. Switch it off only if iOS lays the page out
+      // at the full screen height (the bug is absent); otherwise leave the CSS value alone.
+      if (gap <= 0 && window.innerHeight > 0) root.style.setProperty('--ios-gap', '0px');
+      else root.style.removeProperty('--ios-gap');
+      void envTop;
     };
     apply();
     [150, 600, 1500, 3000].forEach(ms => setTimeout(apply, ms));

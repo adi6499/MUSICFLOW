@@ -128,6 +128,11 @@
         /* 5. iPhone home-screen app: WebKit can lay the page out in a viewport that is shorter than the screen
            by the status bar while still drawing from the top edge, leaving a strip at the bottom. app.js measures
            that difference into --ios-gap (0 everywhere else) and the fixed layers stretch down to the real bottom. */
+        @media (display-mode: standalone) {
+          @supports (-webkit-touch-callout: none) {
+            html { --ios-gap: env(safe-area-inset-top, 0px); }
+          }
+        }
         body.theme-fluent .app-container,
         body.theme-fluent .full-player-sheet,
         body.theme-fluent .floating-bottom-nav { bottom: calc(-1 * var(--ios-gap, 0px)); }
