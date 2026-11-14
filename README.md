@@ -82,6 +82,9 @@ src/
   ui/                 shared pieces: rows, cards, sheets, sliders, sound panel, glass
   styles/             the design system (colours, type, spacing, motion)
 api/                  the one server function (YouTube playlist reader)
+                      (api/update.json is left over on purpose: MusicFlow apps already
+                      installed on phones read it to check for updates. Delete it once
+                      nobody uses MusicFlow any more.)
 scripts/              icon drawing, the health check, the local stand-in for api/
 android/              the Android shell
 ```
