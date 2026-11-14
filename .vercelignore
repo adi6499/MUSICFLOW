@@ -1,0 +1,18 @@
+# What must never be sent to the website host when publishing from this PC.
+# (When the site is built from GitHub instead, .gitignore already keeps the
+# private files out of the repository.)
+
+# The Android project is not part of the website, and it holds the app's
+# private signing key.
+android/
+
+# Built or downloaded files — the host makes its own.
+node_modules/
+dist/
+
+# Local tool settings and stray build results.
+.claude/
+*.apk
+*.jks
+*.keystore
+*.log
