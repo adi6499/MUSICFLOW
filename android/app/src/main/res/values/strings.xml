@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sukoon</string>
+    <string name="channel_playback">Now playing</string>
+    <string name="channel_playback_about">Shows what is playing, with play, pause and skip.</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_next">Next</string>
+</resources>

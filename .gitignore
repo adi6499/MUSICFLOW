@@ -18,3 +18,8 @@ android/app/src/main/assets/public/
 
 # Local tool settings
 .claude/
+
+# Android build results (the APK is shared separately, not kept in the code history)
+android/build.log
+android/*.apk
+android/.kotlin/

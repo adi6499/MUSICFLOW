@@ -5,6 +5,7 @@ import { effect } from '@preact/signals';
 import { useEffect } from 'preact/hooks';
 import { Home as HomeIcon, Library as LibraryIcon, Mic, Plus, Search as SearchIcon, Settings as Cog } from 'lucide-preact';
 import { playlists, settings, createPlaylist } from './lib/library';
+import { setTheme } from './lib/native';
 import * as player from './lib/player';
 import { go, isOpen, route, to } from './lib/router';
 import { dismiss, toasts } from './lib/toast';
@@ -169,6 +170,7 @@ if (typeof window !== 'undefined') {
     const dark = choice === 'dark' || (choice === 'auto' && media.matches);
     root.dataset.theme = dark ? 'dark' : 'light';
     themeNow.value = dark ? 'dark' : 'light';
+    setTheme(dark);
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141312' : '#F4F1EA');
   };
   effect(paint);

@@ -17,6 +17,8 @@ interface Shell {
   haptic?(ms: number): void;
   /** Saves a small text file into the phone's Downloads folder. */
   saveText?(name: string, text: string): void;
+  /** Light or dark is showing: lets Android colour the status-bar icons to match. */
+  theme?(dark: boolean): void;
 }
 
 declare global {
@@ -57,6 +59,11 @@ export function post(url: string, body: object): Promise<any> {
 export function saveText(name: string, text: string): boolean {
   if (!shell?.saveText) return false;
   try { shell.saveText(name, text); return true; } catch { return false; }
+}
+
+/** Tell the Android shell which appearance is showing. Does nothing in a browser. */
+export function setTheme(dark: boolean): void {
+  try { shell?.theme?.(dark); } catch { /* shell went away */ }
 }
 
 /** Extra space the screens must leave for the status bar and gesture bar inside the app. */
