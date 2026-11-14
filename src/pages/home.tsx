@@ -8,7 +8,8 @@ import { dedupeSongs } from '../lib/normalize';
 import { history, mostPlayed, setSetting, settings, topArtistNames } from '../lib/library';
 import * as player from '../lib/player';
 import { route, to } from '../lib/router';
-import { cx, greeting, plain } from '../lib/util';
+import { cx, greeting, isIOS, isStandalone, plain } from '../lib/util';
+import { isApp } from '../lib/native';
 import { MOODS, playMood } from '../ui/actions';
 import { Art, Failed, Link, SkeletonShelf, Spinner, TopBar } from '../ui/bits';
 import { ItemGrid, ItemShelf, Section } from '../ui/cards';
@@ -44,6 +45,24 @@ function Welcome() {
         <p class="muted" style={{ margin: '6px 0 16px', fontSize: 14.5 }}>Which languages do you listen to? You can change this any time in Settings.</p>
         <LanguageChips />
         <button class="btn" style={{ marginTop: 18 }} onClick={() => setSetting('welcomed', true)}>Done</button>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * iPhone only, shown once: Safari is fine, but from the Home Screen the app
+ * opens full screen, keeps its library for good, and is one tap away.
+ */
+function HomeScreenTip() {
+  return (
+    <section class="section" style={{ marginTop: 18 }}>
+      <div class="set-card" style={{ padding: '16px 16px 14px' }}>
+        <b style={{ fontSize: 15.5, fontWeight: 500 }}>Add Sukoon to your Home Screen</b>
+        <p class="muted" style={{ margin: '6px 0 12px', fontSize: 14 }}>
+          Tap the Share button below, then <b style={{ fontWeight: 500 }}>Add to Home Screen</b>. Sukoon then opens full screen like an app and your liked songs and playlists are kept safely.
+        </p>
+        <button class="btn quiet small" onClick={() => setSetting('homeTipSeen', true)}>Got it</button>
       </div>
     </section>
   );
@@ -134,6 +153,7 @@ export function Home() {
       </header>
 
       {!s.welcomed && <Welcome />}
+      {s.welcomed && !s.homeTipSeen && isIOS && !isStandalone && !isApp && <HomeScreenTip />}
       <JumpBackIn />
 
       <Section title="Play a mood">

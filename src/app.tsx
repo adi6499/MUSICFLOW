@@ -8,9 +8,9 @@ import { playlists, settings, createPlaylist } from './lib/library';
 import { setTheme } from './lib/native';
 import * as player from './lib/player';
 import { cssVars, paletteFor } from './lib/themes';
-import { go, isOpen, route, to } from './lib/router';
+import { back, canGoBack, go, isOpen, route, to } from './lib/router';
 import { dismiss, toasts } from './lib/toast';
-import { cx } from './lib/util';
+import { cx, isIOS, isStandalone } from './lib/util';
 import { AlbumPage, PlaylistPage } from './pages/collection';
 import { ArtistPage } from './pages/artist';
 import { Home, SectionPage } from './pages/home';
@@ -202,6 +202,27 @@ if (typeof window !== 'undefined') {
     if (settings.value.calmMotion) root.dataset.calm = '1';
     else delete root.dataset.calm;
   });
+
+  // iPhone, opened from the Home Screen: there is no browser Back button and no
+  // system swipe-back, so a swipe in from the left edge goes back (or closes
+  // whatever is open). In Safari itself the browser already does this.
+  if (isIOS && isStandalone) {
+    let startX = 0;
+    let startY = 0;
+    let fromEdge = false;
+    window.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      fromEdge = e.touches.length === 1 && t.clientX < 24;
+      startX = t.clientX;
+      startY = t.clientY;
+    }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+      if (!fromEdge) return;
+      fromEdge = false;
+      const t = e.changedTouches[0];
+      if (t.clientX - startX > 70 && Math.abs(t.clientY - startY) < 60 && canGoBack()) back();
+    }, { passive: true });
+  }
 
   // The browser tab shows what is playing.
   effect(() => {

@@ -121,6 +121,16 @@ body {
 /* While the full-screen player is open the page behind must not scroll. */
 html.locked { overflow: hidden; }
 
+/* Touch screens (iPhone Safari above all):
+   - a double tap must never zoom the page, and taps must not wait for one;
+   - a long press on a card or cover must not pop up the browser's link preview
+     or "Save image" menu;
+   - buttons and bars are not text, so they cannot be selected by accident. */
+html { touch-action: manipulation; }
+a, img, button, .row, .card, .pick, .mood, .mini, .tabs, .chip { -webkit-touch-callout: none; }
+.tabs, .mini, .bar, .side, .btn, .chip, .card, .pick, .mood, .icon-btn, .seg, .lib-tile, .theme-tile { -webkit-user-select: none; user-select: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+
 h1, h2, h3, h4, p, figure, ul, ol { margin: 0; padding: 0; }
 ul, ol { list-style: none; }
 img { display: block; max-width: 100%; }

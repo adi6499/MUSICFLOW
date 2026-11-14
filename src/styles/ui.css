@@ -364,6 +364,9 @@
   border-radius: var(--r-m);
   background: var(--sunken);
   box-shadow: inset 0 0 0 1px var(--line);
+  /* Stops the iPhone drawing its own inner shadow and rounded shape; 16px stops it zooming in on focus. */
+  -webkit-appearance: none;
+  appearance: none;
   font-size: 16px;
   outline: none;
   transition: box-shadow var(--t-2) var(--out);

@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   fxLowCut: 0,
   podcastSpeed: 1,
   welcomed: false,
+  homeTipSeen: false,
 };
 
 const unit = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);

@@ -18,7 +18,8 @@
 [data-glass='1'] .bar,
 [data-glass='1'] .topbar.stuck {
   background: var(--glass);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+  /* Older iPhones ignore this rule if it contains a variable, so the numbers are written out. */
+  -webkit-backdrop-filter: blur(6px) saturate(1.7);
   backdrop-filter: var(--lens,) blur(var(--glass-blur)) saturate(1.7);
 }
 

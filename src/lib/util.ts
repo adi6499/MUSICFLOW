@@ -165,6 +165,11 @@ export const isIOS =
   (/iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
+/** Opened from the phone's home screen (full screen, no browser bars). */
+export const isStandalone =
+  typeof window !== 'undefined' &&
+  ((navigator as { standalone?: boolean }).standalone === true || !!window.matchMedia?.('(display-mode: standalone)').matches);
+
 export const isTouch =
   typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 

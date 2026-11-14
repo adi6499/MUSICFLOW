@@ -637,8 +637,19 @@ if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
   on('nexttrack', () => void next());
   on('stop', () => pause());
   on('seekto', (d) => { if (typeof d.seekTime === 'number') seek(d.seekTime); });
-  on('seekbackward', (d) => seekBy(-(d.seekOffset || 10)));
-  on('seekforward', (d) => seekBy(d.seekOffset || 10));
+  // The iPhone lock screen shows EITHER skip-10-seconds buttons OR previous/next,
+  // never both: if the skip handlers exist it hides previous/next. So on iPhone
+  // songs get previous/next and only podcasts get the skip buttons. Other
+  // devices show both, so they always get everything.
+  const skipBack: MediaSessionActionHandler = (d) => seekBy(-(d.seekOffset || 10));
+  const skipAhead: MediaSessionActionHandler = (d) => seekBy(d.seekOffset || 10);
+  effect(() => {
+    const wanted = !isIOS || current.value?.kind === 'episode';
+    try {
+      navigator.mediaSession.setActionHandler('seekbackward', wanted ? skipBack : null);
+      navigator.mediaSession.setActionHandler('seekforward', wanted ? skipAhead : null);
+    } catch { /* not supported here */ }
+  });
   effect(() => {
     try { navigator.mediaSession.playbackState = current.value ? (playing.value ? 'playing' : 'paused') : 'none'; } catch { /* ignore */ }
   });

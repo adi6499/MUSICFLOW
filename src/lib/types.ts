@@ -160,4 +160,6 @@ export interface Settings {
   fxLowCut: number;
   podcastSpeed: number;
   welcomed: boolean;
+  /** The iPhone "Add to Home Screen" tip has been dismissed. */
+  homeTipSeen: boolean;
 }
