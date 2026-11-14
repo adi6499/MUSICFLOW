@@ -106,7 +106,7 @@ keep separate libraries; **Settings → Back up / Restore** moves a library betw
 ### Design notes
 
 Calm paper by day, soft ink by night; flat surfaces and hairlines, one quiet accent,
-serif headings. Effort goes into motion rather than decoration: everything that moves
+set in Ubuntu throughout. Effort goes into motion rather than decoration: everything that moves
 uses transform and opacity only, long lists skip off-screen rows, artwork is requested
 at the smallest size that still looks sharp, and pages you have already visited paint
 instantly from memory while they refresh quietly.

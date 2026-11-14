@@ -110,7 +110,7 @@ export function Importer() {
 
       {step.at === 'matching' && (
         <div style={{ marginTop: 28 }}>
-          <h2 class="title" style={{ fontSize: 26 }}>{step.title}</h2>
+          <h2 class="title" style={{ fontSize: 22 }}>{step.title}</h2>
           <p class="muted" style={{ margin: '8px 0 16px' }}>Looking up song {Math.min(step.done + 1, step.total)} of {step.total} · {step.found} found so far</p>
           <div class="meter"><i style={{ transform: `scaleX(${step.total ? step.done / step.total : 0})` }} /></div>
           <button class="btn quiet small" style={{ marginTop: 20 }} onClick={cancel}>Cancel</button>

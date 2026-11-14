@@ -3,7 +3,14 @@
 
 import './lib/px';
 import { render } from 'preact';
-import '@fontsource/instrument-serif/400.css';
+// Ubuntu, in the three weights the design uses. Only the Latin sets are packed;
+// other scripts use the device's own font.
+import '@fontsource/ubuntu/latin-400.css';
+import '@fontsource/ubuntu/latin-500.css';
+import '@fontsource/ubuntu/latin-700.css';
+import '@fontsource/ubuntu/latin-ext-400.css';
+import '@fontsource/ubuntu/latin-ext-500.css';
+import '@fontsource/ubuntu/latin-ext-700.css';
 import './styles/base.css';
 import './styles/ui.css';
 import './styles/player.css';

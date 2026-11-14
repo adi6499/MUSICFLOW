@@ -39,7 +39,7 @@ function Welcome() {
   return (
     <section class="section">
       <div class="set-card" style={{ padding: '18px 16px 16px' }}>
-        <h2 class="title" style={{ fontSize: 27 }}>Welcome to Sukoon</h2>
+        <h2 class="title" style={{ fontSize: 23 }}>Welcome to Sukoon</h2>
         <p class="muted" style={{ margin: '6px 0 16px', fontSize: 14.5 }}>Which languages do you listen to? You can change this any time in Settings.</p>
         <LanguageChips />
         <button class="btn" style={{ marginTop: 18 }} onClick={() => setSetting('welcomed', true)}>Done</button>
