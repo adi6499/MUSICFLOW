@@ -1,0 +1,150 @@
+// The shapes every part of Sukoon agrees on. The catalog servers return several
+// different layouts; normalize.ts turns all of them into these.
+
+export interface Stream {
+  /** Bitrate in kbps: 12, 48, 96, 160 or 320. */
+  q: number;
+  url: string;
+}
+
+export interface Track {
+  id: string;
+  kind: 'song' | 'episode';
+  title: string;
+  /** Display string, e.g. "Pritam, Arijit Singh". */
+  artist: string;
+  album?: string;
+  albumId?: string;
+  /** Any-size artwork URL; use img() from util.ts to pick a size. */
+  image: string;
+  /** Seconds. 0 when the server did not say. */
+  duration: number;
+  year?: string;
+  language?: string;
+  explicit?: boolean;
+  plays?: number;
+  /** Empty until the player resolves it (songs from the home feed arrive without). */
+  streams?: Stream[];
+  /** Direct audio address (podcast episodes). */
+  url?: string;
+  /** Podcast show this episode belongs to. */
+  showId?: string;
+  /** Short description (episodes). */
+  note?: string;
+  /** Release date as ISO text (episodes). */
+  date?: string;
+}
+
+export interface AlbumRef {
+  type: 'album';
+  id: string;
+  title: string;
+  artist: string;
+  image: string;
+  year?: string;
+  songCount?: number;
+  language?: string;
+}
+
+export interface PlaylistRef {
+  type: 'playlist';
+  id: string;
+  title: string;
+  subtitle?: string;
+  image: string;
+  songCount?: number;
+  language?: string;
+}
+
+export interface ArtistRef {
+  type: 'artist';
+  id: string;
+  name: string;
+  image: string;
+}
+
+export interface ShowRef {
+  type: 'show';
+  id: string;
+  title: string;
+  author: string;
+  image: string;
+  genre?: string;
+  episodeCount?: number;
+}
+
+export type Item = Track | AlbumRef | PlaylistRef | ArtistRef | ShowRef;
+
+export interface Album extends AlbumRef {
+  songs: Track[];
+}
+
+export interface Playlist extends PlaylistRef {
+  songs: Track[];
+}
+
+export interface Artist extends ArtistRef {
+  topSongs: Track[];
+  albums: AlbumRef[];
+}
+
+export interface Show extends ShowRef {
+  about?: string;
+  episodes: Track[];
+}
+
+/** A playlist the person made themselves; lives only on this device. */
+export interface LocalPlaylist {
+  id: string;
+  name: string;
+  tracks: Track[];
+  created: number;
+  updated: number;
+}
+
+export interface HomeSection {
+  key: string;
+  title: string;
+  /** "cards" = square cards; "songs" = compact rows; "artists" = round cards. */
+  layout: 'cards' | 'songs' | 'artists';
+  items: Item[];
+}
+
+export interface SearchResults {
+  songs: Track[];
+  albums: AlbumRef[];
+  artists: ArtistRef[];
+  playlists: PlaylistRef[];
+}
+
+export interface LyricLine {
+  /** Seconds from the start of the song. */
+  t: number;
+  text: string;
+}
+
+export interface Lyrics {
+  synced: LyricLine[] | null;
+  plain: string | null;
+}
+
+export type RepeatMode = 'off' | 'all' | 'one';
+export type Quality = 'auto' | 'high' | 'normal' | 'saver';
+export type ThemeChoice = 'auto' | 'light' | 'dark';
+
+export interface Settings {
+  theme: ThemeChoice;
+  quality: Quality;
+  languages: string[];
+  /** Keep playing similar songs when the queue ends. */
+  autoplay: boolean;
+  /** Tint the player with the colour of the album cover. */
+  tint: boolean;
+  /** Reduce motion regardless of the system setting. */
+  calmMotion: boolean;
+  eqOn: boolean;
+  eqPreset: string;
+  eqGains: number[];
+  podcastSpeed: number;
+  welcomed: boolean;
+}

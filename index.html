@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Sukoon</title>
+    <meta name="description" content="Sukoon — a calm, fast music player. Songs, playlists, radio, lyrics and podcasts." />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#F4F1EA" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Sukoon" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="preconnect" href="https://spoton-sigma.vercel.app" crossorigin />
+    <link rel="preconnect" href="https://c.saavncdn.com" crossorigin />
+    <link rel="preconnect" href="https://aac.saavncdn.com" crossorigin />
+    <script>
+      // Pick light or dark before anything is drawn, so the screen never flashes the wrong one.
+      (function () {
+        var dark = false;
+        try {
+          var s = JSON.parse(localStorage.getItem('sukoon.settings') || '{}');
+          var t = s.theme || 'auto';
+          dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        } catch (e) {}
+        var root = document.documentElement;
+        root.dataset.theme = dark ? 'dark' : 'light';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#141312' : '#F4F1EA');
+      })();
+    </script>
+    <style>
+      html { background: #F4F1EA; }
+      html[data-theme='dark'] { background: #141312; }
+      body { margin: 0; }
+      #boot { position: fixed; inset: 0; display: grid; place-items: center; font: 400 34px/1 Georgia, 'Times New Roman', serif; letter-spacing: 0.01em; color: #1E1C19; opacity: 0.9; }
+      html[data-theme='dark'] #boot { color: #EDE9E2; }
+    </style>
+  </head>
+  <body>
+    <div id="app"><div id="boot" aria-hidden="true">Sukoon</div></div>
+    <noscript>Sukoon needs JavaScript to play music. Please enable it in your browser.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

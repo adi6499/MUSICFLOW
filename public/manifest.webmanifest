@@ -1,0 +1,23 @@
+{
+  "name": "Sukoon",
+  "short_name": "Sukoon",
+  "description": "A calm, fast music player. Songs, playlists, radio, lyrics and podcasts.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F1EA",
+  "theme_color": "#F4F1EA",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Search", "url": "./#/search" },
+    { "name": "Liked songs", "url": "./#/library/liked" }
+  ]
+}
