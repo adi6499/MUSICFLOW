@@ -26,18 +26,26 @@
           var t = s.theme || 'auto';
           dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         } catch (e) {}
+        var bg = dark ? '#141312' : '#F4F1EA';
+        var ink = dark ? '#EDE9E2' : '#1E1C19';
+        try {
+          // The colours of the theme that was showing last time (saved by the app).
+          var last = JSON.parse(localStorage.getItem('sukoon.paint') || 'null');
+          var hex = /^#[0-9a-fA-F]{6}$/;
+          if (last && last.dark === dark && hex.test(last.bg) && hex.test(last.ink)) { bg = last.bg; ink = last.ink; }
+        } catch (e) {}
         var root = document.documentElement;
         root.dataset.theme = dark ? 'dark' : 'light';
+        root.style.setProperty('--bg', bg);
+        root.style.setProperty('--ink', ink);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', dark ? '#141312' : '#F4F1EA');
+        if (meta) meta.setAttribute('content', bg);
       })();
     </script>
     <style>
-      html { background: #F4F1EA; }
-      html[data-theme='dark'] { background: #141312; }
+      html { background: var(--bg, #F4F1EA); }
       body { margin: 0; }
-      #boot { position: fixed; inset: 0; display: grid; place-items: center; font: 700 26px/1 Ubuntu, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: -0.025em; color: #1E1C19; opacity: 0.9; }
-      html[data-theme='dark'] #boot { color: #EDE9E2; }
+      #boot { position: fixed; inset: 0; display: grid; place-items: center; font: 700 26px/1 Ubuntu, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: -0.025em; color: var(--ink, #1E1C19); opacity: 0.9; }
     </style>
   </head>
   <body>

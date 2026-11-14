@@ -298,3 +298,28 @@
 .opt:active { transform: scale(0.95); transition-duration: 90ms; }
 .opt.on { background: var(--ink); color: var(--bg); }
 .opt.wide { grid-column: 1 / -1; }
+
+/* ------------------------------------------------------------------ sound panel */
+
+.fx { display: flex; flex-direction: column; gap: 14px; padding: 22px 0 8px; transition: opacity var(--t-2) var(--out); }
+.fx.off { opacity: 0.4; pointer-events: none; }
+.fx-head { display: flex; align-items: baseline; gap: 8px; }
+.fx-head b { font-size: 15px; font-weight: 500; flex: none; }
+.fx-head span { flex: 1; min-width: 0; font-size: 12.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-head i { flex: none; font-style: normal; font-size: 12.5px; color: var(--ink-2); min-width: 26px; text-align: right; }
+.fx-row .seek { height: 30px; }
+.fx-row .seek-fill { background: var(--accent); }
+.fx-row .seek-thumb { background: var(--accent); transform: scale(1); }
+.fx-more {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 48px;
+  margin-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.fx-more:hover { color: var(--ink); }

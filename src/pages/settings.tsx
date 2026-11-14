@@ -2,16 +2,19 @@
 
 import { useRef } from 'preact/hooks';
 import { ChevronRight } from 'lucide-preact';
-import type { Quality, ThemeChoice } from '../lib/types';
+import type { Quality, Settings, ThemeChoice } from '../lib/types';
 import * as eq from '../lib/eq';
-import { clearHistory, exportLibrary, history, importLibrary, liked, playlists, setSetting, settings } from '../lib/library';
+import { clearHistory, exportLibrary, history, importLibrary, liked, playlists, setSetting, setSettings, settings } from '../lib/library';
+import { PALETTES, paletteFor, type Palette } from '../lib/themes';
+import { canBend, canGlass } from '../ui/glass';
 import { saveText } from '../lib/native';
 import { to } from '../lib/router';
 import { toast } from '../lib/toast';
 import { cx } from '../lib/util';
 import { Link, TopBar } from '../ui/bits';
-import { openConfirm, openEq } from '../ui/sheet';
-import { isWide } from '../ui/state';
+import { openConfirm } from '../ui/sheet';
+import { openSound } from '../ui/sound';
+import { isWide, themeNow } from '../ui/state';
 import { LanguageChips } from './home';
 
 const VERSION = '1.0.0';
@@ -25,6 +28,32 @@ function Seg<T extends string>(props: { value: T; options: Array<[T, string]>; l
     <div class="seg" role="radiogroup" aria-label={props.label}>
       {props.options.map(([v, name]) => (
         <button key={v} role="radio" aria-checked={props.value === v} class={cx(props.value === v && 'on')} onClick={() => props.onChange(v)}>{name}</button>
+      ))}
+    </div>
+  );
+}
+
+/** A row of theme swatches. Tapping one applies it straight away. */
+function ThemeTiles(props: { kind: 'light' | 'dark' }) {
+  const s = settings.value;
+  const chosen = paletteFor(props.kind === 'dark' ? s.darkTheme : s.lightTheme, props.kind).id;
+  const pick = (p: Palette) => {
+    const patch: Partial<Settings> = p.kind === 'dark' ? { darkTheme: p.id } : { lightTheme: p.id };
+    // Picking a dark theme while the app is light (or the other way round) switches to it, so the choice is visible.
+    if (themeNow.value !== p.kind) patch.theme = p.kind;
+    setSettings(patch);
+  };
+  return (
+    <div class="themes" role="radiogroup" aria-label={props.kind === 'dark' ? 'Dark themes' : 'Light themes'}>
+      {PALETTES.filter((p) => p.kind === props.kind).map((p) => (
+        <button key={p.id} class={cx('theme-tile', chosen === p.id && 'on')} role="radio" aria-checked={chosen === p.id} onClick={() => pick(p)}>
+          <span class="theme-swatch" style={{ background: p.bg }}>
+            <b style={{ background: p.accent }} />
+            <u style={{ background: p.ink }} />
+            <i style={{ background: p.surface }} />
+          </span>
+          <span class="theme-name">{p.name}</span>
+        </button>
       ))}
     </div>
   );
@@ -78,9 +107,33 @@ export function SettingsPage() {
       <section class="set-group">
         <span class="label">Appearance</span>
         <div class="set-card">
+          <div class="set-row" style={{ flexWrap: 'wrap' }}>
+            <div class="set-text" style={{ minWidth: 170 }}>
+              <div class="set-name">Light or dark</div>
+              <div class="set-note">Auto uses your light theme by day and your dark theme at night.</div>
+            </div>
+            <Seg<ThemeChoice> label="Light or dark" value={s.theme} options={[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']]} onChange={(v) => setSetting('theme', v)} />
+          </div>
+          <div class="set-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+            <div class="set-name">Light themes</div>
+            <ThemeTiles kind="light" />
+          </div>
+          <div class="set-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+            <div class="set-name">Dark themes</div>
+            <ThemeTiles kind="dark" />
+          </div>
           <div class="set-row">
-            <div class="set-text"><div class="set-name">Theme</div><div class="set-note">Auto follows your device.</div></div>
-            <Seg<ThemeChoice> label="Theme" value={s.theme} options={[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']]} onChange={(v) => setSetting('theme', v)} />
+            <div class="set-text">
+              <div class="set-name">Liquid glass</div>
+              <div class="set-note">
+                {!canGlass
+                  ? 'This browser cannot draw glass, so bars stay solid.'
+                  : canBend
+                    ? 'Bars become clear glass that bends what scrolls behind them.'
+                    : 'Bars become clear glass. The bending rim needs Chrome, Edge or the Android app.'}
+              </div>
+            </div>
+            <Switch on={s.glass && canGlass} label="Liquid glass" onChange={(v) => setSetting('glass', v)} />
           </div>
           <div class="set-row">
             <div class="set-text"><div class="set-name">Colour from the cover</div><div class="set-note">The player takes a soft tint from the album cover.</div></div>
@@ -108,10 +161,10 @@ export function SettingsPage() {
             <div class="set-text"><div class="set-name">Keep the music going</div><div class="set-note">When the queue ends, play similar songs.</div></div>
             <Switch on={s.autoplay} label="Keep the music going" onChange={(v) => setSetting('autoplay', v)} />
           </div>
-          <button class="set-row" onClick={openEq}>
+          <button class="set-row" onClick={openSound}>
             <div class="set-text">
-              <div class="set-name">Equalizer</div>
-              <div class="set-note">{!eq.supported ? 'Not available on iPhone and iPad.' : s.eqOn ? `On · ${s.eqPreset}` : 'Off'}</div>
+              <div class="set-name">Sound</div>
+              <div class="set-note">{!eq.supported ? 'Not available on iPhone and iPad.' : s.eqOn ? `On · ${s.eqPreset}` : 'Modes for every speaker, surround, bass and a 10-band equalizer.'}</div>
             </div>
             <ChevronRight size={20} class="faint" />
           </button>

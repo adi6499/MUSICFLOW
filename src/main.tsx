@@ -14,6 +14,7 @@ import '@fontsource/ubuntu/latin-ext-700.css';
 import './styles/base.css';
 import './styles/ui.css';
 import './styles/player.css';
+import './styles/glass.css';
 import { App } from './app';
 import { hydrate } from './lib/library';
 import { initNative, isApp } from './lib/native';
@@ -30,9 +31,9 @@ void restoreSession();
 // While developing only: a handle for poking at the app from the browser console.
 if (import.meta.env.DEV) {
   void Promise.all([
-    import('./lib/player'), import('./lib/library'), import('./lib/router'), import('./lib/api'), import('./lib/station'), import('./lib/ytimport'),
-  ]).then(([player, library, router, api, station, ytimport]) => {
-    (window as any).__sukoonDev = { player, library, router, api, station, ytimport };
+    import('./lib/player'), import('./lib/library'), import('./lib/router'), import('./lib/api'), import('./lib/station'), import('./lib/ytimport'), import('./lib/eq'),
+  ]).then(([player, library, router, api, station, ytimport, eq]) => {
+    (window as any).__sukoonDev = { player, library, router, api, station, ytimport, eq };
   });
 }
 

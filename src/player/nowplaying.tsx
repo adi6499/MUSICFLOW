@@ -19,7 +19,8 @@ import { goAlbum, goArtist, like } from '../ui/actions';
 import { Art, Empty, Spinner } from '../ui/bits';
 import { useQuery } from '../ui/hooks';
 import { TrackRow } from '../ui/rows';
-import { openEq, openSleep, openSpeed, openTrackMenu } from '../ui/sheet';
+import { openSleep, openSpeed, openTrackMenu } from '../ui/sheet';
+import { openSound } from '../ui/sound';
 import { Seek } from '../ui/slider';
 import { closePlayer, isWide, npPanel, themeNow } from '../ui/state';
 
@@ -252,7 +253,7 @@ function Tools(props: { t: Track; wide: boolean }) {
         {left !== null ? <span class="tool-text">{Math.ceil(left / 60)}m</span> : <Moon size={21} />}
       </button>
       {song && eq.supported && (
-        <button class={cx('icon-btn', settings.value.eqOn && 'on')} onClick={openEq} aria-label="Equalizer"><SlidersHorizontal size={21} /></button>
+        <button class={cx('icon-btn', settings.value.eqOn && 'on')} onClick={openSound} aria-label="Sound"><SlidersHorizontal size={21} /></button>
       )}
     </div>
   );

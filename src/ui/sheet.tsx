@@ -8,16 +8,14 @@ import {
 } from 'lucide-preact';
 import type { Track } from '../lib/types';
 import {
-  addToPlaylist, createPlaylist, isLiked, playlists, removeFromPlaylist, setSetting, settings,
+  addToPlaylist, createPlaylist, isLiked, playlists, removeFromPlaylist, settings,
 } from '../lib/library';
 import * as player from '../lib/player';
-import * as eq from '../lib/eq';
 import { isOpen } from '../lib/router';
 import { toast } from '../lib/toast';
 import { clock, cx, plural } from '../lib/util';
 import { goAlbum, goArtist, like, shareTrack, startRadio } from './actions';
 import { Art } from './bits';
-import { VSlider } from './slider';
 import { closeSheet, openSheet, sheet } from './state';
 
 export function SheetHost() {
@@ -291,64 +289,4 @@ export function openSpeed(): void {
       </>
     );
   });
-}
-
-// ---------------------------------------------------------------- equalizer
-
-export function openEq(): void {
-  openSheet(() => <Equalizer />);
-}
-
-function Equalizer() {
-  const s = settings.value;
-  if (!eq.supported) {
-    return (
-      <>
-        <div class="sheet-title">Equalizer</div>
-        <p class="muted" style={{ padding: '0 20px 24px', fontSize: 15 }}>
-          The equalizer isn't available on iPhone and iPad, because they pause sound processing when the screen locks. Everything else works as normal.
-        </p>
-      </>
-    );
-  }
-  const setGain = (i: number, v: number) => {
-    const gains = s.eqGains.slice();
-    gains[i] = v;
-    settings.value = { ...settings.value, eqGains: gains, eqPreset: 'Custom', eqOn: true };
-  };
-  const pick = (name: string, gains: number[]) => {
-    settings.value = { ...settings.value, eqGains: gains.slice(), eqPreset: name, eqOn: true };
-  };
-  return (
-    <>
-      <div class="sheet-head" style={{ paddingBottom: 6 }}>
-        <div style={{ flex: 1 }}>
-          <div class="sheet-title" style={{ padding: 0 }}>Equalizer</div>
-          <div class="small muted" style={{ marginTop: 2 }}>{s.eqOn ? s.eqPreset : 'Off'}</div>
-        </div>
-        <button
-          class={cx('switch', s.eqOn && 'on')}
-          role="switch"
-          aria-checked={s.eqOn}
-          aria-label="Equalizer"
-          onClick={() => setSetting('eqOn', !s.eqOn)}
-        />
-      </div>
-      <div class="sheet-body" style={{ paddingLeft: 16, paddingRight: 16 }}>
-        <div class={cx('eq', !s.eqOn && 'off')}>
-          {eq.BANDS.map((hz, i) => (
-            <div class="eq-band" key={hz}>
-              <VSlider value={s.eqGains[i] || 0} max={eq.MAX_GAIN} label={`${eq.BAND_LABELS[i]} hertz`} onChange={(v) => setGain(i, v)} />
-              <span>{eq.BAND_LABELS[i]}</span>
-            </div>
-          ))}
-        </div>
-        <div class="chips" style={{ padding: '18px 0 10px' }}>
-          {eq.PRESETS.map((p) => (
-            <button key={p.name} class={cx('chip', s.eqOn && s.eqPreset === p.name && 'on')} onClick={() => pick(p.name, p.gains)}>{p.name}</button>
-          ))}
-        </div>
-      </div>
-    </>
-  );
 }

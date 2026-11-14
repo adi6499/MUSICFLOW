@@ -15,12 +15,22 @@ export const DEFAULT_SETTINGS: Settings = {
   autoplay: true,
   tint: true,
   calmMotion: false,
+  glass: true,
+  lightTheme: 'paper',
+  darkTheme: 'ink',
   eqOn: false,
-  eqPreset: 'Flat',
+  eqPreset: 'Original',
   eqGains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  fxBass: 0,
+  fxClarity: 0,
+  fxSpace: 0,
+  fxLoud: 0,
+  fxLowCut: 0,
   podcastSpeed: 1,
   welcomed: false,
 };
+
+const unit = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
 
 const SETTINGS_KEY = 'sukoon.settings';
 
@@ -33,6 +43,15 @@ function readSettings(): Settings {
         const merged = { ...DEFAULT_SETTINGS, ...got } as Settings;
         if (!Array.isArray(merged.languages) || !merged.languages.length) merged.languages = DEFAULT_SETTINGS.languages;
         if (!Array.isArray(merged.eqGains) || merged.eqGains.length !== 10) merged.eqGains = DEFAULT_SETTINGS.eqGains.slice();
+        // Anything saved by an older version, or damaged, falls back to a safe value.
+        merged.fxBass = unit(merged.fxBass);
+        merged.fxClarity = unit(merged.fxClarity);
+        merged.fxSpace = unit(merged.fxSpace);
+        merged.fxLoud = unit(merged.fxLoud);
+        merged.fxLowCut = typeof merged.fxLowCut === 'number' && merged.fxLowCut > 0 ? Math.min(300, merged.fxLowCut) : 0;
+        merged.glass = merged.glass !== false;
+        if (typeof merged.lightTheme !== 'string') merged.lightTheme = DEFAULT_SETTINGS.lightTheme;
+        if (typeof merged.darkTheme !== 'string') merged.darkTheme = DEFAULT_SETTINGS.darkTheme;
         return merged;
       }
     }
@@ -45,6 +64,11 @@ export const settings = signal<Settings>(readSettings());
 
 export function setSetting<K extends keyof Settings>(key: K, value: Settings[K]): void {
   settings.value = { ...settings.value, [key]: value };
+}
+
+/** Change several settings in one step (one redraw, one save). */
+export function setSettings(patch: Partial<Settings>): void {
+  settings.value = { ...settings.value, ...patch };
 }
 
 effect(() => {

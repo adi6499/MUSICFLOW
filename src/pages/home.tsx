@@ -4,6 +4,7 @@ import { useState } from 'preact/hooks';
 import { Settings as Cog } from 'lucide-preact';
 import type { HomeSection, Track } from '../lib/types';
 import { getHome, homeKey, keys, searchSongs } from '../lib/api';
+import { dedupeSongs } from '../lib/normalize';
 import { history, mostPlayed, setSetting, settings, topArtistNames } from '../lib/library';
 import * as player from '../lib/player';
 import { route, to } from '../lib/router';
@@ -109,7 +110,7 @@ function JumpBackIn() {
 function MoreFrom(props: { artist: string }) {
   const q = useQuery(keys.songs(props.artist, 1, 20), (signal) => searchSongs(props.artist, 1, 20, signal));
   const want = plain(props.artist);
-  const songs = (q.data || []).filter((t) => plain(t.artist).includes(want));
+  const songs = dedupeSongs((q.data || []).filter((t) => plain(t.artist).includes(want)));
   if (songs.length < 4) return null;
   return (
     <Section title={`More from ${props.artist}`} more={to.artistNamed(props.artist)}>

@@ -1,0 +1,64 @@
+/* ==========================================================================
+   Sukoon — liquid glass (Settings → Liquid glass)
+   The floating bars become clear glass: you see the page through them, softly
+   blurred, and — in browsers that can — bent at the rim (see ui/glass.ts,
+   which supplies --lens). Menus become frosted glass.
+   Plain on purpose: one thin bright edge, no moving highlights, no gloss.
+   ========================================================================== */
+
+:root {
+  --glass: rgba(250, 248, 243, 0.32);
+  --glass-strong: rgba(255, 255, 255, 0.74);
+  --glass-edge: rgba(255, 255, 255, 0.7);
+  --glass-blur: 6px;
+}
+
+[data-glass='1'] .mini,
+[data-glass='1'] .tabs,
+[data-glass='1'] .bar,
+[data-glass='1'] .topbar.stuck {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+  backdrop-filter: var(--lens,) blur(var(--glass-blur)) saturate(1.7);
+}
+
+/* The page cross-fade treats these bars as part of the page while they are
+   glass, so what shows through them fades together with the page. */
+[data-glass='1'] .mini,
+[data-glass='1'] .tabs,
+[data-glass='1'] .bar { view-transition-name: none; }
+
+[data-glass='1'] .bar { border-top-color: var(--glass-edge); }
+[data-glass='1'] .topbar.stuck { border-bottom-color: var(--line); }
+
+[data-glass='1'] .sheet {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(26px) saturate(1.6);
+  backdrop-filter: blur(26px) saturate(1.6);
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-edge);
+}
+
+/* Phones: the tab bar lifts off the bottom edge and becomes a floating pill,
+   with the mini player as a second pill above it. */
+@media (max-width: 899.98px) {
+  [data-glass='1'] { --dock: calc(var(--tabs-h) + 16px + var(--safe-bottom)); }
+  [data-glass='1'].has-player { --dock: calc(var(--tabs-h) + var(--mini-h) + 26px + var(--safe-bottom)); }
+
+  [data-glass='1'] .tabs {
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(var(--safe-bottom) + 8px);
+    height: var(--tabs-h);
+    padding-bottom: 0;
+    border-top: 0;
+    border-radius: 30px;
+    box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-edge);
+  }
+  [data-glass='1'] .mini {
+    left: calc(10px + var(--safe-left));
+    right: calc(10px + var(--safe-right));
+    bottom: calc(var(--tabs-h) + var(--safe-bottom) + 16px);
+    border-radius: 22px;
+    box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-edge);
+  }
+}

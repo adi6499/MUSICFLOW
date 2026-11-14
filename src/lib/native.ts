@@ -19,6 +19,8 @@ interface Shell {
   saveText?(name: string, text: string): void;
   /** Light or dark is showing: lets Android colour the status-bar icons to match. */
   theme?(dark: boolean): void;
+  /** Same, with the theme's background colour (#rrggbb) so the edges of the screen match it. */
+  themeColor?(dark: boolean, background: string): void;
 }
 
 declare global {
@@ -62,8 +64,11 @@ export function saveText(name: string, text: string): boolean {
 }
 
 /** Tell the Android shell which appearance is showing. Does nothing in a browser. */
-export function setTheme(dark: boolean): void {
-  try { shell?.theme?.(dark); } catch { /* shell went away */ }
+export function setTheme(dark: boolean, background: string): void {
+  try {
+    if (shell?.themeColor) shell.themeColor(dark, background);
+    else shell?.theme?.(dark);
+  } catch { /* shell went away */ }
 }
 
 /** Extra space the screens must leave for the status bar and gesture bar inside the app. */

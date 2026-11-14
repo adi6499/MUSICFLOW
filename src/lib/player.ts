@@ -713,9 +713,9 @@ if (typeof window !== 'undefined') {
   effect(() => { index.value; queue.value; saveSession(); });
   // Equalizer switched on or off while a song is playing.
   effect(() => {
-    const on = settings.value.eqOn;
-    if (on && hasAudio && el === music && loadedId) eq.attach(music);
-    eq.apply(on, settings.value.eqGains);
+    const s = settings.value;
+    if (s.eqOn && hasAudio && el === music && loadedId) eq.attach(music);
+    eq.apply({ on: s.eqOn, gains: s.eqGains, bass: s.fxBass, clarity: s.fxClarity, space: s.fxSpace, loud: s.fxLoud, lowCut: s.fxLowCut });
   });
 }
 

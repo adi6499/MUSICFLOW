@@ -1,12 +1,13 @@
 // The frame around every screen: navigation, the player, and the pieces that
 // slide over the page.
 
-import { effect } from '@preact/signals';
-import { useEffect } from 'preact/hooks';
+import { computed, effect } from '@preact/signals';
+import { useEffect, useRef } from 'preact/hooks';
 import { Home as HomeIcon, Library as LibraryIcon, Mic, Plus, Search as SearchIcon, Settings as Cog } from 'lucide-preact';
 import { playlists, settings, createPlaylist } from './lib/library';
 import { setTheme } from './lib/native';
 import * as player from './lib/player';
+import { cssVars, paletteFor } from './lib/themes';
 import { go, isOpen, route, to } from './lib/router';
 import { dismiss, toasts } from './lib/toast';
 import { cx } from './lib/util';
@@ -21,6 +22,7 @@ import { SettingsPage } from './pages/settings';
 import { Bar, Mini } from './player/dock';
 import { NowPlaying } from './player/nowplaying';
 import { Empty, Link } from './ui/bits';
+import { canGlass, useLens } from './ui/glass';
 import { openPrompt, SheetHost } from './ui/sheet';
 import { isWide, themeNow } from './ui/state';
 
@@ -44,8 +46,10 @@ const TABS: Array<{ tab: Tab; path: string; label: string; icon: typeof HomeIcon
 ];
 
 function Tabs(props: { active: Tab }) {
+  const ref = useRef<HTMLElement>(null);
+  useLens(ref, 30);
   return (
-    <nav class="tabs" aria-label="Main">
+    <nav ref={ref} class="tabs" aria-label="Main">
       {TABS.map(({ tab, path, label, icon: Icon }) => (
         <Link key={tab} to={path} class={cx('tab', props.active === tab && 'on')}>
           <span class="tab-ico"><Icon size={21} strokeWidth={props.active === tab ? 2.3 : 1.9} /></span>
@@ -165,16 +169,34 @@ if (typeof window !== 'undefined') {
   const root = document.documentElement;
   const media = window.matchMedia('(prefers-color-scheme: dark)');
 
+  // Only the three appearance choices matter here; other settings (volume
+  // sliders and so on) must not trigger a repaint of every colour.
+  const look = computed(() => {
+    const s = settings.value;
+    return `${s.theme}|${s.lightTheme}|${s.darkTheme}`;
+  });
   const paint = () => {
-    const choice = settings.value.theme;
-    const dark = choice === 'dark' || (choice === 'auto' && media.matches);
-    root.dataset.theme = dark ? 'dark' : 'light';
-    themeNow.value = dark ? 'dark' : 'light';
-    setTheme(dark);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141312' : '#F4F1EA');
+    look.value;
+    const s = settings.peek();
+    const dark = s.theme === 'dark' || (s.theme === 'auto' && media.matches);
+    const palette = paletteFor(dark ? s.darkTheme : s.lightTheme, dark ? 'dark' : 'light');
+    root.dataset.theme = palette.kind;
+    root.dataset.palette = palette.id;
+    const vars = cssVars(palette);
+    for (const name in vars) root.style.setProperty(name, vars[name]);
+    themeNow.value = palette.kind;
+    setTheme(dark, palette.bg);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', palette.bg);
+    // Remembered so the very first frame of the next start is already the right colour.
+    try { localStorage.setItem('sukoon.paint', JSON.stringify({ dark, bg: palette.bg, ink: palette.ink })); } catch { /* optional */ }
   };
   effect(paint);
   media.addEventListener('change', paint);
+
+  effect(() => {
+    if (settings.value.glass && canGlass) root.dataset.glass = '1';
+    else delete root.dataset.glass;
+  });
 
   effect(() => {
     if (settings.value.calmMotion) root.dataset.calm = '1';

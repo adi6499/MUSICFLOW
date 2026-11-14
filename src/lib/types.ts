@@ -142,9 +142,22 @@ export interface Settings {
   tint: boolean;
   /** Reduce motion regardless of the system setting. */
   calmMotion: boolean;
+  /** Floating bars and menus drawn as clear glass. */
+  glass: boolean;
+  /** Palette used when the app is light, and when it is dark (ids from themes.ts). */
+  lightTheme: string;
+  darkTheme: string;
+  /** Sound engine: on/off, the chosen mode's name, the ten equalizer bands… */
   eqOn: boolean;
   eqPreset: string;
   eqGains: number[];
+  /** …and the four simple controls, each 0…1. */
+  fxBass: number;
+  fxClarity: number;
+  fxSpace: number;
+  fxLoud: number;
+  /** Remove sound below this many hertz (0 = keep everything). Set by the small-speaker modes. */
+  fxLowCut: number;
   podcastSpeed: number;
   welcomed: boolean;
 }

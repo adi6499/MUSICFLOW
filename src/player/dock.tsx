@@ -10,6 +10,7 @@ import * as player from '../lib/player';
 import { clock, cx, tick } from '../lib/util';
 import { goAlbum, goArtist, like } from '../ui/actions';
 import { Art, Spinner } from '../ui/bits';
+import { useLens } from '../ui/glass';
 import { Seek } from '../ui/slider';
 import { openPlayer } from '../ui/state';
 
@@ -29,6 +30,8 @@ function MiniProgress() {
 export function Mini() {
   const t = player.current.value;
   const start = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const glass = useRef<HTMLDivElement>(null);
+  useLens(glass, 22);
   if (!t) return null;
 
   // Tap opens the player. Swipe up opens it too; swipe sideways changes song.
@@ -57,7 +60,7 @@ export function Mini() {
   const stop = (fn: () => void) => (e: Event) => { e.stopPropagation(); fn(); };
 
   return (
-    <div class="mini" role="button" tabIndex={0} aria-label="Open player" onClick={click} onPointerDown={down} onPointerUp={up}
+    <div ref={glass} class="mini" role="button" tabIndex={0} aria-label="Open player" onClick={click} onPointerDown={down} onPointerUp={up}
       onKeyDown={(e) => { if (e.key === 'Enter') openPlayer(); }}>
       <Art src={t.image} />
       <div class="mini-text mini-swap" key={t.id}>
@@ -103,11 +106,13 @@ function Volume() {
 
 export function Bar() {
   const t = player.current.value;
+  const glass = useRef<HTMLDivElement>(null);
+  useLens(glass, 0);
   if (!t) return null;
   const liked = isLiked(t.id);
   const rep = player.repeat.value;
   return (
-    <div class="bar">
+    <div ref={glass} class="bar">
       <div class="bar-left">
         <button onClick={() => openPlayer()} aria-label="Open player" style={{ flex: 'none' }}><Art src={t.image} /></button>
         <div style={{ minWidth: 0 }} class="mini-swap" key={t.id}>

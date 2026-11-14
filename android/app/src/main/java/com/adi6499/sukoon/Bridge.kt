@@ -94,6 +94,12 @@ class Bridge(private val activity: MainActivity) {
     /** Light or dark was chosen in the app: make the status-bar icons readable. */
     @JavascriptInterface
     fun theme(dark: Boolean) {
-        activity.runOnUiThread { activity.applyTheme(dark) }
+        activity.runOnUiThread { activity.applyTheme(dark, null) }
+    }
+
+    /** The same, with the chosen theme's background colour ("#rrggbb"). */
+    @JavascriptInterface
+    fun themeColor(dark: Boolean, background: String) {
+        activity.runOnUiThread { activity.applyTheme(dark, background) }
     }
 }

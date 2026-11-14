@@ -243,8 +243,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun applyTheme(dark: Boolean) {
-        val background = if (dark) Color.parseColor("#141312") else Color.parseColor("#F4F1EA")
+    fun applyTheme(dark: Boolean, colour: String?) {
+        val fallback = if (dark) Color.parseColor("#141312") else Color.parseColor("#F4F1EA")
+        // Only a plain "#rrggbb" is accepted; anything else keeps the standard colour.
+        val background = if (colour != null && Regex("^#[0-9a-fA-F]{6}$").matches(colour)) Color.parseColor(colour) else fallback
         window.decorView.setBackgroundColor(background)
         webView?.setBackgroundColor(background)
         WindowCompat.getInsetsController(window, window.decorView).apply {

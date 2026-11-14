@@ -3,8 +3,9 @@
 A calm, fast music player for phone and PC. *Sukoon* means peace of mind.
 
 Songs, albums, artists and playlists · one-tap moods · endless radio · synced lyrics ·
-podcasts · a ten-band equalizer · sleep timer · import from YouTube Music ·
-your own playlists and liked songs, kept on your device.
+podcasts · sound modes for every kind of speaker · sleep timer · import from YouTube
+Music · eleven themes and a liquid glass look · your own playlists and liked songs,
+kept on your device.
 
 One web app runs everywhere: in any browser, "installed" to a phone's home screen,
 and inside the Android app in the `android/` folder.
@@ -72,12 +73,13 @@ src/
     lyrics.ts         song words from LRCLIB
     podcasts.ts       Apple's podcast directory
     ytimport.ts       YouTube Music playlist → Sukoon playlist
-    eq.ts             ten-band equalizer
+    eq.ts             the sound engine: modes, bass, clarity, surround, loudness, 10-band equalizer
+    themes.ts         the colour themes (one entry each)
     router.ts         which screen is showing; Back button behaviour
     native.ts         the bridge to the Android shell
   pages/              one file per screen
   player/             mini player, desktop bar, full-screen player
-  ui/                 shared pieces: rows, cards, sheets, sliders
+  ui/                 shared pieces: rows, cards, sheets, sliders, sound panel, glass
   styles/             the design system (colours, type, spacing, motion)
 api/                  the one server function (YouTube playlist reader)
 scripts/              icon drawing, the health check, the local stand-in for api/
@@ -102,6 +104,16 @@ android/              the Android shell
 Liked songs, playlists, history and settings are saved **only on your device** — there
 are no accounts and nothing is uploaded. The website and the Android app therefore
 keep separate libraries; **Settings → Back up / Restore** moves a library between them.
+
+### Sound
+
+Settings → Sound (or the sliders button in the player). Pick a mode — Spatial, Cinema,
+Old speaker, Phone speaker, Late night and more — or set Bass, Clarity, Surround and
+Loudness yourself, with a ten-band equalizer underneath for fine control. The modes for
+old and small speakers remove the rumble those speakers cannot play, add overtones so
+bass is still heard, restore detail, and raise the level; a limiter keeps everything
+free of distortion. It is a stereo enhancer, not Dolby Atmos (that needs specially
+mixed songs and a licensed decoder). Not available on iPhone and iPad.
 
 ### Design notes
 
