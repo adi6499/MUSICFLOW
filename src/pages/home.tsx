@@ -9,7 +9,7 @@ import { history, mostPlayed, setSetting, settings, topArtistNames } from '../li
 import * as offline from '../lib/offline';
 import * as player from '../lib/player';
 import { route, to } from '../lib/router';
-import { cx, greeting, isIOS, isStandalone, plain } from '../lib/util';
+import { cx, greeting, isAndroid, isIOS, isStandalone, plain } from '../lib/util';
 import { isApp } from '../lib/native';
 import { MOODS, playMood } from '../ui/actions';
 import { Art, Failed, Link, SkeletonShelf, Spinner, TopBar } from '../ui/bits';
@@ -65,6 +65,23 @@ function HomeScreenTip() {
           Tap the Share button below, then <b style={{ fontWeight: 500 }}>Add to Home Screen</b>. Sukoon then opens full screen like an app and your liked songs and playlists are kept safely.
         </p>
         <button class="btn quiet small" onClick={() => setSetting('homeTipSeen', true)}>Got it</button>
+      </div>
+    </section>
+  );
+}
+
+/** Android browsers only, shown once: there is an app, and here is where to get it. */
+function AppTip() {
+  const done = () => setSetting('appTipSeen', true);
+  return (
+    <section class="section" style={{ marginTop: 18 }}>
+      <div class="set-card" style={{ padding: '16px 16px 14px' }}>
+        <b style={{ fontSize: 15.5, fontWeight: 500 }}>Sukoon has an Android app</b>
+        <p class="muted" style={{ margin: '6px 0 12px', fontSize: 14 }}>It keeps playing with the screen off and keeps your downloads safe.</p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={to.getApp()} class="btn small" onClick={done}>Get the app</Link>
+          <button class="btn quiet small" onClick={done}>Not now</button>
+        </div>
       </div>
     </section>
   );
@@ -177,6 +194,7 @@ export function Home() {
 
       {!s.welcomed && <Welcome />}
       {s.welcomed && !s.homeTipSeen && isIOS && !isStandalone && !isApp && <HomeScreenTip />}
+      {s.welcomed && !s.appTipSeen && isAndroid && !isStandalone && !isApp && <AppTip />}
       <OfflineShelf />
       <JumpBackIn />
       <MadeForYou />

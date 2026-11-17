@@ -39,14 +39,19 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.includes('/api/')) return;
+  // The Android app file is always fetched fresh and never kept here.
+  if (url.pathname.includes('/download/')) return;
 
   // The page itself: fresh from the network when possible, saved copy otherwise.
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./', copy)).catch(() => {});
+          // Only a real page is kept as "the page" (never an error, never some other kind of file).
+          if (res.ok && (res.headers.get('content-type') || '').includes('text/html')) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put('./', copy)).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match('./').then((hit) => hit || Response.error())),

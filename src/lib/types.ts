@@ -174,6 +174,8 @@ export interface Settings {
   welcomed: boolean;
   /** The iPhone "Add to Home Screen" tip has been dismissed. */
   homeTipSeen: boolean;
+  /** The "Sukoon has an Android app" tip (Android browsers only) has been answered. */
+  appTipSeen: boolean;
   /** The "try Sukoon Sound" suggestion in the player has been answered. */
   soundTipSeen: boolean;
 }

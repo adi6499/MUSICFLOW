@@ -3,6 +3,7 @@
 import { useRef } from 'preact/hooks';
 import { ChevronRight } from 'lucide-preact';
 import type { Quality, Settings, ThemeChoice } from '../lib/types';
+import { appFileKey, getAppFile, isNewer } from '../lib/appfile';
 import * as eq from '../lib/eq';
 import { clearHistory, exportLibrary, history, importLibrary, liked, playlists, setSetting, setSettings, settings } from '../lib/library';
 import { PALETTES, paletteFor, type Palette } from '../lib/themes';
@@ -10,6 +11,8 @@ import { canBend, canGlass } from '../ui/glass';
 import { saveText } from '../lib/native';
 import { to } from '../lib/router';
 import { toast } from '../lib/toast';
+import { VERSION } from '../lib/version';
+import { useQuery } from '../ui/hooks';
 import { buzz } from '../lib/haptics';
 import { isApp } from '../lib/native';
 import * as offline from '../lib/offline';
@@ -20,7 +23,6 @@ import { openSound } from '../ui/sound';
 import { isWide, themeNow } from '../ui/state';
 import { LanguageChips } from './home';
 
-const VERSION = '1.2.0';
 
 function Switch(props: { on: boolean; label: string; onChange: (on: boolean) => void }) {
   return <button class={cx('switch', props.on && 'on')} role="switch" aria-checked={props.on} aria-label={props.label} onClick={() => props.onChange(!props.on)} />;
@@ -72,6 +74,22 @@ function download(name: string, text: string): void {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/** Inside the Android app: appears only when the website offers a newer version than this one. */
+function UpdateRow() {
+  const q = useQuery(appFileKey, (signal) => getAppFile(signal), { ttl: 30 * 60 * 1000 });
+  const file = q.data;
+  if (!file || !isNewer(file.version, VERSION)) return null;
+  return (
+    <Link to={to.getApp()} class="set-row">
+      <div class="set-text">
+        <div class="set-name">Update available</div>
+        <div class="set-note">Version {file.version} is ready. You have {VERSION}.</div>
+      </div>
+      <ChevronRight size={20} class="faint" />
+    </Link>
+  );
 }
 
 export function SettingsPage() {
@@ -269,6 +287,15 @@ export function SettingsPage() {
       <section class="set-group">
         <span class="label">About</span>
         <div class="set-card">
+          {isApp ? <UpdateRow /> : (
+            <Link to={to.getApp()} class="set-row">
+              <div class="set-text">
+                <div class="set-name">Get the Android app</div>
+                <div class="set-note">Plays with the screen off and keeps your downloads safe.</div>
+              </div>
+              <ChevronRight size={20} class="faint" />
+            </Link>
+          )}
           <div class="set-row">
             <div class="set-text">
               <div class="set-name">Sukoon {VERSION}</div>

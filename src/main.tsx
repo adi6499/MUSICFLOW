@@ -16,10 +16,14 @@ import './styles/ui.css';
 import './styles/player.css';
 import './styles/glass.css';
 import { App } from './app';
+import { getAppFile, isNewer } from './lib/appfile';
 import { hydrate } from './lib/library';
 import { initNative, isApp } from './lib/native';
 import { initOffline } from './lib/offline';
 import { restoreSession } from './lib/player';
+import { go, to } from './lib/router';
+import { toast } from './lib/toast';
+import { VERSION } from './lib/version';
 
 const root = document.getElementById('app')!;
 root.textContent = '';
@@ -29,6 +33,23 @@ initNative();
 void hydrate();
 void restoreSession();
 void initOffline();
+
+// Inside the Android app: a moment after start-up, see whether the website
+// offers a newer version, and say so once (Settings keeps showing it after).
+if (isApp) {
+  setTimeout(() => {
+    void getAppFile()
+      .then((file) => {
+        if (!file || !isNewer(file.version, VERSION)) return;
+        let told = '';
+        try { told = localStorage.getItem('sukoon.updateTold') || ''; } catch { /* optional */ }
+        if (told === file.version) return;
+        try { localStorage.setItem('sukoon.updateTold', file.version); } catch { /* optional */ }
+        toast(`Sukoon ${file.version} is ready.`, { label: 'See', run: () => go(to.getApp()) }, 6000);
+      })
+      .catch(() => { /* offline, or nothing published: stay quiet */ });
+  }, 5000);
+}
 
 // While developing only: a handle for poking at the app from the browser console.
 if (import.meta.env.DEV) {

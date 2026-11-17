@@ -13,6 +13,8 @@ dist/
 # Local tool settings and stray build results.
 .claude/
 *.apk
+# ...except the one app file the website offers on its download page.
+!public/download/Sukoon.apk
 *.jks
 *.keystore
 *.log

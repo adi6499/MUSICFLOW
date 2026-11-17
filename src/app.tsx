@@ -16,6 +16,7 @@ import { cx, isIOS, isStandalone } from './lib/util';
 import { AlbumPage, PlaylistPage } from './pages/collection';
 import { ArtistPage } from './pages/artist';
 import { Home, SectionPage } from './pages/home';
+import { GetAppPage } from './pages/getapp';
 import { Importer } from './pages/importer';
 import { MixPage } from './pages/mixes';
 import { SharedPage } from './pages/shared';
@@ -138,6 +139,7 @@ function Screen() {
     case 'import': return <Importer />;
     case 'mix': return <MixPage />;
     case 'stats': return <StatsPage />;
+    case 'app': return <GetAppPage />;
     case 'shared': return <SharedPage />;
   }
   return (

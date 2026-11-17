@@ -146,6 +146,15 @@ keep separate libraries; **Settings → Back up / Restore** moves a library betw
 - On iPhone, add Sukoon to the Home Screen: Safari may clear the storage of a website
   that has not been opened for a week.
 
+### Getting the Android app from the website
+
+The website has a **Get the app** page (`#/app`, linked from Settings and, once, from
+Home on Android browsers) that offers the Android app file with install steps.
+`android\build.cmd` finishes by copying the new app file to `public/download/Sukoon.apk`
+and writing `public/download/app.json` (version, size, date); both reach the website
+with the next `git push`. The app itself reads that note and says, in Settings and once
+at start-up, when a newer version is ready.
+
 ### Made from your own listening
 
 All of this is worked out on your device; none of it is sent anywhere.

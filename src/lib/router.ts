@@ -202,6 +202,8 @@ export const to = {
   section: (key: string) => `/section/${encodeURIComponent(key)}`,
   mix: (kind: string) => `/mix/${encodeURIComponent(kind)}`,
   stats: () => '/stats',
+  /** "Get the app": the Android app file and how to install it. */
+  getApp: () => '/app',
   /** A playlist passed around as a link: its name and the ids of its songs. */
   shared: (name: string, ids: string[]) => `/shared?n=${encodeURIComponent(name)}&ids=${ids.map(encodeURIComponent).join(',')}`,
   podcasts: () => '/podcasts',

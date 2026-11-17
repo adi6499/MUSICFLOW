@@ -1,6 +1,6 @@
 {
   "name": "sukoon",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Sukoon — a calm, fast music player for phone and PC",
   "private": true,
   "type": "module",
@@ -11,7 +11,8 @@
     "check": "tsc --noEmit",
     "test": "node scripts/smoke.mjs",
     "icons": "node scripts/icons.mjs",
-    "bench:search": "node scripts/search-bench.mjs"
+    "bench:search": "node scripts/search-bench.mjs",
+    "publish:apk": "node scripts/publish-apk.mjs"
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.3.0",

@@ -12,6 +12,7 @@ import { buzz } from '../lib/haptics';
 import * as offline from '../lib/offline';
 import { firstArtist, plural } from '../lib/util';
 import { isApp } from '../lib/native';
+import { SITE } from '../lib/version';
 
 export function isTrack(item: Item): item is Track {
   return !('type' in item);
@@ -125,9 +126,6 @@ export async function share(title: string, path: string): Promise<void> {
     toast("Couldn't share from this browser.");
   }
 }
-
-/** Where the website lives. Links made inside the Android app point here, since the app's own address is private to the phone. */
-const SITE = 'https://musicflow-two.vercel.app/';
 
 /** Share a link that opens a screen of Sukoon for whoever receives it. Works from the app too. */
 export async function shareLink(title: string, path: string): Promise<void> {

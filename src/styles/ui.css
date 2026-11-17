@@ -723,3 +723,34 @@ button.set-row:active { background: var(--line); }
 .row.away, .card.away, .pick.away { opacity: 0.38; }
 .dl-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-top: 16px; }
 .dl-card b { font-size: 15px; font-weight: 500; }
+
+/* ------------------------------------------------------------------ "get the app" page */
+
+.app-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 14px 0 6px; }
+.app-icon { width: 84px; height: 84px; border-radius: 22px; box-shadow: var(--shadow-art); margin-bottom: 16px; }
+.app-hero .muted { margin-top: 6px; }
+.app-get { margin-top: 20px; min-height: 52px; padding: 0 26px; font-size: 16px; }
+.app-meta { margin-top: 12px; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.app-wait { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px 0; color: var(--ink-2); font-size: 14.5px; }
+.app-card { padding: 16px 16px 15px; font-size: 14.5px; line-height: 1.5; }
+.app-card > b { display: block; font-size: 15.5px; font-weight: 500; }
+.app-card > p { margin-top: 6px; }
+.app-card > .btn { margin-top: 14px; }
+.app-card b { font-weight: 500; }
+.steps { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; gap: 12px; align-items: flex-start; }
+.step-n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.app-points { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.app-points li { position: relative; padding-left: 16px; }
+.app-points li::before { content: ''; position: absolute; left: 2px; top: 0.62em; width: 5px; height: 5px; border-radius: 50%; background: var(--ink-3); }

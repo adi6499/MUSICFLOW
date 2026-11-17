@@ -34,6 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   podcastSpeed: 1,
   welcomed: false,
   homeTipSeen: false,
+  appTipSeen: false,
   soundTipSeen: false,
 };
 

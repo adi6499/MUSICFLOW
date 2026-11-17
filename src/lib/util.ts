@@ -165,6 +165,8 @@ export const isIOS =
   (/iPhone|iPad|iPod/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
+export const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+
 /** Opened from the phone's home screen (full screen, no browser bars). */
 export const isStandalone =
   typeof window !== 'undefined' &&

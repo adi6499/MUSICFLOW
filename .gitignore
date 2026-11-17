@@ -19,7 +19,8 @@ android/app/src/main/assets/public/
 # Local tool settings
 .claude/
 
-# Android build results (the APK is shared separately, not kept in the code history)
+# Android build results. The one copy the website offers lives in public/download/
+# (put there by scripts/publish-apk.mjs) and IS kept, so the site can serve it.
 android/build.log
 android/*.apk
 android/.kotlin/

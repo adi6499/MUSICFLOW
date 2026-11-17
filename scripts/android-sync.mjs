@@ -21,8 +21,10 @@ await rm(to, { recursive: true, force: true });
 await mkdir(to, { recursive: true });
 await cp(from, to, { recursive: true });
 
-// The app does not need the website's offline helper or install details.
+// The app does not need the website's offline helper or install details,
+// and it must not carry a copy of itself (the website's download folder).
 for (const extra of ['sw.js', 'manifest.webmanifest']) await rm(join(to, extra), { force: true });
+await rm(join(to, 'download'), { recursive: true, force: true });
 
 let files = 0;
 let bytes = 0;
