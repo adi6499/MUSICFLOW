@@ -1,4 +1,4 @@
-// Import a playlist from YouTube Music: paste the link, Sukoon finds the same
+// Import a playlist from YouTube Music: paste the link, Music Flow finds the same
 // songs in its own catalog and saves them as one of your playlists.
 
 import { useEffect, useRef, useState } from 'preact/hooks';
@@ -77,7 +77,7 @@ export function Importer() {
       <TopBar title="Import playlist" threshold={90} />
       <header class="page-head">
         <h1 class="display">Import a playlist</h1>
-        <p class="muted">Paste a YouTube Music playlist link. Sukoon finds the same songs in its own library and saves them as a playlist here.</p>
+        <p class="muted">Paste a YouTube Music playlist link. Music Flow finds the same songs in its own library and saves them as a playlist here.</p>
       </header>
 
       {step.at === 'ask' && (

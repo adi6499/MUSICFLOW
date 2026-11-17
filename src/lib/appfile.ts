@@ -1,6 +1,6 @@
 // The Android app file offered on the website's "Get the app" page.
 //
-// android/build.cmd puts each new build at  download/Sukoon.apk  on the
+// android/build.cmd puts each new build at  download/MusicFlow.apk  on the
 // website, next to a small note (download/app.json) saying which version it
 // is. The page reads that note; the Android app reads it too, to notice when
 // a newer version has been published.
@@ -20,7 +20,7 @@ export interface AppFile {
 /** Inside the app the website is somewhere else; on the website it is right here. */
 const base = isApp ? SITE : './';
 
-export const appFileUrl = base + 'download/Sukoon.apk';
+export const appFileUrl = base + 'download/MusicFlow.apk';
 export const appFileKey = 'appfile';
 
 /** What is on offer right now, or null when nothing has been published. */

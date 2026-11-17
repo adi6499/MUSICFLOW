@@ -1,4 +1,4 @@
-// Sukoon service worker: keeps the app's own files on the device so it opens
+// Music Flow service worker: keeps the app's own files on the device so it opens
 // instantly and still opens offline. It never stores songs (downloaded songs
 // are kept by the app itself, in its own storage), and it leaves requests to
 // other sites (the catalog, artwork, audio) completely alone.

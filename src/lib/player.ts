@@ -372,7 +372,7 @@ function cheer(): void {
   for (const id in c) total += c[id];
   if (MILESTONES.indexOf(total) === -1) return;
   buzz('done');
-  toast(`That was your ${total.toLocaleString()}th song on Sukoon. Thank you for listening.`, undefined, 5200);
+  toast(`That was your ${total.toLocaleString()}th song on Music Flow. Thank you for listening.`, undefined, 5200);
 }
 
 // ---------------------------------------------------------------- songs blend together

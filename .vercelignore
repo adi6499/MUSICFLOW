@@ -14,7 +14,7 @@ dist/
 .claude/
 *.apk
 # ...except the one app file the website offers on its download page.
-!public/download/Sukoon.apk
+!public/download/MusicFlow.apk
 *.jks
 *.keystore
 *.log

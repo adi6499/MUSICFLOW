@@ -1,6 +1,6 @@
-# Sukoon for Android
+# Music Flow for Android
 
-A small Android shell around the Sukoon web app. The web app is packed inside the
+A small Android shell around the Music Flow web app. The web app is packed inside the
 APK, so the app opens without downloading anything; only the music itself is
 streamed.
 
@@ -23,7 +23,7 @@ android\build.cmd
 ```
 
 It builds the website, copies it into the app, builds the signed APK, and leaves
-**`Sukoon-v1.2.2.apk`** in this folder. The first build takes a few minutes; later
+**`MusicFlow-v1.3.0.apk`** in this folder. The first build takes a few minutes; later
 ones are quicker. If something goes wrong, the full output is in `build.log`.
 
 It expects the Android tools where they already are on this PC

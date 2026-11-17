@@ -45,7 +45,7 @@ if (isApp) {
         try { told = localStorage.getItem('sukoon.updateTold') || ''; } catch { /* optional */ }
         if (told === file.version) return;
         try { localStorage.setItem('sukoon.updateTold', file.version); } catch { /* optional */ }
-        toast(`Sukoon ${file.version} is ready.`, { label: 'See', run: () => go(to.getApp()) }, 6000);
+        toast(`Music Flow ${file.version} is ready.`, { label: 'See', run: () => go(to.getApp()) }, 6000);
       })
       .catch(() => { /* offline, or nothing published: stay quiet */ });
   }, 5000);
@@ -85,7 +85,7 @@ if (import.meta.env.PROD && !isApp && 'serviceWorker' in navigator && location.p
   window.addEventListener('load', () => {
 navigator.serviceWorker.register('./sw.js').catch(() => { /* the app works without it */ });
     // The very first visit loads the app's files before the keeper is in place,
-    // so hand it the list afterwards. From then on Sukoon opens with no internet.
+    // so hand it the list afterwards. From then on Music Flow opens with no internet.
     navigator.serviceWorker.ready.then((reg) => {
       const mine = performance.getEntriesByType('resource')
         .map((e) => e.name)

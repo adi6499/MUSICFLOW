@@ -1,6 +1,6 @@
 // Downloads: keep songs on this device so they play with no internet.
 //
-// A downloaded song is stored inside Sukoon's own storage on the device (the
+// A downloaded song is stored inside Music Flow's own storage on the device (the
 // same private place the library lives), together with its cover and, where
 // they exist, its lyrics. Nothing is written to the phone's shared folders,
 // and nothing is uploaded. The player (player.ts) asks here first, so a

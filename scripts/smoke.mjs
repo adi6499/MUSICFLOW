@@ -1,4 +1,4 @@
-// A health check for everything Sukoon depends on that lives on the internet.
+// A health check for everything Music Flow depends on that lives on the internet.
 // Run with:  npm test
 // It asks each service one small real question and prints a tick or a cross.
 // If the app ever "stops working", run this first: it tells you which outside
@@ -133,7 +133,7 @@ await check('YouTube Music playlist reader', false, async () => {
 
 console.log(
   failed === 0
-    ? '\nEverything Sukoon relies on is answering correctly.\n'
+    ? '\nEverything Music Flow relies on is answering correctly.\n'
     : critical
       ? `\n${failed} check(s) failed, ${critical} of them essential — music will not play until the main server is back.\n`
       : `\n${failed} non-essential check(s) failed — music still plays; the feature named above is degraded.\n`,

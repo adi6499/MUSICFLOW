@@ -60,7 +60,7 @@ const flat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 export const MODES: Mode[] = [
   { name: 'Original', note: 'The song exactly as it was made.', gains: flat, bass: 0, clarity: 0, space: 0, loud: 0, vocal: 0, lowCut: 0 },
-  { name: 'Signature', note: "Sukoon's own tuning: warm bass, a clear voice and a little air around it.", gains: [2, 1.5, 0.5, 0, -0.5, 0, 1, 1.5, 2, 2], bass: 0.3, clarity: 0.35, space: 0.3, loud: 0.2, vocal: 0.35, lowCut: 0 },
+  { name: 'Signature', note: "Music Flow's own tuning: warm bass, a clear voice and a little air around it.", gains: [2, 1.5, 0.5, 0, -0.5, 0, 1, 1.5, 2, 2], bass: 0.3, clarity: 0.35, space: 0.3, loud: 0.2, vocal: 0.35, lowCut: 0 },
   { name: 'Spatial', note: 'Wide and open, with room around the music.', gains: [2, 2, 1, 0, -1, 0, 1, 2, 3, 3], bass: 0.35, clarity: 0.45, space: 0.7, loud: 0.25, vocal: 0.2, lowCut: 0 },
   { name: 'Cinema', note: 'Big, deep and enveloping.', gains: [4, 3, 2, 0, -1, 0, 1, 2, 3, 3], bass: 0.6, clarity: 0.4, space: 0.85, loud: 0.4, vocal: 0.25, lowCut: 0 },
   { name: 'Concert', note: 'Like a seat in the hall.', gains: [2, 2, 1, 0, 0, 0, 1, 2, 2, 2], bass: 0.3, clarity: 0.3, space: 1, loud: 0.2, vocal: 0.1, lowCut: 0 },

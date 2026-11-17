@@ -127,7 +127,7 @@ export async function share(title: string, path: string): Promise<void> {
   }
 }
 
-/** Share a link that opens a screen of Sukoon for whoever receives it. Works from the app too. */
+/** Share a link that opens a screen of Music Flow for whoever receives it. Works from the app too. */
 export async function shareLink(title: string, path: string): Promise<void> {
   const url = (isApp ? SITE : `${location.origin}${location.pathname}`) + '#' + path;
   try {

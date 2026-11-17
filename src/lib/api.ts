@@ -419,7 +419,7 @@ function askWith(signal?: AbortSignal): Ask {
 
 async function searchEverything(query: string, signal?: AbortSignal, languages: string[] = []): Promise<SearchResults> {
   const q = query.trim();
-  // Songs come from both servers at once and are ranked by Sukoon itself
+  // Songs come from both servers at once and are ranked by Music Flow itself
   // (see searchrank.ts for why). Albums, artists and playlists lead with the
   // complete server and are then put in order of how well the name fits.
   const [songs, albums, artists, playlists] = await Promise.allSettled([

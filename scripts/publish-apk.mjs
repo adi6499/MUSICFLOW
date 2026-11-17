@@ -2,7 +2,7 @@
 // Run automatically at the end of android/build.cmd.
 //   node scripts/publish-apk.mjs
 //
-// It copies  android/Sukoon-v<version>.apk  to  public/download/Sukoon.apk
+// It copies  android/MusicFlow-v<version>.apk  to  public/download/MusicFlow.apk
 // (one fixed name, so the page's link never changes) and writes
 // public/download/app.json, the small note the page and the app read to know
 // which version is on offer. Nothing is uploaded here: the file reaches the
@@ -17,14 +17,14 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // named, to put an earlier build back:  node scripts/publish-apk.mjs 1.2.0
 const named = process.argv[2];
 const version = named && /^\d+\.\d+\.\d+$/.test(named) ? named : JSON.parse(await readFile(join(root, 'package.json'), 'utf8')).version;
-const from = join(root, 'android', `Sukoon-v${version}.apk`);
+const from = join(root, 'android', `MusicFlow-v${version}.apk`);
 const folder = join(root, 'public', 'download');
 
 let info;
 try {
   info = await stat(from);
 } catch {
-  console.error(`There is no app file for version ${version} yet (looked for android/Sukoon-v${version}.apk). Run android\\build.cmd first.`);
+  console.error(`There is no app file for version ${version} yet (looked for android/MusicFlow-v${version}.apk). Run android\\build.cmd first.`);
   process.exit(1);
 }
 if (info.size < 100 * 1024) {
@@ -33,7 +33,7 @@ if (info.size < 100 * 1024) {
 }
 
 await mkdir(folder, { recursive: true });
-await copyFile(from, join(folder, 'Sukoon.apk'));
+await copyFile(from, join(folder, 'MusicFlow.apk'));
 
 const two = (n) => (n < 10 ? '0' + n : '' + n);
 const d = info.mtime;

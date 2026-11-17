@@ -50,9 +50,9 @@ export function GetAppPage() {
     const newer = !!file && isNewer(file.version, VERSION);
     return (
       <div class="page page-narrow page-in">
-        <TopBar title="Sukoon for Android" threshold={90} />
+        <TopBar title="Music Flow for Android" threshold={90} />
         <header class="page-head">
-          <h1 class="display">Sukoon for Android</h1>
+          <h1 class="display">Music Flow for Android</h1>
           <p class="muted">You are using version {VERSION}.</p>
         </header>
         <section class="section" style={{ marginTop: 18 }}>
@@ -68,7 +68,7 @@ export function GetAppPage() {
             {!q.loading && !newer && (
               <>
                 <b><Check size={17} style={{ verticalAlign: '-3px', marginRight: 6 }} />You have the latest version</b>
-                <p class="muted">{q.error ? "Couldn't check just now. Try again when you are online." : 'New versions are published on the Sukoon website and announced here.'}</p>
+                <p class="muted">{q.error ? "Couldn't check just now. Try again when you are online." : 'New versions are published on the Music Flow website and announced here.'}</p>
               </>
             )}
           </div>
@@ -79,11 +79,11 @@ export function GetAppPage() {
 
   return (
     <div class="page page-narrow page-in">
-      <TopBar title="Sukoon for Android" threshold={150} />
+      <TopBar title="Music Flow for Android" threshold={150} />
       <header class="app-hero">
         <img class="app-icon" src="./icon-192.png" alt="" width="84" height="84" draggable={false} />
-        <h1 class="title">Sukoon for Android</h1>
-        <p class="muted">The same Sukoon, as an app on your phone.</p>
+        <h1 class="title">Music Flow for Android</h1>
+        <p class="muted">The same Music Flow, as an app on your phone.</p>
 
         {q.loading && <div class="app-wait"><Spinner size={20} /></div>}
         {q.error && !file && <Failed error={q.error} retry={q.reload} />}
@@ -94,7 +94,7 @@ export function GetAppPage() {
         )}
         {file && (
           <>
-            <a class="btn app-get" href={appFileUrl} download={`Sukoon-${file.version}.apk`} onClick={() => buzz('tap')}>
+            <a class="btn app-get" href={appFileUrl} download={`MusicFlow-${file.version}.apk`} onClick={() => buzz('tap')}>
               <ArrowDownToLine size={19} /> Download the app
             </a>
             <div class="app-meta">
@@ -114,7 +114,7 @@ export function GetAppPage() {
         <section class="section">
           <div class="set-card app-card">
             <b>On an iPhone or iPad?</b>
-            <p class="muted">This file is for Android phones only. On iPhone, open Sukoon in Safari, tap the Share button, then <b>Add to Home Screen</b>. It then opens full screen like an app.</p>
+            <p class="muted">This file is for Android phones only. On iPhone, open Music Flow in Safari, tap the Share button, then <b>Add to Home Screen</b>. It then opens full screen like an app.</p>
           </div>
         </section>
       )}
@@ -126,7 +126,7 @@ export function GetAppPage() {
             <div class="set-card app-card">
               <ol class="steps">
                 <Step n={1}>Tap <b>Download the app</b> above. When it has finished, open the file: tap the notification, or find it in your phone's <b>Downloads</b>.</Step>
-                <Step n={2}>Android asks whether your browser may install apps. Tap <b>Settings</b>, switch on <b>Allow from this source</b>, then go back. It asks because Sukoon does not come from the Play Store.</Step>
+                <Step n={2}>Android asks whether your browser may install apps. Tap <b>Settings</b>, switch on <b>Allow from this source</b>, then go back. It asks because Music Flow does not come from the Play Store.</Step>
                 <Step n={3}>Tap <b>Install</b>, then <b>Open</b>.</Step>
               </ol>
               <p class="small faint" style={{ marginTop: 12 }}>

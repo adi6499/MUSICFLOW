@@ -347,11 +347,11 @@ export function exportLibrary(): string {
   return JSON.stringify(data);
 }
 
-/** Merges a backup into what is already here. Throws if the file is not a Sukoon backup. */
+/** Merges a backup into what is already here. Throws if the file is not a Music Flow backup. */
 export function importLibrary(text: string): { songs: number; playlists: number } {
   let data: any;
-  try { data = JSON.parse(text); } catch { throw new Error('That file is not a Sukoon backup.'); }
-  if (!data || data.mark !== BACKUP_MARK) throw new Error('That file is not a Sukoon backup.');
+  try { data = JSON.parse(text); } catch { throw new Error('That file is not a Music Flow backup.'); }
+  if (!data || data.mark !== BACKUP_MARK) throw new Error('That file is not a Music Flow backup.');
   const okTrack = (t: any): t is Track => !!t && typeof t.id === 'string' && typeof t.title === 'string';
   let songs = 0;
   let lists = 0;

@@ -1,4 +1,4 @@
-// Turns whatever the catalog servers send into Sukoon's own shapes (types.ts).
+// Turns whatever the catalog servers send into Music Flow's own shapes (types.ts).
 // Every function here is defensive: a missing or odd field never throws, it
 // just leaves that detail out.
 

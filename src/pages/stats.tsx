@@ -24,7 +24,7 @@ function spoken(seconds: number): string {
 }
 
 function summary(s: Stats): string {
-  const lines = [`My week on Sukoon: ${spoken(s.weekSeconds)}, ${plural(s.weekPlays, 'song')}.`];
+  const lines = [`My week on Music Flow: ${spoken(s.weekSeconds)}, ${plural(s.weekPlays, 'song')}.`];
   if (s.topArtists.length) lines.push('Top artists: ' + s.topArtists.slice(0, 3).map((a) => a.name).join(', ') + '.');
   if (s.topSongs.length) lines.push('On repeat: ' + s.topSongs.slice(0, 3).map((x) => x.track.title).join(', ') + '.');
   return lines.join('\n');
@@ -58,7 +58,7 @@ export function drawCard(s: Stats): HTMLCanvasElement {
 
   x.fillStyle = accent;
   font(700, 34);
-  x.fillText('MY WEEK ON SUKOON', L, 150);
+  x.fillText('MY WEEK ON MUSIC FLOW', L, 150);
 
   x.fillStyle = ink;
   font(700, 132);
@@ -122,9 +122,9 @@ async function shareWeek(s: Stats): Promise<void> {
     const canvas = drawCard(s);
     const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, 'image/png'));
     if (blob) {
-      const file = new File([blob], 'my-week-on-sukoon.png', { type: 'image/png' });
+      const file = new File([blob], 'my-week-on-music-flow.png', { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My week on Sukoon', text });
+        await navigator.share({ files: [file], title: 'My week on Music Flow', text });
         return;
       }
       if (!isApp) {

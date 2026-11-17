@@ -5,7 +5,7 @@
 // (searching "shape of you" returns four unknown covers), and both list the
 // same song several times and put an obscure new version above the famous one.
 //
-// So Sukoon asks both servers at once, pools everything, and ranks the pool
+// So Music Flow asks both servers at once, pools everything, and ranks the pool
 // itself, by:
 //   1. how well the title and artist match the words typed (one typo per word
 //      is forgiven, and the last word may be half-typed);

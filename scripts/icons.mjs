@@ -1,4 +1,4 @@
-// Draws the Sukoon icon (a crescent with a single note-dot, on dusk indigo)
+// Draws the Music Flow icon (a crescent with a single note-dot, on dusk indigo)
 // and writes every size the website and the Android app need.
 // Run with:  npm run icons
 

@@ -1,9 +1,9 @@
 @echo off
-rem Builds the Sukoon Android app.
+rem Builds the Music Flow Android app.
 rem   1. builds the website            (npm run build)
 rem   2. copies it into this project   (scripts\android-sync.mjs)
 rem   3. builds the signed APK         (Gradle)
-rem   4. puts a copy next to this file as Sukoon-v<version>.apk
+rem   4. puts a copy next to this file as MusicFlow-v<version>.apk
 rem   5. puts the same file on the website's download page  (scripts\publish-apk.mjs);
 rem      it goes live with the next upload to GitHub
 rem The full Gradle output goes to build.log in this folder.
@@ -35,14 +35,14 @@ if errorlevel 1 (
 echo BUILD_EXIT 0 >> "%PROJECT%build.log"
 
 echo === 3/4 Copying the APK ===
-copy /y "%PROJECT%app\build\outputs\apk\release\app-release.apk" "%PROJECT%Sukoon-v1.2.2.apk" > nul
+copy /y "%PROJECT%app\build\outputs\apk\release\app-release.apk" "%PROJECT%MusicFlow-v1.3.0.apk" > nul
 if errorlevel 1 goto failed
 echo === 4/4 Putting it on the website's download page ===
 cd /d "%PROJECT%.."
 call node scripts\publish-apk.mjs
 if errorlevel 1 goto failed
 echo.
-echo BUILD_OK  The app is at %PROJECT%Sukoon-v1.2.2.apk
+echo BUILD_OK  The app is at %PROJECT%MusicFlow-v1.3.0.apk
 exit /b 0
 
 :failed

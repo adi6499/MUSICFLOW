@@ -2,7 +2,7 @@
 //
 // The liquid glass look costs the graphics chip real work on every frame of
 // scrolling. Fast phones and computers don't notice; modest ones stutter. So
-// Sukoon watches how long frames actually take while the person scrolls, and
+// Music Flow watches how long frames actually take while the person scrolls, and
 // if this device is struggling it steps the effects down:
 //
 //   level 0  everything: clear glass that bends what is behind it
@@ -44,7 +44,7 @@ export function restoreEffects(): void {
   save();
 }
 
-/** Let Sukoon adjust effects by itself again. */
+/** Let Music Flow adjust effects by itself again. */
 export function autoEffects(): void {
   locked = false;
   save();

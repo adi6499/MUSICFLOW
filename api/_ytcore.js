@@ -1,5 +1,5 @@
 // Reads a public YouTube Music (or YouTube) playlist: its name and the songs in
-// it. Only titles, artists and lengths are read; Sukoon then looks the same
+// it. Only titles, artists and lengths are read; Music Flow then looks the same
 // songs up in its own catalog. Nothing is streamed or downloaded from YouTube.
 //
 // This one file is shared by three callers:

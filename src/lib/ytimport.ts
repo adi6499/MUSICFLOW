@@ -1,7 +1,7 @@
-// Bring a YouTube Music playlist into Sukoon.
+// Bring a YouTube Music playlist into Music Flow.
 // Step 1 reads the playlist's song names (through the website's small server
 // function, or through the Android app's own networking). Step 2 finds each
-// song in Sukoon's catalog.
+// song in Music Flow's catalog.
 //
 // A song is only accepted when there is real evidence it is the same
 // recording: the title must agree AND either an artist or the film name must
@@ -44,7 +44,7 @@ export async function fetchYtPlaylist(input: string, signal?: AbortSignal): Prom
   }
   const type = res.headers.get('content-type') || '';
   if (!type.includes('json')) {
-    throw new Error('Playlist import is not available on this copy of Sukoon. Use the Sukoon website or the Android app.');
+    throw new Error('Playlist import is not available on this copy of Music Flow. Use the Music Flow website or the Android app.');
   }
   const data = await res.json();
   if (!res.ok || !data?.ok) throw new Error(data?.error || "Couldn't read that playlist.");

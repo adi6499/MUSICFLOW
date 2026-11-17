@@ -1,6 +1,8 @@
-# Sukoon
+# Music Flow
 
-A calm, fast music player for phone and PC. *Sukoon* means peace of mind.
+A calm, fast music player for phone and PC. (Until November 2026 it was called Sukoon; the
+project folder, the Android package id and the storage keys still carry that name on purpose,
+so nothing already installed breaks. To rename it again: `node scripts/rename-app.mjs "New Name"`.)
 
 Songs, albums, artists and playlists · search that finds the right song first · voice
 search · one-tap moods · mixes made for you · endless radio · songs that blend into each
@@ -36,7 +38,7 @@ code show up straight away.
 | `npm run build` | Makes the finished website in the `dist` folder. |
 | `npm run preview` | Serves that finished website locally, to check it. |
 | `npm run check` | Checks the code for mistakes without running it. |
-| `npm test` | Health check of every outside service Sukoon relies on (about 10 seconds). |
+| `npm test` | Health check of every outside service Music Flow relies on (about 10 seconds). |
 | `npm run icons` | Redraws the app icon in every size (website + Android). |
 
 **If music ever stops working, run `npm test` first.** It asks each outside service one
@@ -75,7 +77,7 @@ src/
     library.ts        likes, playlists, history, settings (saved on the device)
     lyrics.ts         song words from LRCLIB
     podcasts.ts       Apple's podcast directory
-    ytimport.ts       YouTube Music playlist → Sukoon playlist
+    ytimport.ts       YouTube Music playlist → Music Flow playlist
     eq.ts             the sound engine: modes, bass, clarity, surround, loudness, 10-band equalizer
     themes.ts         the colour themes (one entry each)
     router.ts         which screen is showing; Back button behaviour
@@ -94,10 +96,10 @@ android/              the Android shell
 
 ### Where the music comes from
 
-- **Songs** come from a community-run catalog service. Sukoon uses two servers and
+- **Songs** come from a community-run catalog service. Music Flow uses two servers and
   takes the best of both: the main one for search, albums and the home feed; the
   backup for complete playlists, fuller artist pages and "similar songs". If either
-  is down, the other covers for it. Sukoon does not control this catalog, so a song
+  is down, the other covers for it. Music Flow does not control this catalog, so a song
   can occasionally be missing or stop working — the app repairs or skips it by itself.
 - **Lyrics** come from [LRCLIB](https://lrclib.net).
 - **Podcasts** come from Apple's public podcast directory and play from each podcast's
@@ -131,7 +133,7 @@ keep separate libraries; **Settings → Back up / Restore** moves a library betw
 - **Download** a song from its ⋯ menu, or a whole album, playlist, mix or your liked
   songs with the arrow beside Play and Shuffle. *Settings → Downloads* sets the quality
   (about 3, 5 or 10 MB a song) and can keep every liked song downloaded automatically.
-- Downloaded songs are kept **inside Sukoon's own storage on the device**, with their
+- Downloaded songs are kept **inside Music Flow's own storage on the device**, with their
   cover and lyrics. They are not loose files in the phone's folders, and nothing is
   uploaded. *Library → Downloads* lists them, shows the space used, and removes them.
 - **With no internet** a strip at the top says so, Home leads with your downloads,
@@ -143,14 +145,14 @@ keep separate libraries; **Settings → Back up / Restore** moves a library betw
   service worker); the Android app always does, since its files are inside the app.
 - Podcasts cannot be downloaded: most podcast hosts do not allow a web page to save
   their files.
-- On iPhone, add Sukoon to the Home Screen: Safari may clear the storage of a website
+- On iPhone, add Music Flow to the Home Screen: Safari may clear the storage of a website
   that has not been opened for a week.
 
 ### Getting the Android app from the website
 
 The website has a **Get the app** page (`#/app`, linked from Settings and, once, from
 Home on Android browsers) that offers the Android app file with install steps.
-`android\build.cmd` finishes by copying the new app file to `public/download/Sukoon.apk`
+`android\build.cmd` finishes by copying the new app file to `public/download/MusicFlow.apk`
 and writing `public/download/app.json` (version, size, date); both reach the website
 with the next `git push`. The app itself reads that note and says, in Settings and once
 at start-up, when a newer version is ready.
@@ -169,14 +171,14 @@ All of this is worked out on your device; none of it is sent anywhere.
 
 ### Search
 
-Both catalog servers are asked at once and Sukoon ranks the answers itself (the right
+Both catalog servers are asked at once and Music Flow ranks the answers itself (the right
 original ahead of covers, remixes and karaoke versions; spelling slips forgiven).
 `npm run bench:search` measures it against 65 real searches. The microphone in the
 search box listens for a song, an artist or an album; say "play …" and it starts.
 
 ### Sound
 
-Settings → Sound (or the sliders button in the player). Pick a mode — Signature (Sukoon's
+Settings → Sound (or the sliders button in the player). Pick a mode — Signature (Music Flow's
 own tuning), Spatial, Cinema, Old speaker, Phone speaker, Late night and more — or set
 Bass, Vocals, Clarity, Surround and Loudness yourself, with a ten-band equalizer underneath for fine control. The modes for
 old and small speakers remove the rumble those speakers cannot play, add overtones so

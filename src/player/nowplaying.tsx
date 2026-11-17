@@ -150,7 +150,7 @@ function Inner(props: { t: Track }) {
     if (!eq.supported || s.eqOn || s.soundTipSeen || player.current.value?.kind !== 'song') return;
     const id = setTimeout(() => {
       setSetting('soundTipSeen', true);
-      toast('Want richer sound? Try the Sukoon Signature mode.', { label: 'Try it', run: () => { applyMode('Signature'); buzz('done'); } }, 5200);
+      toast('Want richer sound? Try the Music Flow Signature mode.', { label: 'Try it', run: () => { applyMode('Signature'); buzz('done'); } }, 5200);
     }, 4000);
     return () => clearTimeout(id);
   }, []);

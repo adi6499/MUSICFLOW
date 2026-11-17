@@ -18,7 +18,7 @@ import { isWide, openSheet } from '../ui/state';
 import { Moods } from './home';
 
 const PROBLEMS: Record<VoiceProblem, string> = {
-  denied: "Sukoon isn't allowed to use the microphone. Allow it in your browser's settings for this site, then try again.",
+  denied: "Music Flow isn't allowed to use the microphone. Allow it in your browser's settings for this site, then try again.",
   nothing: "Didn't catch that.",
   unavailable: "Voice search isn't available on this device.",
   failed: "Voice search didn't work just now.",

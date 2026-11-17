@@ -43,7 +43,7 @@ function Welcome() {
   return (
     <section class="section">
       <div class="set-card" style={{ padding: '18px 16px 16px' }}>
-        <h2 class="title" style={{ fontSize: 23 }}>Welcome to Sukoon</h2>
+        <h2 class="title" style={{ fontSize: 23 }}>Welcome to Music Flow</h2>
         <p class="muted" style={{ margin: '6px 0 16px', fontSize: 14.5 }}>Which languages do you listen to? You can change this any time in Settings.</p>
         <LanguageChips />
         <button class="btn" style={{ marginTop: 18 }} onClick={() => setSetting('welcomed', true)}>Done</button>
@@ -60,9 +60,9 @@ function HomeScreenTip() {
   return (
     <section class="section" style={{ marginTop: 18 }}>
       <div class="set-card" style={{ padding: '16px 16px 14px' }}>
-        <b style={{ fontSize: 15.5, fontWeight: 500 }}>Add Sukoon to your Home Screen</b>
+        <b style={{ fontSize: 15.5, fontWeight: 500 }}>Add Music Flow to your Home Screen</b>
         <p class="muted" style={{ margin: '6px 0 12px', fontSize: 14 }}>
-          Tap the Share button below, then <b style={{ fontWeight: 500 }}>Add to Home Screen</b>. Sukoon then opens full screen like an app and your liked songs and playlists are kept safely.
+          Tap the Share button below, then <b style={{ fontWeight: 500 }}>Add to Home Screen</b>. Music Flow then opens full screen like an app and your liked songs and playlists are kept safely.
         </p>
         <button class="btn quiet small" onClick={() => setSetting('homeTipSeen', true)}>Got it</button>
       </div>
@@ -76,7 +76,7 @@ function AppTip() {
   return (
     <section class="section" style={{ marginTop: 18 }}>
       <div class="set-card" style={{ padding: '16px 16px 14px' }}>
-        <b style={{ fontSize: 15.5, fontWeight: 500 }}>Sukoon has an Android app</b>
+        <b style={{ fontSize: 15.5, fontWeight: 500 }}>Music Flow has an Android app</b>
         <p class="muted" style={{ margin: '6px 0 12px', fontSize: 14 }}>It keeps playing with the screen off and keeps your downloads safe.</p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Link to={to.getApp()} class="btn small" onClick={done}>Get the app</Link>

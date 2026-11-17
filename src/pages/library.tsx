@@ -186,7 +186,7 @@ export function DownloadsPage() {
       )}
 
       {!offline.supported && (
-        <Empty icon={<ArrowDownToLine size={26} strokeWidth={1.6} />} title="Downloads aren't available here" text="This browser window doesn't allow files to be kept (private windows often don't). Open Sukoon in a normal window." />
+        <Empty icon={<ArrowDownToLine size={26} strokeWidth={1.6} />} title="Downloads aren't available here" text="This browser window doesn't allow files to be kept (private windows often don't). Open Music Flow in a normal window." />
       )}
       {offline.supported && offline.ready.value && !list.length && !busy && (
         <Empty icon={<ArrowDownToLine size={26} strokeWidth={1.6} />} title="Nothing downloaded yet" text="Open an album, a playlist or your liked songs and tap the download arrow. For one song, use its ⋯ menu.">
@@ -200,7 +200,7 @@ export function DownloadsPage() {
       </div>
       {list.length > 0 && isIOS && !isStandalone && !isApp && (
         <p class="small faint" style={{ padding: '16px 4px 0' }}>
-          On iPhone, add Sukoon to your Home Screen (Share, then Add to Home Screen). Safari may clear the downloads of a website that hasn't been opened for a week; on the Home Screen they are kept.
+          On iPhone, add Music Flow to your Home Screen (Share, then Add to Home Screen). Safari may clear the downloads of a website that hasn't been opened for a week; on the Home Screen they are kept.
         </p>
       )}
     </div>
@@ -264,7 +264,7 @@ function openPlaylistMenu(p: LocalPlaylist): void {
             if (ids.length > 150) toast('Only the first 150 songs fit in a link.');
             void shareLink(p.name, to.shared(p.name, ids.slice(0, 150)));
           })}>
-            <Link2 size={20} /><span>Share as a link</span><span class="menu-end">Opens in Sukoon</span>
+            <Link2 size={20} /><span>Share as a link</span><span class="menu-end">Opens in Music Flow</span>
           </button>
           <div class="menu-sep" />
           <button class="menu-item danger" onClick={act(() => {

@@ -99,7 +99,7 @@ export function SettingsPage() {
 
   const backup = () => {
     const stamp = new Date().toISOString().slice(0, 10);
-    download(`sukoon-backup-${stamp}.json`, exportLibrary());
+    download(`music-flow-backup-${stamp}.json`, exportLibrary());
     toast('Backup saved to your downloads');
   };
   const restore = async (e: Event) => {
@@ -274,7 +274,7 @@ export function SettingsPage() {
         <span class="label">Your library</span>
         <div class="set-card">
           <Link to={to.importer()} class="set-row">
-            <div class="set-text"><div class="set-name">Import from YouTube Music</div><div class="set-note">Turn a playlist link into a Sukoon playlist.</div></div>
+            <div class="set-text"><div class="set-name">Import from YouTube Music</div><div class="set-note">Turn a playlist link into a Music Flow playlist.</div></div>
             <ChevronRight size={20} class="faint" />
           </Link>
           <button class="set-row" onClick={backup}>
@@ -318,9 +318,9 @@ export function SettingsPage() {
           )}
           <div class="set-row">
             <div class="set-text">
-              <div class="set-name">Sukoon {VERSION}</div>
+              <div class="set-name">Music Flow {VERSION}</div>
               <div class="set-note">
-                Songs come from a community-run catalog that Sukoon does not control, so a song may occasionally be missing or stop working. Lyrics are from LRCLIB; podcasts from Apple's podcast directory.
+                Songs come from a community-run catalog that Music Flow does not control, so a song may occasionally be missing or stop working. Lyrics are from LRCLIB; podcasts from Apple's podcast directory.
               </div>
             </div>
           </div>

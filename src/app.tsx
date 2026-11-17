@@ -80,7 +80,7 @@ function Side(props: { active: Tab }) {
   });
   return (
     <aside class="side">
-      <Link to={to.home()} class="brand">Sukoon</Link>
+      <Link to={to.home()} class="brand">Music Flow</Link>
       <nav class="side-list" aria-label="Main">
         {TABS.map(({ tab, path, label, icon: Icon }) => (
           <Link key={tab} to={path} class={cx('side-link', props.active === tab && r.name !== 'settings' && !onPlaylist && 'on')}>
@@ -294,7 +294,7 @@ if (typeof window !== 'undefined') {
   // The browser tab shows what is playing.
   effect(() => {
     const t = player.current.value;
-    document.title = t && player.playing.value ? `${t.title} · ${t.artist}` : 'Sukoon';
+    document.title = t && player.playing.value ? `${t.title} · ${t.artist}` : 'Music Flow';
   });
 
   // Keyboard. Space plays and pauses, the arrows move through the song (with

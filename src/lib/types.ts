@@ -1,4 +1,4 @@
-// The shapes every part of Sukoon agrees on. The catalog servers return several
+// The shapes every part of Music Flow agrees on. The catalog servers return several
 // different layouts; normalize.ts turns all of them into these.
 
 export interface Stream {
@@ -174,8 +174,8 @@ export interface Settings {
   welcomed: boolean;
   /** The iPhone "Add to Home Screen" tip has been dismissed. */
   homeTipSeen: boolean;
-  /** The "Sukoon has an Android app" tip (Android browsers only) has been answered. */
+  /** The "Music Flow has an Android app" tip (Android browsers only) has been answered. */
   appTipSeen: boolean;
-  /** The "try Sukoon Sound" suggestion in the player has been answered. */
+  /** The "try Music Flow Sound" suggestion in the player has been answered. */
   soundTipSeen: boolean;
 }

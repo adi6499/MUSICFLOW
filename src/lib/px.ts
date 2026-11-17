@@ -1,6 +1,6 @@
 // Preact 11 stopped turning plain numbers in inline styles into pixels
 // (`marginTop: 18` used to mean 18px; now the browser ignores it).
-// Sukoon's components write sizes as plain numbers, so this restores that one
+// Music Flow's components write sizes as plain numbers, so this restores that one
 // behaviour, using the same rule Preact 10 used: numbers get "px" unless the
 // property is one that is naturally unit-less (opacity, flex, z-index, …).
 //
