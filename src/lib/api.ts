@@ -12,6 +12,7 @@ import {
   dedupeSongs, toAlbum, toAlbumRefs, toArtist, toArtistRefs, toHome, toPlaylist, toPlaylistRefs, toTrack, toTracks,
 } from './normalize';
 import { kvGet, kvSet } from './store';
+import { findSongs, rankByName, type Ask } from './searchrank.ts';
 import { alike, plain, sleep } from './util';
 
 interface Server {
@@ -238,7 +239,7 @@ function list(data: any): any[] {
 
 export function getSong(id: string, signal?: AbortSignal): Promise<Track | null> {
   return cached('song:' + id, 6 * HOUR, async () => {
-    const data = await request((s) => s.song(id), { signal, filled: (d) => list(d).length > 0 });
+    const data = await request((s) => s.song(id), { signal, first: 'backup', filled: (d) => list(d).length > 0 });
     return toTrack(list(data)[0]);
   });
 }
@@ -267,7 +268,7 @@ export async function refetchSong(id: string): Promise<Track | null> {
 
 export function getAlbum(id: string, signal?: AbortSignal): Promise<Album> {
   return cached('album:' + id, 6 * HOUR, async () => {
-    const data = await request(() => `/albums?id=${enc(id)}`, { signal, filled: (d) => !!d && !!d.id });
+    const data = await request(() => `/albums?id=${enc(id)}`, { signal, first: 'backup', filled: (d) => !!d && !!d.id && Array.isArray(d.songs) && d.songs.length > 0 });
     const album = toAlbum(data);
     if (!album) throw new ApiError('This album could not be opened.');
     return album;
@@ -328,7 +329,8 @@ export function searchSongs(query: string, page = 1, limit = 24, signal?: AbortS
   return cached(`s:songs:${q.toLowerCase()}:${page}:${limit}`, 15 * MIN, async () => {
     const data = await request(
       (s) => `/search/songs?query=${enc(q)}&page=${s.firstPage + page - 1}&limit=${limit}`,
-      { signal, filled: (d) => list(d).length > 0 },
+      // The main server leaves out most international originals, so the backup leads.
+      { signal, first: 'backup', filled: (d) => list(d).length > 0 },
     );
     return toTracks(list(data));
   });
@@ -337,7 +339,7 @@ export function searchSongs(query: string, page = 1, limit = 24, signal?: AbortS
 export function searchAlbums(query: string, signal?: AbortSignal, limit = 14): Promise<AlbumRef[]> {
   const q = query.trim();
   return cached(`s:albums:${q.toLowerCase()}:${limit}`, 15 * MIN, async () => {
-    const data = await request((s) => `/search/albums?query=${enc(q)}&page=${s.firstPage}&limit=${limit}`, { signal, filled: (d) => list(d).length > 0 });
+    const data = await request((s) => `/search/albums?query=${enc(q)}&page=${s.firstPage}&limit=${limit}`, { signal, first: 'backup', filled: (d) => list(d).length > 0 });
     return toAlbumRefs(list(data));
   });
 }
@@ -345,7 +347,7 @@ export function searchAlbums(query: string, signal?: AbortSignal, limit = 14): P
 export function searchArtists(query: string, signal?: AbortSignal, limit = 10): Promise<ArtistRef[]> {
   const q = query.trim();
   return cached(`s:artists:${q.toLowerCase()}:${limit}`, 15 * MIN, async () => {
-    const data = await request((s) => `/search/artists?query=${enc(q)}&page=${s.firstPage}&limit=${limit}`, { signal, filled: (d) => list(d).length > 0 });
+    const data = await request((s) => `/search/artists?query=${enc(q)}&page=${s.firstPage}&limit=${limit}`, { signal, first: 'backup', filled: (d) => list(d).length > 0 });
     return toArtistRefs(list(data));
   });
 }
@@ -353,7 +355,7 @@ export function searchArtists(query: string, signal?: AbortSignal, limit = 10): 
 export function searchPlaylists(query: string, signal?: AbortSignal, limit = 14): Promise<PlaylistRef[]> {
   const q = query.trim();
   return cached(`s:playlists:${q.toLowerCase()}:${limit}`, 15 * MIN, async () => {
-    const data = await request((s) => `/search/playlists?query=${enc(q)}&page=${s.firstPage}&limit=${limit}`, { signal, filled: (d) => list(d).length > 0 });
+    const data = await request((s) => `/search/playlists?query=${enc(q)}&page=${s.firstPage}&limit=${limit}`, { signal, first: 'backup', filled: (d) => list(d).length > 0 });
     return toPlaylistRefs(list(data));
   });
 }
@@ -361,14 +363,28 @@ export function searchPlaylists(query: string, signal?: AbortSignal, limit = 14)
 export const searchKey = (query: string) => 's:all:' + query.trim().toLowerCase();
 
 /** Everything for the search screen in one go. One part failing never hides the others. */
-export function searchAll(query: string, signal?: AbortSignal): Promise<SearchResults> {
-  return cached(searchKey(query), 15 * MIN, () => searchEverything(query, signal));
+export function searchAll(query: string, signal?: AbortSignal, languages: string[] = []): Promise<SearchResults> {
+  return cached(searchKey(query), 15 * MIN, () => searchEverything(query, signal, languages));
 }
 
-async function searchEverything(query: string, signal?: AbortSignal): Promise<SearchResults> {
+/** Lets the ranking engine (searchrank.ts) question one particular server. */
+function askWith(signal?: AbortSignal): Ask {
+  return async (name, path) => {
+    const server = SERVERS.find((s) => s.name === name);
+    if (!server) throw new Error('unknown server');
+    const json = await fetchJson(server.base + path, signal);
+    if (!json || json.success === false) throw new Error('The music server could not answer');
+    return json.data !== undefined ? json.data : json;
+  };
+}
+
+async function searchEverything(query: string, signal?: AbortSignal, languages: string[] = []): Promise<SearchResults> {
   const q = query.trim();
+  // Songs come from both servers at once and are ranked by Sukoon itself
+  // (see searchrank.ts for why). Albums, artists and playlists lead with the
+  // complete server and are then put in order of how well the name fits.
   const [songs, albums, artists, playlists] = await Promise.allSettled([
-    searchSongs(q, 1, 30, signal),
+    findSongs(q, askWith(signal), languages),
     searchAlbums(q, signal),
     searchArtists(q, signal),
     searchPlaylists(q, signal),
@@ -377,11 +393,18 @@ async function searchEverything(query: string, signal?: AbortSignal): Promise<Se
   if (songs.status === 'rejected' && albums.status === 'rejected' && artists.status === 'rejected' && playlists.status === 'rejected') {
     throw songs.reason;
   }
+  const artistList = artists.status === 'fulfilled' ? rankByName(q, artists.value, (a) => a.name) : [];
+  // Was an artist's name typed? The quick search says so directly; a near-exact name match says so too.
+  const intent = songs.status === 'fulfilled' ? songs.value.intent : {};
+  const lead =
+    artistList.find((a) => a.id === intent.artistId) ||
+    (artistList[0] && alike(plain(q), plain(artistList[0].name)) >= 0.8 ? artistList[0] : undefined);
   return {
-    songs: songs.status === 'fulfilled' ? dedupeSongs(songs.value) : [],
-    albums: albums.status === 'fulfilled' ? albums.value : [],
-    artists: artists.status === 'fulfilled' ? artists.value : [],
-    playlists: playlists.status === 'fulfilled' ? playlists.value : [],
+    songs: songs.status === 'fulfilled' ? songs.value.songs : [],
+    albums: albums.status === 'fulfilled' ? rankByName(q, albums.value, (a) => a.title) : [],
+    artists: artistList,
+    playlists: playlists.status === 'fulfilled' ? rankByName(q, playlists.value, (p) => p.title) : [],
+    lead,
   };
 }
 

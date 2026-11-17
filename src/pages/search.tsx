@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Clock, Search as SearchIcon, SearchX, X } from 'lucide-preact';
 import { searchAll, searchKey } from '../lib/api';
-import { addSearch, removeSearch, searches } from '../lib/library';
+import { addSearch, removeSearch, searches, settings } from '../lib/library';
 import { quietReplace, route, to } from '../lib/router';
-import { alike, cx, plain } from '../lib/util';
+import { cx } from '../lib/util';
 import { Empty, Failed, SkeletonRows, SkeletonShelf } from '../ui/bits';
 import { ItemShelf, Section } from '../ui/cards';
 import { useDebounced, useQuery } from '../ui/hooks';
@@ -24,7 +24,7 @@ export function Search() {
   const input = useRef<HTMLInputElement>(null);
   const term = useDebounced(text.trim(), 280);
   const ready = term.length >= 2;
-  const q = useQuery(ready ? searchKey(term) : null, (signal) => searchAll(term, signal), { ttl: 15 * 60 * 1000 });
+  const q = useQuery(ready ? searchKey(term) : null, (signal) => searchAll(term, signal, settings.peek().languages), { ttl: 15 * 60 * 1000 });
 
   // Keep the address in step with what is typed, so Back returns to these results.
   useEffect(() => {
@@ -42,7 +42,9 @@ export function Search() {
   const data = q.data;
   const nothing = !!data && !data.songs.length && !data.albums.length && !data.artists.length && !data.playlists.length;
   // If the words typed are an artist's name, lead with the artist.
-  const artistFirst = !!data && data.artists.length > 0 && alike(plain(term), plain(data.artists[0].name)) >= 0.8;
+  const lead = data?.lead;
+  const artistFirst = !!lead;
+  const otherArtists = data ? data.artists.filter((a) => a.id !== lead?.id) : [];
   const show = (f: Filter) => filter === 'all' || filter === f;
   const remember = () => { if (ready) addSearch(term); };
 
@@ -114,7 +116,7 @@ export function Search() {
       {ready && data && !nothing && (
         <div onClickCapture={remember}>
           {artistFirst && show('artists') && filter === 'all' && (
-            <Section title="Artist"><ItemShelf items={data.artists.slice(0, 1)} small /></Section>
+            <Section title="Artist"><ItemShelf items={[lead!]} small /></Section>
           )}
           {show('songs') && data.songs.length > 0 && (
             <Section title="Songs">
@@ -124,8 +126,8 @@ export function Search() {
               )}
             </Section>
           )}
-          {show('artists') && data.artists.length > (artistFirst && filter === 'all' ? 1 : 0) && (
-            <Section title="Artists"><ItemShelf items={artistFirst && filter === 'all' ? data.artists.slice(1) : data.artists} small /></Section>
+          {show('artists') && (filter === 'all' ? otherArtists : data.artists).length > 0 && (
+            <Section title="Artists"><ItemShelf items={filter === 'all' ? otherArtists : data.artists} small /></Section>
           )}
           {show('albums') && data.albums.length > 0 && (
             <Section title="Albums"><ItemShelf items={data.albums} /></Section>

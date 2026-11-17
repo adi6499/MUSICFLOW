@@ -115,6 +115,8 @@ export interface SearchResults {
   albums: AlbumRef[];
   artists: ArtistRef[];
   playlists: PlaylistRef[];
+  /** Set when the words typed are an artist's name: that artist is shown first. */
+  lead?: ArtistRef;
 }
 
 export interface LyricLine {

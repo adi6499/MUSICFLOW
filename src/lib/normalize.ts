@@ -5,7 +5,7 @@
 import type {
   Album, AlbumRef, Artist, ArtistRef, HomeSection, Item, Playlist, PlaylistRef, Stream, Track,
 } from './types';
-import { decode, plain, firstArtist } from './util';
+import { decode, plain, firstArtist } from './util.ts';
 
 type Raw = Record<string, any>;
 
