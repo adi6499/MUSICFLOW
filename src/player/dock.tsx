@@ -25,7 +25,7 @@ export function Mini() {
   const t = player.current.value;
   const start = useRef<{ x: number; y: number; moved: boolean } | null>(null);
   const glass = useRef<HTMLDivElement>(null);
-  useLens(glass, 22);
+  useLens(glass, 'pill');
   if (!t) return null;
 
   // Tap opens the player. Swipe up opens it too; swipe sideways changes song.

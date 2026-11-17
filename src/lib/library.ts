@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoplay: true,
   tint: true,
   calmMotion: false,
-  glass: true,
+  glassLevel: 100,
   haptics: true,
   crossfade: 5,
   lightTheme: 'paper',
@@ -60,7 +60,12 @@ function readSettings(): Settings {
         merged.haptics = merged.haptics !== false;
         merged.crossfade = typeof merged.crossfade === 'number' && merged.crossfade >= 0 && merged.crossfade <= 12 ? merged.crossfade : 5;
         merged.fxLowCut = typeof merged.fxLowCut === 'number' && merged.fxLowCut > 0 ? Math.min(300, merged.fxLowCut) : 0;
-        merged.glass = merged.glass !== false;
+        // The glass used to be a plain on/off switch; "off" becomes Solid, anything else Clear.
+        const level = (got as { glassLevel?: unknown }).glassLevel;
+        merged.glassLevel = typeof level === 'number' && level >= 0 && level <= 100
+          ? Math.round(level)
+          : (got as { glass?: unknown }).glass === false ? 0 : 100;
+        delete (merged as { glass?: unknown }).glass;
         if (merged.downloadQuality !== 'high' && merged.downloadQuality !== 'saver') merged.downloadQuality = 'normal';
         merged.keepLiked = merged.keepLiked === true;
         if (typeof merged.lightTheme !== 'string') merged.lightTheme = DEFAULT_SETTINGS.lightTheme;

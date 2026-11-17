@@ -7,7 +7,8 @@ import { appFileKey, getAppFile, isNewer } from '../lib/appfile';
 import * as eq from '../lib/eq';
 import { clearHistory, exportLibrary, history, importLibrary, liked, playlists, setSetting, setSettings, settings } from '../lib/library';
 import { PALETTES, paletteFor, type Palette } from '../lib/themes';
-import { canBend, canGlass } from '../ui/glass';
+import { canBend, canGlass, glassName, type GlassName } from '../ui/glass';
+import { Seek } from '../ui/slider';
 import { saveText } from '../lib/native';
 import { to } from '../lib/router';
 import { toast } from '../lib/toast';
@@ -143,18 +144,37 @@ export function SettingsPage() {
             <div class="set-name">Dark themes</div>
             <ThemeTiles kind="dark" />
           </div>
-          <div class="set-row">
+          <div class="set-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
             <div class="set-text">
-              <div class="set-name">Liquid glass</div>
+              <div class="set-name">Glass</div>
               <div class="set-note">
                 {!canGlass
-                  ? 'This browser cannot draw glass, so bars stay solid.'
+                  ? 'This browser cannot draw glass, so the bars stay solid.'
                   : canBend
-                    ? 'Bars become clear glass that bends what scrolls behind them.'
-                    : 'Bars become clear glass. The bending rim needs Chrome, Edge or the Android app.'}
+                    ? 'The bars at the top and bottom and the menus are glass. Clear is a magnifying glass: what passes underneath stays sharp and looks bigger. Frosted is milky. Solid is plain.'
+                    : 'The bars at the top and bottom and the menus are glass. Clear shows the page through them, Frosted is milky, Solid is plain. The magnifying effect needs Chrome, Edge or the Android app.'}
               </div>
             </div>
-            <Switch on={s.glass && canGlass} label="Liquid glass" onChange={(v) => setSetting('glass', v)} />
+            {canGlass && (
+              <div class="glass-control">
+                <Seek
+                  class="fat"
+                  value={s.glassLevel}
+                  max={100}
+                  step={5}
+                  label="Glass"
+                  text={(v) => `${glassName(v)}, ${Math.round(v)} out of 100`}
+                  onSeek={(v) => setSetting('glassLevel', Math.round(v))}
+                  onScrub={(v) => { if (v !== null) setSetting('glassLevel', Math.round(v)); }}
+                />
+                <Seg<GlassName>
+                  label="Glass"
+                  value={glassName(s.glassLevel)}
+                  options={[['solid', 'Solid'], ['frosted', 'Frosted'], ['clear', 'Clear']]}
+                  onChange={(v) => { buzz('select'); setSetting('glassLevel', v === 'solid' ? 0 : v === 'frosted' ? 30 : 100); }}
+                />
+              </div>
+            )}
           </div>
           <div class="set-row">
             <div class="set-text"><div class="set-name">Colour from the cover</div><div class="set-note">The player takes a soft tint from the album cover.</div></div>

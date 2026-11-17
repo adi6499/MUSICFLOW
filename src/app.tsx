@@ -56,7 +56,7 @@ const TABS: Array<{ tab: Tab; path: string; label: string; icon: typeof HomeIcon
 
 function Tabs(props: { active: Tab }) {
   const ref = useRef<HTMLElement>(null);
-  useLens(ref, 30);
+  useLens(ref, 'pill');
   return (
     <nav ref={ref} class="tabs" aria-label="Main">
       {TABS.map(({ tab, path, label, icon: Icon }) => (
@@ -244,8 +244,17 @@ if (typeof window !== 'undefined') {
   // device is keeping up (lib/perf.ts steps it down by itself if not).
   effect(() => {
     const level = perfLevel.value;
-    if (settings.value.glass && canGlass && level < 2) root.dataset.glass = '1';
-    else delete root.dataset.glass;
+    // One number rules the glass: 0 solid … 100 clear (see styles/glass.css).
+    const n = settings.value.glassLevel;
+    root.style.setProperty('--g', String(n / 100));
+    root.style.setProperty('--gp', n + '%');
+    if (n >= 5 && canGlass && level < 2) {
+      root.dataset.glass = '1';
+      root.dataset.glassLevel = n < 55 ? 'frosted' : 'clear';
+    } else {
+      delete root.dataset.glass;
+      delete root.dataset.glassLevel;
+    }
     if (level) root.dataset.perf = String(level);
     else delete root.dataset.perf;
   });

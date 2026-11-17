@@ -51,8 +51,26 @@ if (isApp) {
   }, 5000);
 }
 
-// While developing only: a handle for poking at the app from the browser console.
+// While developing only: a handle for poking at the app from the browser console,
+// and two address knobs for taking pictures with an off-screen browser:
+//   ?set={"glassLevel":30,"theme":"dark"}   apply these settings
+//   ?scroll=400                             scroll this far down once the page has filled in
+//   ?song=kesariya                          put this song in the player (paused), so the mini player shows
 if (import.meta.env.DEV) {
+  try {
+    const knobs = new URLSearchParams(location.search);
+    const set = knobs.get('set');
+    if (set) void import('./lib/library').then((library) => library.setSettings(JSON.parse(set)));
+    const scroll = Number(knobs.get('scroll'));
+    if (scroll > 0) setTimeout(() => window.scrollTo(0, scroll), 2500);
+    const song = knobs.get('song');
+    if (song) {
+      void Promise.all([import('./lib/api'), import('./lib/player')]).then(async ([api, player]) => {
+        const found = await api.searchSongs(song, 1, 3);
+        if (found.length) { player.playTracks(found, 0, 'Preview'); player.pause(); }
+      });
+    }
+  } catch { /* a mistyped knob is simply ignored */ }
   void Promise.all([
     import('./lib/player'), import('./lib/library'), import('./lib/router'), import('./lib/api'), import('./lib/station'), import('./lib/ytimport'), import('./lib/eq'), import('./lib/mixes'), import('./lib/offline'),
   ]).then(([player, library, router, api, station, ytimport, eq, mixes, offline]) => {

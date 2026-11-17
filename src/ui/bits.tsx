@@ -6,6 +6,8 @@ import { artTick, offlineArt, online } from '../lib/offline';
 import * as player from '../lib/player';
 import { back, go } from '../lib/router';
 import { cx, img } from '../lib/util';
+import { useRef } from 'preact/hooks';
+import { useLens } from './glass';
 import { useScrolled } from './hooks';
 
 export function Art(props: {
@@ -65,8 +67,11 @@ export function Link(props: { to: string; class?: string; children?: ComponentCh
 /** Sticky bar for inner screens. The title fades in once the big heading has scrolled away. */
 export function TopBar(props: { title?: string; children?: ComponentChildren; threshold?: number }) {
   const stuck = useScrolled(props.threshold ?? 120);
+  // Once it sticks it is a pane of glass over the page (magnifying, where the browser can).
+  const glass = useRef<HTMLDivElement>(null);
+  useLens(glass, 'flat');
   return (
-    <div class={cx('topbar', stuck && 'stuck')}>
+    <div ref={glass} class={cx('topbar', stuck && 'stuck')}>
       <button class="icon-btn" onClick={back} aria-label="Back"><ArrowLeft size={22} /></button>
       {props.title ? <div class="topbar-title clip">{props.title}</div> : <div class="spacer" />}
       {props.children}

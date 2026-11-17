@@ -1,63 +1,115 @@
 /* ==========================================================================
-   Sukoon — liquid glass (Settings → Liquid glass)
-   The floating bars become clear glass: you see the page through them, softly
-   blurred, and — in browsers that can — bent at the rim (see ui/glass.ts,
-   which supplies --lens). Menus become frosted glass.
-   Plain on purpose: one thin bright edge, no moving highlights, no gloss.
+   Sukoon — glass (Settings → Glass)
+   The floating bars are glass. ONE number rules it: --g (0…1) and --gp
+   (0%…100%), set from the Glass slider. 0 = solid, 30 = frosted, 100 = clear.
+     Clear    the page reads through the bars; where the browser can, the bar
+              is a magnifying glass (see ui/glass.ts, which supplies --lens
+              and marks the bar data-lens)
+     Frosted  milky: a heavier wash of the theme's colour and a soft blur
+     Solid    no glass at all (data-glass is then absent and none of this applies)
+   Plain on purpose: one thin bright rim, no moving highlights, no gloss.
    ========================================================================== */
 
 :root {
-  --glass: rgba(250, 248, 243, 0.32);
-  --glass-strong: rgba(255, 255, 255, 0.74);
+  --g: 1;
+  --gp: 100%;
+  /* The clearest form of each surface. lib/themes.ts sets these per theme; these are the first-paint values. */
+  --gx-bar: rgba(250, 248, 243, 0.1);
+  --gx-pane: rgba(255, 255, 255, 0.62);
   --glass-edge: rgba(255, 255, 255, 0.7);
-  --glass-blur: 6px;
+  --rim: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.55);
+  --mag-bright: 1.04;
+  /* As the slider moves towards Solid, each surface fills in with the theme's own colour… */
+  --glass: color-mix(in srgb, var(--gx-bar) var(--gp), var(--surface));
+  --pane: color-mix(in srgb, var(--gx-pane) var(--gp), var(--raised));
+  /* …and blurs more: clear = a light blur, frosted = a heavy one. */
+  --gblur: calc(4px + 22px * (1 - var(--g)));
 }
 
 [data-glass='1'] .mini,
 [data-glass='1'] .tabs,
-[data-glass='1'] .bar,
 [data-glass='1'] .topbar.stuck {
   background: var(--glass);
-  /* Older iPhones ignore this rule if it contains a variable, so the numbers are written out. */
-  -webkit-backdrop-filter: blur(6px) saturate(1.7);
-  backdrop-filter: var(--lens,) blur(var(--glass-blur)) saturate(1.7);
+  /* Older iPhones ignore this rule if it contains a variable, so a number is written out. */
+  -webkit-backdrop-filter: blur(8px) saturate(1.6);
+  backdrop-filter: blur(var(--gblur)) saturate(1.6);
 }
 
-/* Only the two small floating pills (mini player, tab bar) get the bending
-   rim. The wide desktop bar and the top bar are clear glass without it: over
-   such a large area the bending is barely visible and costs the most. */
+/* The magnifier: no blur at Clear, so what passes underneath stays sharp and
+   simply looks bigger; only a touch brighter, so colours behind stay true. */
+[data-glass='1'] .mini[data-lens],
+[data-glass='1'] .tabs[data-lens],
+[data-glass='1'] .topbar.stuck[data-lens] {
+  backdrop-filter: var(--lens) blur(calc((1 - var(--g)) * 22px)) brightness(var(--mag-bright));
+}
 
-[data-glass='1'] .bar { border-top-color: var(--glass-edge); }
+/* Clear glass shows whatever is underneath, album covers included. So that the
+   words and icons ON a bar stay readable over any picture, they carry a soft
+   edge of the theme's own colour (like subtitles on a film). The glass itself
+   stays clear. It follows the glass LEVEL, not the magnifier: an iPhone (which
+   cannot magnify) shows the same clear glass over the same covers. Frosted
+   glass does not need it. */
+[data-glass-level='clear'] .mini,
+[data-glass-level='clear'] .tabs,
+[data-glass-level='clear'] .topbar.stuck {
+  --halo-icon: drop-shadow(0 0 1px var(--surface)) drop-shadow(0 0 4px var(--surface)) drop-shadow(0 0 9px var(--surface));
+  text-shadow: 0 0 1px var(--surface), 0 0 5px var(--surface), 0 0 11px var(--surface), 0 0 18px var(--surface);
+}
+[data-glass-level='clear'] .mini svg,
+[data-glass-level='clear'] .tabs svg,
+[data-glass-level='clear'] .topbar.stuck svg { filter: var(--halo-icon); }
+/* Buttons that have their own solid face need no edge. */
+[data-glass-level='clear'] .topbar.stuck .btn { text-shadow: none; }
+[data-glass-level='clear'] .topbar.stuck .btn svg { filter: none; }
+/* Tab names are quiet grey on a solid bar; on clear glass they need full ink. */
+[data-glass-level='clear'] .tabs .tab { color: var(--ink); }
+[data-glass-level='clear'] .tabs .tab.on { color: var(--accent); }
+[data-glass-level='clear'] .tabs .tab.on .tab-ico { background: color-mix(in srgb, var(--surface) 72%, transparent); }
+[data-glass-level='clear'] .mini .mini-sub { color: var(--ink); }
+
+/* The wide player bar on a computer is a pane, not a magnifier: it holds a
+   dozen small controls that must stay easy to find over any picture. */
+[data-glass='1'] .bar {
+  background: var(--pane);
+  -webkit-backdrop-filter: blur(20px) saturate(1.7);
+  backdrop-filter: blur(max(18px, var(--gblur))) saturate(1.7);
+  border-top-color: var(--glass-edge);
+}
 [data-glass='1'] .topbar.stuck { border-bottom-color: var(--line); }
 
 [data-glass='1'] .sheet {
-  background: var(--glass-strong);
+  background: var(--pane);
   -webkit-backdrop-filter: blur(26px) saturate(1.6);
   backdrop-filter: blur(26px) saturate(1.6);
-  box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-edge);
+  box-shadow: var(--shadow), var(--rim);
 }
 
 /* Phones: the tab bar lifts off the bottom edge and becomes a floating pill,
-   with the mini player as a second pill above it. */
+   with the mini player as a second pill above it. Both are fully round at the
+   ends: the magnifier is shaped for exactly that. */
 @media (max-width: 899.98px) {
   [data-glass='1'] { --dock: calc(var(--tabs-h) + 16px + var(--safe-bottom)); }
   [data-glass='1'].has-player { --dock: calc(var(--tabs-h) + var(--mini-h) + 26px + var(--safe-bottom)); }
 
   [data-glass='1'] .tabs {
-    left: calc(10px + var(--safe-left));
-    right: calc(10px + var(--safe-right));
+    left: calc(12px + var(--safe-left));
+    right: calc(12px + var(--safe-right));
     bottom: calc(var(--safe-bottom) + 8px);
     height: var(--tabs-h);
-    padding-bottom: 0;
+    padding: 0 6px;
     border-top: 0;
-    border-radius: 30px;
-    box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-edge);
+    border-radius: 999px;
+    box-shadow: var(--rim), var(--shadow);
   }
   [data-glass='1'] .mini {
-    left: calc(10px + var(--safe-left));
-    right: calc(10px + var(--safe-right));
+    left: calc(12px + var(--safe-left));
+    right: calc(12px + var(--safe-right));
     bottom: calc(var(--tabs-h) + var(--safe-bottom) + 16px);
-    border-radius: 22px;
-    box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-edge);
+    padding: 0 10px 0 8px;
+    border-radius: 999px;
+    box-shadow: var(--rim), var(--shadow);
   }
+  [data-glass='1'] .mini .art { border-radius: 50%; }
+  /* The progress line sits inside the pill instead of being cut off by its round ends. */
+  [data-glass='1'] .mini-prog { left: 30px; right: 30px; bottom: 5px; height: 2px; border-radius: 2px; overflow: hidden; }
 }

@@ -184,6 +184,16 @@ bass is still heard, restore detail, and raise the level; a limiter keeps everyt
 free of distortion. It is a stereo enhancer, not Dolby Atmos (that needs specially
 mixed songs and a licensed decoder). Not available on iPhone and iPad.
 
+### Glass
+
+Settings → Appearance → **Glass** is one slider: **Solid**, **Frosted** or **Clear**.
+At Clear the floating bars are a magnifying glass (the same one as in the Expenses app):
+what passes underneath stays sharp and looks bigger, stretching at the rounded rim. That
+needs a Chromium browser (Chrome, Edge, the Android app); Safari, iPhone and Firefox show
+plain clear glass. Words and icons on clear glass carry a soft edge in the theme's colour
+so they stay readable over album covers. The wide player bar on a computer is a frosted
+pane rather than a magnifier, because it holds many small controls.
+
 ### Design notes
 
 Calm paper by day, soft ink by night; flat surfaces and hairlines, one quiet accent,

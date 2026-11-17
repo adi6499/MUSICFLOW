@@ -754,3 +754,10 @@ button.set-row:active { background: var(--line); }
 .app-points { list-style: none; display: flex; flex-direction: column; gap: 11px; }
 .app-points li { position: relative; padding-left: 16px; }
 .app-points li::before { content: ''; position: absolute; left: 2px; top: 0.62em; width: 5px; height: 5px; border-radius: 50%; background: var(--ink-3); }
+
+/* ------------------------------------------------------------------ settings: the glass slider */
+
+.glass-control { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.glass-control .seek { flex: 1 1 180px; height: 30px; }
+.glass-control .seek-fill, .glass-control .seek-thumb { background: var(--accent); }
+.glass-control .seek-thumb { transform: scale(1); }

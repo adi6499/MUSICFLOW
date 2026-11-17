@@ -72,10 +72,16 @@ export function cssVars(p: Palette): Record<string, string> {
     '--accent': p.accent,
     '--accent-ink': p.accentInk,
     '--accent-soft': `rgba(${rgb(p.accent)}, ${dark ? 0.14 : 0.11})`,
-    // Liquid glass: a see-through wash of the theme's own surface colour, and a thin bright rim.
-    '--glass': `rgba(${rgb(p.surface)}, ${dark ? 0.3 : 0.32})`,
-    '--glass-strong': `rgba(${rgb(p.raised)}, ${dark ? 0.7 : 0.74})`,
+    // Glass: the clearest form of each surface, in the theme's own colours (styles/glass.css
+    // fills them in as the Glass slider moves towards Solid), the thin bright rim of a pane of
+    // glass, and how much the magnifier brightens what is under it.
+    '--gx-bar': `rgba(${rgb(p.surface)}, ${dark ? 0.08 : 0.1})`,
+    '--gx-pane': `rgba(${rgb(p.raised)}, ${dark ? 0.56 : 0.62})`,
     '--glass-edge': dark ? 'rgba(255, 255, 255, 0.13)' : 'rgba(255, 255, 255, 0.7)',
+    '--rim': dark
+      ? 'inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.08)'
+      : 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.55)',
+    '--mag-bright': dark ? '1.1' : '1.04',
     '--danger': dark ? '#f0907c' : '#b0432e',
     '--scrim': dark ? 'rgba(0, 0, 0, 0.6)' : `rgba(${ink}, 0.32)`,
     '--shadow': dark

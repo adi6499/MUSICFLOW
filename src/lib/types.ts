@@ -144,8 +144,8 @@ export interface Settings {
   tint: boolean;
   /** Reduce motion regardless of the system setting. */
   calmMotion: boolean;
-  /** Floating bars and menus drawn as clear glass. */
-  glass: boolean;
+  /** How glassy the floating bars and menus are: 0 = solid, 30 = frosted, 100 = clear (the magnifier). */
+  glassLevel: number;
   /** Small taps you can feel when pressing things. */
   haptics: boolean;
   /** Seconds each song overlaps the next one (0 = a clean cut). */
