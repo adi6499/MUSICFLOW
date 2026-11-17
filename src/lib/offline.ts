@@ -17,7 +17,7 @@ import { settings } from './library';
 import { getLyrics } from './lyrics';
 import { kvGet, kvSet } from './store';
 import { toast } from './toast';
-import { img, plural } from './util';
+import { img, plural, sleep } from './util';
 
 export interface Saved {
   t: Track;
@@ -211,6 +211,35 @@ async function loadArt(): Promise<void> {
   } catch { /* covers simply come from the network */ }
 }
 
+// ---------------------------------------------------------------- words for downloaded songs
+
+// Lyrics come from a free, community-run library. A big playlist must not
+// send it hundreds of requests at once (it answers "too many" and gives
+// nothing), so the words are fetched one song at a time with a pause between.
+const wordsWanted: Track[] = [];
+let wordsBusy = false;
+
+function wantWords(track: Track): void {
+  wordsWanted.push(track);
+  void fetchWords();
+}
+
+async function fetchWords(): Promise<void> {
+  if (wordsBusy) return;
+  wordsBusy = true;
+  try {
+    while (wordsWanted.length && online.peek()) {
+      const track = wordsWanted.shift()!;
+      let reached = true;
+      try { await getLyrics(track); } catch { reached = false; }
+      // Refused or unreachable: give it a good rest before the next one.
+      await sleep(reached ? 900 : 20000);
+    }
+  } finally {
+    wordsBusy = false;
+  }
+}
+
 // ---------------------------------------------------------------- downloading
 
 let waiting: Track[] = [];
@@ -335,7 +364,7 @@ async function one(track: Track): Promise<void> {
     lastDone = track.title;
     // The cover and the words come along, so the song is whole without internet.
     void keepArt(track);
-    void getLyrics(track).catch(() => { /* not every song has lyrics */ });
+    wantWords(track);
   } catch (e) {
     if (ctl.signal.aborted) return; // stopped on purpose
     if (!online.peek() || (inBrowser && navigator.onLine === false)) {
@@ -441,7 +470,7 @@ export async function removeAll(): Promise<void> {
 /** Read the list of downloads, check it against what is really on the device, and resume anything unfinished. */
 export async function initOffline(): Promise<void> {
   if (!inBrowser) return;
-  window.addEventListener('online', () => { online.value = true; pump(); });
+  window.addEventListener('online', () => { online.value = true; pump(); void fetchWords(); });
   window.addEventListener('offline', () => { online.value = false; });
   if (!supported) { ready.value = true; return; }
   try {
