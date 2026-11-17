@@ -10,14 +10,16 @@ import { canBend, canGlass } from '../ui/glass';
 import { saveText } from '../lib/native';
 import { to } from '../lib/router';
 import { toast } from '../lib/toast';
-import { cx } from '../lib/util';
+import { buzz } from '../lib/haptics';
+import { isApp } from '../lib/native';
+import { cx, isIOS, isTouch } from '../lib/util';
 import { Link, TopBar } from '../ui/bits';
-import { openConfirm } from '../ui/sheet';
+import { openConfirm, openShortcuts } from '../ui/sheet';
 import { openSound } from '../ui/sound';
 import { isWide, themeNow } from '../ui/state';
 import { LanguageChips } from './home';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 function Switch(props: { on: boolean; label: string; onChange: (on: boolean) => void }) {
   return <button class={cx('switch', props.on && 'on')} role="switch" aria-checked={props.on} aria-label={props.label} onClick={() => props.onChange(!props.on)} />;
@@ -143,6 +145,21 @@ export function SettingsPage() {
             <div class="set-text"><div class="set-name">Less motion</div><div class="set-note">Turn off slides and fades.</div></div>
             <Switch on={s.calmMotion} label="Less motion" onChange={(v) => setSetting('calmMotion', v)} />
           </div>
+          {(isTouch || isApp) && (
+            <div class="set-row">
+              <div class="set-text">
+                <div class="set-name">Taps you can feel</div>
+                <div class="set-note">{isIOS ? 'A light tick when you press play, like a song or move things. Needs a recent iPhone.' : 'A small vibration when you press play, like a song or move things.'}</div>
+              </div>
+              <Switch on={s.haptics} label="Taps you can feel" onChange={(v) => { setSetting('haptics', v); if (v) setTimeout(() => buzz('like'), 30); }} />
+            </div>
+          )}
+          {isWide.value && (
+            <button class="set-row" onClick={openShortcuts}>
+              <div class="set-text"><div class="set-name">Keyboard shortcuts</div><div class="set-note">Press ? at any time to see them.</div></div>
+              <ChevronRight size={20} class="faint" />
+            </button>
+          )}
         </div>
       </section>
 
@@ -161,6 +178,20 @@ export function SettingsPage() {
             <div class="set-text"><div class="set-name">Keep the music going</div><div class="set-note">When the queue ends, play similar songs.</div></div>
             <Switch on={s.autoplay} label="Keep the music going" onChange={(v) => setSetting('autoplay', v)} />
           </div>
+          {!isIOS && (
+            <div class="set-row" style={{ flexWrap: 'wrap' }}>
+              <div class="set-text" style={{ minWidth: 180 }}>
+                <div class="set-name">Songs blend together</div>
+                <div class="set-note">{s.crossfade > 0 ? `Each song fades into the next over ${s.crossfade} seconds, with no silence between.` : 'Each song ends before the next one starts.'}</div>
+              </div>
+              <Seg<string>
+                label="Songs blend together"
+                value={String(s.crossfade)}
+                options={[['0', 'Off'], ['3', '3s'], ['5', '5s'], ['8', '8s'], ['12', '12s']]}
+                onChange={(v) => setSetting('crossfade', Number(v))}
+              />
+            </div>
+          )}
           <button class="set-row" onClick={openSound}>
             <div class="set-text">
               <div class="set-name">Sound</div>

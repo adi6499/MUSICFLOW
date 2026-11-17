@@ -1,9 +1,11 @@
 // The playback engine. One place owns the audio, the queue and "what next".
 //
 // Design choices that keep it dependable:
-//  * ONE audio element is reused for every song. Phones only allow background
-//    and lock-screen playback to continue on an element the person has already
-//    started by hand, so swapping elements between songs would stall there.
+//  * On iPhone ONE audio element is reused for every song. iPhones only allow
+//    background and lock-screen playback to continue on an element the person
+//    has already started by hand, so swapping elements would stall there.
+//    Everywhere else there are two song "decks", so the end of one song can
+//    overlap the start of the next (see "songs blend together" below).
 //  * Every start gets a ticket number. If the person taps three songs quickly,
 //    only the last one is allowed to finish starting.
 //  * A song that fails is retried once with a fresh address and lower quality,
@@ -13,7 +15,8 @@
 import { batch, computed, effect, signal } from '@preact/signals';
 import type { RepeatMode, Track } from './types';
 import { isAbort, refetchSong, withStreams } from './api';
-import { episodePos, logPlay, setEpisodePos, settings } from './library';
+import { addListening, counts, episodePos, logPlay, setEpisodePos, settings } from './library';
+import { buzz } from './haptics';
 import { kvGet, kvSet } from './store';
 import { toast } from './toast';
 import { clamp, img, isIOS, shuffled } from './util';
@@ -57,14 +60,20 @@ function readVolume(): number {
 const hasAudio = typeof Audio !== 'undefined';
 /** Songs: allowed to be read by the equalizer (the catalog's audio permits it). */
 const music: HTMLAudioElement = hasAudio ? new Audio() : ({} as HTMLAudioElement);
+/** A second song deck, used only while one song fades into the next. */
+const musicB: HTMLAudioElement = hasAudio ? new Audio() : ({} as HTMLAudioElement);
 /** Podcasts: many hosts don't permit that, so they get a plain element. */
 const spoken: HTMLAudioElement = hasAudio ? new Audio() : ({} as HTMLAudioElement);
 if (hasAudio) {
   music.crossOrigin = 'anonymous';
+  musicB.crossOrigin = 'anonymous';
   music.preload = 'auto';
+  musicB.preload = 'auto';
   spoken.preload = 'auto';
 }
 let el: HTMLAudioElement = music;
+/** True while "sing along" is lowering the original singer (karaoke screen). */
+export const singAlong = signal(false);
 const unlocked = new WeakSet<HTMLAudioElement>();
 
 let ticket = 0;
@@ -118,12 +127,15 @@ function unlock(target: HTMLAudioElement): void {
 
 async function start(track: Track, startAt = 0, autoplay = true): Promise<void> {
   const my = ++ticket;
-  const target = track.kind === 'episode' ? spoken : music;
+  endBlend();
+  // Songs keep whichever deck is in use; episodes have their own element.
+  const target = track.kind === 'episode' ? spoken : el === musicB ? musicB : music;
   if (el !== target) {
     try { el.pause(); } catch { /* nothing loaded */ }
     el = target;
   }
   logged = false;
+  heardFrom = -1;
   loadedId = '';
   batch(() => {
     loading.value = true;
@@ -150,7 +162,7 @@ async function start(track: Track, startAt = 0, autoplay = true): Promise<void> 
     if (!url) { fail(track, my); return; }
   }
 
-  if (el === music && settings.value.eqOn) eq.attach(music);
+  if (el !== spoken && (settings.value.eqOn || singAlong.value)) eq.attach(el);
   pendingSeek = startAt > 1 ? startAt : 0;
   try {
     el.src = url;
@@ -219,6 +231,8 @@ function giveUp(track: Track): void {
 
 function wire(a: HTMLAudioElement): void {
   const mine = () => a === el;
+  /** This element is the song that is fading out underneath the new one. */
+  const leaving = () => !!blend && blend.from === a;
   a.addEventListener('playing', () => {
     if (!mine() || a.src === SILENCE) return;
     retried = false;
@@ -230,6 +244,7 @@ function wire(a: HTMLAudioElement): void {
     if (!mine() || a.src === SILENCE || a.ended) return;
     // A pause that we did not ask for (headphones pulled, a call) still counts.
     if (loadedId && !loading.value) playing.value = false;
+    bankHeard(true);
     saveSession(true);
   });
   a.addEventListener('waiting', () => { if (mine() && loadedId) loading.value = true; });
@@ -253,15 +268,23 @@ function wire(a: HTMLAudioElement): void {
     } catch { /* not ready */ }
   });
   a.addEventListener('timeupdate', () => {
+    // The outgoing song keeps the fade moving even when the screen is off and
+    // ordinary timers are slowed right down.
+    if (leaving()) { stepBlend(); return; }
     if (!mine() || !loadedId || a.src === SILENCE) return;
     const t = a.currentTime;
     position.value = t;
     const track = current.value;
     if (!track) return;
     const d = duration.value;
+    // Time actually listened to (for the listening stats): only real, forward play counts.
+    if (heardFrom >= 0 && t > heardFrom && t - heardFrom < 2) heardBank += t - heardFrom;
+    heardFrom = t;
+    if (heardBank >= 20) bankHeard();
     if (!logged && (t > 30 || (d > 0 && t > d / 2))) {
       logged = true;
       logPlay(track);
+      if (track.kind === 'song') cheer();
     }
     const stamp = Date.now();
     if (stamp - lastPosState > 1000) {
@@ -273,15 +296,175 @@ function wire(a: HTMLAudioElement): void {
     // Get the next song's address ready shortly before this one ends.
     if (d > 0 && d - t < 25) prepareNext();
     if (d > 0 && d - t < 40) void topUp();
+    if (d > 0) maybeBlend(track, t, d);
   });
-  a.addEventListener('ended', () => { if (mine() && a.src !== SILENCE) onEnded(); });
+  a.addEventListener('ended', () => {
+    if (leaving()) { endBlend(); return; }
+    if (mine() && a.src !== SILENCE) onEnded();
+  });
   a.addEventListener('error', () => {
+    if (leaving()) { endBlend(); return; }
     if (!mine() || !loadedId || a.src === SILENCE || !a.src) return;
     const track = current.value;
     if (track) fail(track, ticket);
   });
 }
-if (hasAudio) { wire(music); wire(spoken); }
+if (hasAudio) { wire(music); wire(musicB); wire(spoken); }
+
+// ---------------------------------------------------------------- listening time & small celebrations
+
+let heardFrom = -1;
+let heardBank = 0;
+
+/** Pass the seconds listened so far on to the listening stats. */
+function bankHeard(all = false): void {
+  if (heardBank < (all ? 1 : 20)) return;
+  addListening(heardBank);
+  heardBank = 0;
+}
+
+const MILESTONES = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+
+/** A quiet word on round numbers: the 100th song, the 1,000th… */
+function cheer(): void {
+  let total = 0;
+  const c = counts.value;
+  for (const id in c) total += c[id];
+  if (MILESTONES.indexOf(total) === -1) return;
+  buzz('done');
+  toast(`That was your ${total.toLocaleString()}th song on Sukoon. Thank you for listening.`, undefined, 5200);
+}
+
+// ---------------------------------------------------------------- songs blend together
+//
+// A few seconds before a song ends, the next one starts quietly on the other
+// deck and the two swap loudness, so there is never a gap of silence. It is
+// skipped where it could not work or would not be wanted: on iPhone (which
+// does not let a web page set loudness), for podcasts, when repeating one
+// song, and when a sleep timer is about to stop the music.
+
+interface Blend { from: HTMLAudioElement; seconds: number; startedAt: number }
+let blend: Blend | null = null;
+let blendTimer: ReturnType<typeof setInterval> | 0 = 0;
+/** The song already loaded on the idle deck, ready to start instantly. */
+let primedId = '';
+
+const idleDeck = (): HTMLAudioElement => (el === music ? musicB : music);
+
+function blendSeconds(): number {
+  const s = settings.value.crossfade;
+  return !isIOS && s > 0 ? Math.min(12, s) : 0;
+}
+
+function maybeBlend(track: Track, t: number, d: number): void {
+  const seconds = blendSeconds();
+  if (!seconds || blend || el === spoken || track.kind !== 'song' || repeat.value === 'one' || d < seconds * 4) return;
+  const left = d - t;
+  if (left > seconds + 12) return;
+  const at = sleepAt.value;
+  if (at === 'track' || (typeof at === 'number' && at - Date.now() < (left + 30) * 1000)) return;
+  const q = queue.value;
+  let i = index.value + 1;
+  if (i >= q.length) {
+    if (repeat.value !== 'all' || q.length < 2) return;
+    i = 0;
+  }
+  const upcoming = q[i];
+  if (!upcoming || upcoming.kind !== 'song' || upcoming.id === track.id) return;
+  const url = pickUrl(upcoming);
+  if (!url) return; // its address is still being fetched; look again on the next tick
+  const deck = idleDeck();
+  if (primedId !== upcoming.id) {
+    // Load it a few seconds early so it can begin the instant it is needed.
+    primedId = upcoming.id;
+    try { deck.volume = 0; deck.src = url; deck.load(); } catch { primedId = ''; }
+    return;
+  }
+  if (left <= seconds && !el.paused) beginBlend(upcoming, i, deck, Math.max(1, left));
+}
+
+function beginBlend(track: Track, i: number, deck: HTMLAudioElement, seconds: number): void {
+  const from = el;
+  ticket++; // anything still starting belongs to the song that is leaving
+  blend = { from, seconds, startedAt: Date.now() };
+  el = deck;
+  logged = false;
+  retried = false;
+  heardFrom = -1;
+  loadedId = track.id;
+  pendingSeek = 0;
+  batch(() => {
+    index.value = i;
+    position.value = 0;
+    duration.value = Number.isFinite(deck.duration) && deck.duration > 0 ? deck.duration : track.duration || 0;
+    bufferedTo.value = 0;
+  });
+  setMeta(track);
+  markHeard(track);
+  if (settings.value.eqOn || singAlong.value) eq.attach(deck);
+  const my = ticket;
+  try {
+    deck.volume = 0;
+    deck.playbackRate = 1;
+    const p = deck.play();
+    if (p) p.catch((e) => {
+      if (my !== ticket || (e as { name?: string })?.name === 'AbortError') return;
+      // The quiet start was refused: fall back to an ordinary start.
+      void start(track, 0, true);
+    });
+  } catch {
+    void start(track, 0, true);
+    return;
+  }
+  if (!blendTimer) blendTimer = setInterval(stepBlend, 60);
+  stepBlend();
+}
+
+/** Move the two loudness levels along. Equal-power curves keep the overall level steady. */
+function stepBlend(): void {
+  const b = blend;
+  if (!b) return;
+  const d = b.from.duration;
+  const left = Number.isFinite(d) ? d - b.from.currentTime : 0;
+  if (b.from.ended || left <= 0.05 || Date.now() - b.startedAt > (b.seconds + 3) * 1000) { endBlend(); return; }
+  const p = clamp(1 - left / b.seconds, 0, 1);
+  const full = volume.value;
+  try {
+    b.from.volume = clamp(Math.cos((p * Math.PI) / 2) * full, 0, 1);
+    el.volume = clamp(Math.sin((p * Math.PI) / 2) * full, 0, 1);
+  } catch { /* loudness is fixed on this device */ }
+}
+
+/** Finish (or cut short) a blend: silence the old deck and give the new one full loudness. */
+function endBlend(): void {
+  const b = blend;
+  if (blendTimer) { clearInterval(blendTimer); blendTimer = 0; }
+  if (!b) return;
+  blend = null;
+  primedId = '';
+  try { b.from.pause(); b.from.removeAttribute('src'); b.from.load(); } catch { /* nothing loaded */ }
+  if (!fading) { try { el.volume = volume.value; } catch { /* read-only on iPhone */ } }
+}
+
+/**
+ * The position right now, to a fraction of a second. (`position` only ticks a
+ * few times a second, which is too coarse for words lighting up as they are sung.)
+ */
+export function liveTime(): number {
+  try {
+    if (loadedId && el.src && el.src !== SILENCE && !el.seeking) return el.currentTime || 0;
+  } catch { /* fall through */ }
+  return position.value;
+}
+
+/** Sing along: lower the original singer's voice. Only where sound processing is available. */
+export function setSingAlong(on: boolean): void {
+  if (!eq.supported || singAlong.value === on) return;
+  singAlong.value = on;
+  if (on && hasAudio && el !== spoken && loadedId) eq.attach(el);
+  eq.setSingAlong(on);
+  if (on) eq.wake();
+}
 
 function onEnded(): void {
   const track = current.value;
@@ -351,6 +534,7 @@ export function toggle(): void {
   if (playing.value) {
     playing.value = false;
     loading.value = false;
+    endBlend();
     if (loadedId === track.id) { try { el.pause(); } catch { /* nothing */ } } else ticket++;
     return;
   }
@@ -412,6 +596,8 @@ export function seek(seconds: number): void {
   const d = duration.value || current.value?.duration || 0;
   const to = clamp(seconds, 0, d > 0 ? Math.max(0, d - 0.25) : seconds);
   position.value = to;
+  heardFrom = -1;
+  endBlend();
   if (loadedId && el.src && el.src !== SILENCE) {
     try { el.currentTime = to; } catch { pendingSeek = to; }
     setPosState();
@@ -422,7 +608,8 @@ export function seekBy(delta: number): void { seek(position.value + delta); }
 
 export function setVolume(v: number): void {
   volume.value = clamp(v, 0, 1);
-  if (!fading) { try { el.volume = volume.value; } catch { /* read-only on iPhone */ } }
+  if (blend) stepBlend();
+  else if (!fading) { try { el.volume = volume.value; } catch { /* read-only on iPhone */ } }
   try { localStorage.setItem('sukoon.volume', String(volume.value)); } catch { /* optional */ }
 }
 
@@ -492,7 +679,7 @@ export function removeAt(i: number): void {
     const to = Math.min(at, list.length - 1);
     batch(() => { queue.value = list; index.value = to; });
     if (playing.value) void start(list[to], 0, true);
-    else { ticket++; loadedId = ''; batch(() => { position.value = 0; duration.value = list[to].duration || 0; }); setMeta(list[to]); }
+    else { ticket++; endBlend(); loadedId = ''; batch(() => { position.value = 0; duration.value = list[to].duration || 0; }); setMeta(list[to]); }
     return;
   }
   batch(() => { queue.value = list; if (i < at) index.value = at - 1; });
@@ -519,6 +706,8 @@ export function clearUpNext(): void {
 
 export function stop(): void {
   ticket++;
+  endBlend();
+  bankHeard(true);
   try { el.pause(); el.removeAttribute('src'); el.load(); } catch { /* nothing loaded */ }
   loadedId = '';
   batch(() => {
@@ -714,8 +903,8 @@ export async function restoreSession(): Promise<void> {
 }
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('pagehide', () => saveSession(true));
-  document.addEventListener('visibilitychange', () => { if (document.hidden) saveSession(true); });
+  window.addEventListener('pagehide', () => { bankHeard(true); saveSession(true); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { bankHeard(true); saveSession(true); } });
   // Coming back online while a song was stuck: try again.
   window.addEventListener('online', () => {
     const track = current.value;
@@ -725,9 +914,15 @@ if (typeof window !== 'undefined') {
   // Equalizer switched on or off while a song is playing.
   effect(() => {
     const s = settings.value;
-    if (s.eqOn && hasAudio && el === music && loadedId) eq.attach(music);
-    eq.apply({ on: s.eqOn, gains: s.eqGains, bass: s.fxBass, clarity: s.fxClarity, space: s.fxSpace, loud: s.fxLoud, lowCut: s.fxLowCut });
+    if (s.eqOn && hasAudio && el !== spoken && loadedId) eq.attach(el);
+    eq.apply({ on: s.eqOn, gains: s.eqGains, bass: s.fxBass, clarity: s.fxClarity, space: s.fxSpace, loud: s.fxLoud, vocal: s.fxVocal, lowCut: s.fxLowCut });
   });
+}
+
+/** What the two song decks are doing right now. Used by tests to confirm a blend really overlaps. */
+export function decks() {
+  const say = (a: HTMLAudioElement) => ({ playing: !a.paused && !a.ended && !!a.src, volume: Math.round(a.volume * 100) / 100, at: Math.round((a.currentTime || 0) * 10) / 10 });
+  return { active: el === music ? 'A' : el === musicB ? 'B' : 'spoken', blending: !!blend, A: say(music), B: say(musicB) };
 }
 
 /** For the Android app shell: lets it read and drive playback. */

@@ -2,7 +2,7 @@
 
 import { useState } from 'preact/hooks';
 import {
-  Clock, Download, Heart, History as HistoryIcon, ListEnd, ListMusic, Pencil, Plus, Search as SearchIcon, Share2, Trash2, X,
+  ChartNoAxesColumn, Clock, Download, Heart, History as HistoryIcon, Link2, ListEnd, ListMusic, Pencil, Plus, Search as SearchIcon, Share2, Trash2, X,
 } from 'lucide-preact';
 import type { LocalPlaylist, Track } from '../lib/types';
 import {
@@ -18,6 +18,7 @@ import { ItemShelf, Section } from '../ui/cards';
 import { TrackList, TrackRow } from '../ui/rows';
 import { openConfirm, openPrompt } from '../ui/sheet';
 import { openSheet } from '../ui/state';
+import { shareLink } from '../ui/actions';
 import { ListActions } from './collection';
 
 /** Cover for a personal playlist: a 2×2 of its first four different covers. */
@@ -69,6 +70,10 @@ export function Library() {
         <Link to={to.importer()} class="lib-tile">
           <Download size={24} />
           <div><b>Import</b><span>From YouTube Music</span></div>
+        </Link>
+        <Link to={to.stats()} class="lib-tile wide">
+          <ChartNoAxesColumn size={24} />
+          <div><b>Your listening</b><span>This week, your streak and what you play most</span></div>
         </Link>
       </div>
 
@@ -185,6 +190,13 @@ function openPlaylistMenu(p: LocalPlaylist): void {
             else void navigator.clipboard.writeText(text).then(() => toast('Song list copied'), () => toast("Couldn't copy from this browser."));
           })}>
             <Share2 size={20} /><span>Share song list</span>
+          </button>
+          <button class="menu-item" disabled={!p.tracks.some((t) => t.kind === 'song')} onClick={act(() => {
+            const ids = p.tracks.filter((t) => t.kind === 'song').map((t) => t.id);
+            if (ids.length > 150) toast('Only the first 150 songs fit in a link.');
+            void shareLink(p.name, to.shared(p.name, ids.slice(0, 150)));
+          })}>
+            <Link2 size={20} /><span>Share as a link</span><span class="menu-end">Opens in Sukoon</span>
           </button>
           <div class="menu-sep" />
           <button class="menu-item danger" onClick={act(() => {

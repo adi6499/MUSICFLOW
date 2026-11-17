@@ -52,14 +52,18 @@ const scrollAt = new Map<number, number>();
 let ignorePop = 0;
 
 function calm(): boolean {
-  return settings.value.calmMotion || (inBrowser && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  return settings.peek().calmMotion || (inBrowser && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 
-function show(next: Route, move: 'push' | 'pop' | 'replace', scrollTo: number, instant = false): void {
-  const apply = () => {
-    lastMove.value = move;
-    route.value = next;
-  };
+function show(next: Route, move: 'push' | 'pop' | 'replace', scrollTo: number): void {
+  // The screen is swapped at once and then makes its own short entrance (see
+  // .page-in in base.css). An earlier version cross-faded a snapshot of the
+  // old screen into the new one as well; the two animations ran on top of each
+  // other and the old screen sat frozen while the new one was photographed,
+  // which made every tap feel late.
+  document.documentElement.dataset.move = move;
+  lastMove.value = move;
+  route.value = next;
   const place = () => {
     if (scrollTo <= 0) { window.scrollTo(0, 0); return; }
     // The page may still be filling in; keep nudging until it is tall enough.
@@ -70,27 +74,8 @@ function show(next: Route, move: 'push' | 'pop' | 'replace', scrollTo: number, i
     };
     settle();
   };
-  const doc = document as Document & { startViewTransition?: (cb: () => unknown) => { finished: Promise<void> } };
-  const same = next.name === route.value.name && next.parts.join('/') === route.value.parts.join('/');
-  if (instant || !doc.startViewTransition || calm() || document.hidden || same) {
-    apply();
-    requestAnimationFrame(place);
-    setTimeout(place, 0);
-    return;
-  }
-  document.documentElement.dataset.move = move;
-  try {
-    const vt = doc.startViewTransition(async () => {
-      apply();
-      // Let the new screen render before the browser takes its "after" picture.
-      await new Promise((r) => setTimeout(r, 0));
-      place();
-    });
-    vt.finished.catch(() => { /* interrupted by another move: fine */ });
-  } catch {
-    apply();
-    setTimeout(place, 0);
-  }
+  // Signals redraw the screen in a microtask; place the scroll right after.
+  setTimeout(place, 0);
 }
 
 /** Go to another screen. */
@@ -106,8 +91,7 @@ export function go(path: string, opts: { replace?: boolean } = {}): void {
     // The overlay owns the newest history entry; turn that entry into the new screen.
     idx += 1;
     history.replaceState({ i: idx }, '', '#' + target);
-    // The overlay is already sliding away; switch the screen underneath without a second animation.
-    show(next, 'push', 0, true);
+    show(next, 'push', 0);
   } else if (opts.replace) {
     history.replaceState({ i: idx }, '', '#' + target);
     show(next, 'replace', 0);
@@ -216,7 +200,10 @@ export const to = {
   /** Songs know the artist's name but often not the id; the artist screen resolves it. */
   artistNamed: (name: string) => `/artist/~${encodeURIComponent(name)}`,
   section: (key: string) => `/section/${encodeURIComponent(key)}`,
-  mood: (key: string) => `/mood/${encodeURIComponent(key)}`,
+  mix: (kind: string) => `/mix/${encodeURIComponent(kind)}`,
+  stats: () => '/stats',
+  /** A playlist passed around as a link: its name and the ids of its songs. */
+  shared: (name: string, ids: string[]) => `/shared?n=${encodeURIComponent(name)}&ids=${ids.map(encodeURIComponent).join(',')}`,
   podcasts: () => '/podcasts',
   show: (id: string) => `/show/${encodeURIComponent(id)}`,
   settings: () => '/settings',

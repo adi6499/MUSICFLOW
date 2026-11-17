@@ -146,6 +146,10 @@ export interface Settings {
   calmMotion: boolean;
   /** Floating bars and menus drawn as clear glass. */
   glass: boolean;
+  /** Small taps you can feel when pressing things. */
+  haptics: boolean;
+  /** Seconds each song overlaps the next one (0 = a clean cut). */
+  crossfade: number;
   /** Palette used when the app is light, and when it is dark (ids from themes.ts). */
   lightTheme: string;
   darkTheme: string;
@@ -158,10 +162,14 @@ export interface Settings {
   fxClarity: number;
   fxSpace: number;
   fxLoud: number;
+  /** Brings the singer forward. */
+  fxVocal: number;
   /** Remove sound below this many hertz (0 = keep everything). Set by the small-speaker modes. */
   fxLowCut: number;
   podcastSpeed: number;
   welcomed: boolean;
   /** The iPhone "Add to Home Screen" tip has been dismissed. */
   homeTipSeen: boolean;
+  /** The "try Sukoon Sound" suggestion in the player has been answered. */
+  soundTipSeen: boolean;
 }

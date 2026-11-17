@@ -1,7 +1,7 @@
 // A song in a list.
 
-import type { ComponentChildren } from 'preact';
-import { Ellipsis, Heart } from 'lucide-preact';
+import type { ComponentChildren, TargetedKeyboardEvent, TargetedPointerEvent } from 'preact';
+import { Ellipsis, GripVertical, Heart } from 'lucide-preact';
 import type { Track } from '../lib/types';
 import { isLiked } from '../lib/library';
 import * as player from '../lib/player';
@@ -9,6 +9,15 @@ import { clock, cx } from '../lib/util';
 import { like } from './actions';
 import { Art } from './bits';
 import { openTrackMenu } from './sheet';
+
+/** What a queue row's drag handle needs. */
+export interface Grip {
+  onPointerDown: (e: TargetedPointerEvent<HTMLButtonElement>) => void;
+  onPointerMove: (e: TargetedPointerEvent<HTMLButtonElement>) => void;
+  onPointerUp: (e: TargetedPointerEvent<HTMLButtonElement>) => void;
+  onPointerCancel: (e: TargetedPointerEvent<HTMLButtonElement>) => void;
+  onKeyDown: (e: TargetedKeyboardEvent<HTMLButtonElement>) => void;
+}
 
 export function TrackRow(props: {
   track: Track;
@@ -25,6 +34,8 @@ export function TrackRow(props: {
   /** Replace the default tap (used by the queue to jump). */
   onPlay?: () => void;
   queueIndex?: number;
+  /** Queue rows: a handle to drag the row to a new place (replaces the heart). */
+  grip?: Grip;
 }) {
   const t = props.track;
   const cur = player.current.value;
@@ -61,7 +72,12 @@ export function TrackRow(props: {
         </div>
       </div>
       {t.duration > 0 && <span class="row-time">{clock(t.duration)}</span>}
-      {t.kind === 'song' && (
+      {props.grip && (
+        <button class="icon-btn sm row-grip" aria-label={`Move ${t.title}. Drag, or use the up and down arrow keys.`} onClick={(e) => e.stopPropagation()} {...props.grip}>
+          <GripVertical size={18} />
+        </button>
+      )}
+      {t.kind === 'song' && !props.grip && (
         <button class={cx('icon-btn sm heart row-like', liked && 'on')} onClick={stop(() => like(t))} aria-label={liked ? 'Unlike' : 'Like'} aria-pressed={liked}>
           <Heart size={18} />
         </button>

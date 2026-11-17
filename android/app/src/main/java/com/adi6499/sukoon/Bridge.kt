@@ -91,6 +91,18 @@ class Bridge(private val activity: MainActivity) {
         activity.runOnUiThread { activity.saveText(name, text) }
     }
 
+    /** A small tap you can feel. Each kind of action has its own feel (see src/lib/haptics.ts). */
+    @JavascriptInterface
+    fun haptic(kind: String) {
+        activity.runOnUiThread { activity.haptic(kind) }
+    }
+
+    /** Voice search: Android listens, then hands the words back to the page as a 'heard' event. */
+    @JavascriptInterface
+    fun listen(language: String) {
+        activity.runOnUiThread { activity.listen(language) }
+    }
+
     /** Light or dark was chosen in the app: make the status-bar icons readable. */
     @JavascriptInterface
     fun theme(dark: Boolean) {

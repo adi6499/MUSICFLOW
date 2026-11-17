@@ -14,6 +14,9 @@ export const themeNow = signal<'light' | 'dark'>(
   typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
 );
 
+/** The soft colour the player takes from the cover (unset = plain background). The karaoke screen shares it. */
+export const coverBg = signal<string | undefined>(undefined);
+
 /** What the big player shows beside (or instead of) the cover. */
 export const npPanel = signal<'art' | 'lyrics' | 'queue'>('art');
 
@@ -22,6 +25,10 @@ export function openPlayer(panel?: 'art' | 'lyrics' | 'queue'): void {
   openOverlay('player');
 }
 export function closePlayer(): void { closeOverlay('player'); }
+
+/** The big-words screen for singing along. */
+export function openKaraoke(): void { openOverlay('karaoke'); }
+export function closeKaraoke(): void { closeOverlay('karaoke'); }
 
 export interface SheetSpec {
   key: number;

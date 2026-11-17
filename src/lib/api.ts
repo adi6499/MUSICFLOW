@@ -13,7 +13,7 @@ import {
 } from './normalize';
 import { kvGet, kvSet } from './store';
 import { findSongs, rankByName, type Ask } from './searchrank.ts';
-import { alike, plain, sleep } from './util';
+import { alike, cleanTitle, plain, sleep } from './util';
 
 interface Server {
   name: string;
@@ -260,6 +260,45 @@ export function getSimilar(id: string, limit = 24, signal?: AbortSignal): Promis
   });
 }
 
+/** Several songs by id, in the order asked for (used to open a playlist shared by link). */
+export function getSongs(ids: string[], signal?: AbortSignal): Promise<Track[]> {
+  const clean = [...new Set(ids.filter((id) => /^[\w-]{4,24}$/.test(id)))].slice(0, 150);
+  if (!clean.length) return Promise.resolve([]);
+  return cached(songsKey(clean), 6 * HOUR, async () => {
+    const found = new Map<string, Track>();
+    // Asked for in groups: one very long address would be refused.
+    for (let i = 0; i < clean.length; i += 25) {
+      const group = clean.slice(i, i + 25);
+      try {
+        const data = await request((s) => (s.name === 'backup' ? `/songs?ids=${group.map(enc).join(',')}` : null), { signal });
+        for (const t of toTracks(list(data))) found.set(t.id, t);
+      } catch (e) {
+        if (isAbort(e)) throw e;
+      }
+    }
+    // Anything still missing is asked for one at a time, from either server.
+    const missing = clean.filter((id) => !found.has(id)).slice(0, 40);
+    const single = await Promise.allSettled(missing.map((id) => getSong(id, signal)));
+    for (const r of single) if (r.status === 'fulfilled' && r.value) found.set(r.value.id, r.value);
+    const out = clean.map((id) => found.get(id)).filter((t): t is Track => !!t);
+    if (!out.length) throw new ApiError("Couldn't load these songs. Please try again in a moment.");
+    return out;
+  });
+}
+
+export const songsKey = (ids: string[]) => 'songs:' + ids.join(',');
+
+/** An artist's releases, newest first. Only the backup server can sort this way. */
+export function getArtistLatest(id: string, signal?: AbortSignal): Promise<Track[]> {
+  return cached('artistLatest:' + id, 6 * HOUR, async () => {
+    const pages = await Promise.allSettled([0, 1].map((page) =>
+      request((s) => (s.name === 'backup' ? `/artists/${enc(id)}/songs?sortBy=latest&sortOrder=desc&page=${page}` : null), { signal }),
+    ));
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    return pages.flatMap((p) => (p.status === 'fulfilled' ? toTracks(list(p.value)) : []));
+  });
+}
+
 /** Ask again, ignoring what we remembered (used when an audio address stopped working). */
 export async function refetchSong(id: string): Promise<Track | null> {
   kept.delete('song:' + id);
@@ -396,9 +435,13 @@ async function searchEverything(query: string, signal?: AbortSignal, languages: 
   const artistList = artists.status === 'fulfilled' ? rankByName(q, artists.value, (a) => a.name) : [];
   // Was an artist's name typed? The quick search says so directly; a near-exact name match says so too.
   const intent = songs.status === 'fulfilled' ? songs.value.intent : {};
-  const lead =
-    artistList.find((a) => a.id === intent.artistId) ||
-    (artistList[0] && alike(plain(q), plain(artistList[0].name)) >= 0.8 ? artistList[0] : undefined);
+  // (A name match alone is not enough: the catalog has junk "artists" named
+  // after hit songs. So it only counts for an artist with a picture, and only
+  // when the words typed are not simply the title of the best song found.)
+  const bestSong = songs.status === 'fulfilled' ? songs.value.songs[0] : undefined;
+  const typedASong = !!bestSong && plain(cleanTitle(bestSong.title)) === plain(q);
+  const named = artistList.find((a) => !!a.image && alike(plain(q), plain(a.name)) >= 0.8);
+  const lead = artistList.find((a) => a.id === intent.artistId) || (typedASong ? undefined : named);
   return {
     songs: songs.status === 'fulfilled' ? songs.value.songs : [],
     albums: albums.status === 'fulfilled' ? rankByName(q, albums.value, (a) => a.title) : [],

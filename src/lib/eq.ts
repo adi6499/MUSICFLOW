@@ -5,11 +5,12 @@
 //                                        └→ high sparkle                      ┘         │
 //                                                          room ambience ───────────────┘
 //
-// Four simple controls sit on top of the equalizer:
+// Five simple controls sit on top of the equalizer:
 //   Bass      real low-end boost, plus added harmonics so bass is still heard
 //             on speakers too small to play the low notes themselves
 //   Clarity   lifts voices and detail
 //   Surround  widens the stereo picture and adds a little room around it
+//   Vocals    brings the singer forward without touching the instruments
 //   Loudness  evens out quiet and loud passages and raises the overall level
 // A limiter at the very end stops any of this from distorting.
 //
@@ -36,6 +37,8 @@ export interface Sound {
   clarity: number;
   space: number;
   loud: number;
+  /** Brings the singer forward (0…1). */
+  vocal: number;
   /** Remove everything below this many hertz (0 = keep it all). */
   lowCut: number;
 }
@@ -49,29 +52,31 @@ export interface Mode {
   clarity: number;
   space: number;
   loud: number;
+  vocal: number;
   lowCut: number;
 }
 
 const flat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 export const MODES: Mode[] = [
-  { name: 'Original', note: 'The song exactly as it was made.', gains: flat, bass: 0, clarity: 0, space: 0, loud: 0, lowCut: 0 },
-  { name: 'Spatial', note: 'Wide and open, with room around the music.', gains: [2, 2, 1, 0, -1, 0, 1, 2, 3, 3], bass: 0.35, clarity: 0.45, space: 0.7, loud: 0.25, lowCut: 0 },
-  { name: 'Cinema', note: 'Big, deep and enveloping.', gains: [4, 3, 2, 0, -1, 0, 1, 2, 3, 3], bass: 0.6, clarity: 0.4, space: 0.85, loud: 0.4, lowCut: 0 },
-  { name: 'Concert', note: 'Like a seat in the hall.', gains: [2, 2, 1, 0, 0, 0, 1, 2, 2, 2], bass: 0.3, clarity: 0.3, space: 1, loud: 0.2, lowCut: 0 },
-  { name: 'Headphones', note: 'Balanced, with a gentle sense of space.', gains: [2, 1, 0, 0, 0, 0, 1, 1, 2, 2], bass: 0.3, clarity: 0.3, space: 0.5, loud: 0.15, lowCut: 0 },
-  { name: 'Old speaker', note: 'For ageing or tired speakers: removes rumble they cannot play, restores warmth and detail, and lifts the level.', gains: [-6, -2, 3, 2, -1, 0, 2, 3, 4, 2], bass: 0.8, clarity: 0.6, space: 0.15, loud: 0.7, lowCut: 80 },
-  { name: 'Phone speaker', note: 'For a phone or tablet playing out loud: fuller and louder without distortion.', gains: [-9, -6, 0, 3, 2, 1, 2, 3, 2, 0], bass: 0.95, clarity: 0.35, space: 0, loud: 0.85, lowCut: 140 },
-  { name: 'Small speaker', note: 'For Bluetooth and laptop speakers: bass you can hear without the boom.', gains: [-5, -1, 3, 2, 0, 0, 1, 2, 3, 1], bass: 0.75, clarity: 0.4, space: 0.25, loud: 0.55, lowCut: 65 },
-  { name: 'Car', note: 'Cuts through road noise.', gains: [4, 3, 1, 0, -1, 0, 1, 2, 3, 2], bass: 0.5, clarity: 0.45, space: 0.4, loud: 0.55, lowCut: 0 },
-  { name: 'Bass boost', note: 'More weight in the low end.', gains: [7, 6, 4, 2, 0, 0, 0, 0, 0, 0], bass: 0.8, clarity: 0.1, space: 0.1, loud: 0.2, lowCut: 0 },
-  { name: 'Vocal', note: 'Brings the singer forward.', gains: [-2, -2, -1, 1, 3, 4, 4, 2, 0, -1], bass: 0, clarity: 0.4, space: 0.1, loud: 0.3, lowCut: 0 },
-  { name: 'Bollywood', note: 'Punchy rhythm, bright strings and clear vocals.', gains: [4, 3, 1, 0, 1, 2, 3, 3, 3, 2], bass: 0.45, clarity: 0.45, space: 0.35, loud: 0.35, lowCut: 0 },
-  { name: 'Acoustic', note: 'Natural and warm.', gains: [3, 3, 2, 0, 1, 1, 2, 3, 2, 1], bass: 0.2, clarity: 0.3, space: 0.3, loud: 0.1, lowCut: 0 },
-  { name: 'Classical', note: 'Wide dynamics, airy top.', gains: [3, 2, 1, 1, 0, 0, 0, 1, 2, 3], bass: 0.15, clarity: 0.25, space: 0.55, loud: 0, lowCut: 0 },
-  { name: 'Electronic', note: 'Deep bass and crisp highs.', gains: [5, 4, 1, 0, -2, 1, 0, 1, 4, 5], bass: 0.6, clarity: 0.4, space: 0.45, loud: 0.3, lowCut: 0 },
-  { name: 'Rock', note: 'Guitars and drums up front.', gains: [4, 3, 2, 0, -1, 0, 2, 3, 4, 4], bass: 0.4, clarity: 0.4, space: 0.3, loud: 0.35, lowCut: 0 },
-  { name: 'Late night', note: 'Quiet parts up, loud parts down, bass tamed: easy at low volume.', gains: [-4, -3, -1, 0, 1, 2, 2, 1, 0, -1], bass: 0, clarity: 0.25, space: 0.1, loud: 0.9, lowCut: 0 },
+  { name: 'Original', note: 'The song exactly as it was made.', gains: flat, bass: 0, clarity: 0, space: 0, loud: 0, vocal: 0, lowCut: 0 },
+  { name: 'Signature', note: "Sukoon's own tuning: warm bass, a clear voice and a little air around it.", gains: [2, 1.5, 0.5, 0, -0.5, 0, 1, 1.5, 2, 2], bass: 0.3, clarity: 0.35, space: 0.3, loud: 0.2, vocal: 0.35, lowCut: 0 },
+  { name: 'Spatial', note: 'Wide and open, with room around the music.', gains: [2, 2, 1, 0, -1, 0, 1, 2, 3, 3], bass: 0.35, clarity: 0.45, space: 0.7, loud: 0.25, vocal: 0.2, lowCut: 0 },
+  { name: 'Cinema', note: 'Big, deep and enveloping.', gains: [4, 3, 2, 0, -1, 0, 1, 2, 3, 3], bass: 0.6, clarity: 0.4, space: 0.85, loud: 0.4, vocal: 0.25, lowCut: 0 },
+  { name: 'Concert', note: 'Like a seat in the hall.', gains: [2, 2, 1, 0, 0, 0, 1, 2, 2, 2], bass: 0.3, clarity: 0.3, space: 1, loud: 0.2, vocal: 0.1, lowCut: 0 },
+  { name: 'Headphones', note: 'Balanced, with a gentle sense of space.', gains: [2, 1, 0, 0, 0, 0, 1, 1, 2, 2], bass: 0.3, clarity: 0.3, space: 0.5, loud: 0.15, vocal: 0.15, lowCut: 0 },
+  { name: 'Old speaker', note: 'For ageing or tired speakers: removes rumble they cannot play, restores warmth and detail, and lifts the level.', gains: [-6, -2, 3, 2, -1, 0, 2, 3, 4, 2], bass: 0.8, clarity: 0.6, space: 0.15, loud: 0.7, vocal: 0.45, lowCut: 80 },
+  { name: 'Phone speaker', note: 'For a phone or tablet playing out loud: fuller and louder without distortion.', gains: [-9, -6, 0, 3, 2, 1, 2, 3, 2, 0], bass: 0.95, clarity: 0.35, space: 0, loud: 0.85, vocal: 0.5, lowCut: 140 },
+  { name: 'Small speaker', note: 'For Bluetooth and laptop speakers: bass you can hear without the boom.', gains: [-5, -1, 3, 2, 0, 0, 1, 2, 3, 1], bass: 0.75, clarity: 0.4, space: 0.25, loud: 0.55, vocal: 0.4, lowCut: 65 },
+  { name: 'Car', note: 'Cuts through road noise.', gains: [4, 3, 1, 0, -1, 0, 1, 2, 3, 2], bass: 0.5, clarity: 0.45, space: 0.4, loud: 0.55, vocal: 0.4, lowCut: 0 },
+  { name: 'Bass boost', note: 'More weight in the low end.', gains: [7, 6, 4, 2, 0, 0, 0, 0, 0, 0], bass: 0.8, clarity: 0.1, space: 0.1, loud: 0.2, vocal: 0, lowCut: 0 },
+  { name: 'Vocal', note: 'Brings the singer forward.', gains: [-2, -2, -1, 1, 3, 4, 4, 2, 0, -1], bass: 0, clarity: 0.4, space: 0.1, loud: 0.3, vocal: 0.8, lowCut: 0 },
+  { name: 'Bollywood', note: 'Punchy rhythm, bright strings and clear vocals.', gains: [4, 3, 1, 0, 1, 2, 3, 3, 3, 2], bass: 0.45, clarity: 0.45, space: 0.35, loud: 0.35, vocal: 0.4, lowCut: 0 },
+  { name: 'Acoustic', note: 'Natural and warm.', gains: [3, 3, 2, 0, 1, 1, 2, 3, 2, 1], bass: 0.2, clarity: 0.3, space: 0.3, loud: 0.1, vocal: 0.3, lowCut: 0 },
+  { name: 'Classical', note: 'Wide dynamics, airy top.', gains: [3, 2, 1, 1, 0, 0, 0, 1, 2, 3], bass: 0.15, clarity: 0.25, space: 0.55, loud: 0, vocal: 0, lowCut: 0 },
+  { name: 'Electronic', note: 'Deep bass and crisp highs.', gains: [5, 4, 1, 0, -2, 1, 0, 1, 4, 5], bass: 0.6, clarity: 0.4, space: 0.45, loud: 0.3, vocal: 0.1, lowCut: 0 },
+  { name: 'Rock', note: 'Guitars and drums up front.', gains: [4, 3, 2, 0, -1, 0, 2, 3, 4, 4], bass: 0.4, clarity: 0.4, space: 0.3, loud: 0.35, vocal: 0.2, lowCut: 0 },
+  { name: 'Late night', note: 'Quiet parts up, loud parts down, bass tamed: easy at low volume.', gains: [-4, -3, -1, 0, 1, 2, 2, 1, 0, -1], bass: 0, clarity: 0.25, space: 0.1, loud: 0.9, vocal: 0.45, lowCut: 0 },
 ];
 
 const Ctx: typeof AudioContext | undefined =
@@ -89,6 +94,9 @@ interface Graph {
   air: BiquadFilterNode;
   bassGain: GainNode;
   sparkleGain: GainNode;
+  vocalGain: GainNode;
+  lowKeep: GainNode;
+  highKeep: GainNode;
   mix: GainNode;
   ll: GainNode;
   rr: GainNode;
@@ -104,7 +112,7 @@ interface Graph {
 let g: Graph | null = null;
 let roomOn = false;
 const sources = new WeakMap<HTMLMediaElement, MediaElementAudioSourceNode>();
-let last: Sound = { on: false, gains: flat, bass: 0, clarity: 0, space: 0, loud: 0, lowCut: 0 };
+let last: Sound = { on: false, gains: flat, bass: 0, clarity: 0, space: 0, loud: 0, vocal: 0, lowCut: 0 };
 
 /** A shape that turns a low note into the same note plus its overtones. */
 function curve(make: (x: number) => number) {
@@ -233,6 +241,47 @@ function build(): Graph | null {
     const out = gain(1);
     merge.connect(out);
 
+    // Vocals: a singer is nearly always mixed dead centre, in the middle of the
+    // range. So take what is the same in both ears, keep only the voice range,
+    // and add a little of it back in. Instruments off to the sides are untouched.
+    const centre = gain(1);
+    centre.channelCount = 1;
+    centre.channelCountMode = 'explicit';
+    centre.channelInterpretation = 'speakers'; // both sides folded into one
+    const voiceFrom = filter('highpass', 300);
+    const voiceTo = filter('lowpass', 3600);
+    const vocalGain = gain(0);
+    mix.connect(centre);
+    centre.connect(voiceFrom);
+    voiceFrom.connect(voiceTo);
+    voiceTo.connect(vocalGain);
+    vocalGain.connect(out);
+
+    // Sing along: the widener above can also remove everything that is the
+    // same in both ears, which is where the singer sits. That would take the
+    // bass and the cymbals with it, so those two ranges are kept on these side
+    // paths and added back. Silent unless sing-along is switched on.
+    const keepLow = gain(1);
+    keepLow.channelCount = 1;
+    keepLow.channelCountMode = 'explicit';
+    keepLow.channelInterpretation = 'speakers';
+    const lowOnly = filter('lowpass', 170);
+    const lowKeep = gain(0);
+    mix.connect(keepLow);
+    keepLow.connect(lowOnly);
+    lowOnly.connect(lowKeep);
+    lowKeep.connect(out);
+    const keepHigh = gain(1);
+    keepHigh.channelCount = 1;
+    keepHigh.channelCountMode = 'explicit';
+    keepHigh.channelInterpretation = 'speakers';
+    const highOnly = filter('highpass', 7500);
+    const highKeep = gain(0);
+    mix.connect(keepHigh);
+    keepHigh.connect(highOnly);
+    highOnly.connect(highKeep);
+    highKeep.connect(out);
+
     // Room ambience (bass is kept out of it so the low end stays tight).
     const room = ctx.createConvolver();
     room.buffer = makeRoom(ctx);
@@ -270,7 +319,7 @@ function build(): Graph | null {
     analyser.fftSize = 4096;
     trim.connect(analyser);
 
-    g = { ctx, input, lowCut, bands, shelf, presence, air, bassGain, sparkleGain, mix, ll, rr, lr, rl, room, wet, leveller, makeup, analyser };
+    g = { ctx, input, lowCut, bands, shelf, presence, air, bassGain, sparkleGain, vocalGain, lowKeep, highKeep, mix, ll, rr, lr, rl, room, wet, leveller, makeup, analyser };
     return g;
   } catch {
     g = null;
@@ -289,6 +338,21 @@ export function attach(el: HTMLMediaElement): void {
     apply(last);
   } catch { /* already routed elsewhere; leave the plain path */ }
 }
+
+let singing = false;
+
+/**
+ * Sing along: lower the original singer so you can take over. It works by
+ * removing what is identical in the left and right ear (the singer is nearly
+ * always placed dead centre) while keeping the bass and the shimmer. It suits
+ * most songs; on old or single-channel recordings there is nothing to separate.
+ */
+export function setSingAlong(on: boolean): void {
+  if (singing === on) return;
+  singing = on;
+  apply(last);
+}
+export const isSinging = () => singing;
 
 /** Browsers start audio processing asleep until the person interacts. */
 export function wake(): void {
@@ -309,6 +373,7 @@ export function apply(s: Sound): void {
   const clarity = on ? clamp(s.clarity || 0, 0, 1) : 0;
   const space = on ? clamp(s.space || 0, 0, 1) : 0;
   const loud = on ? clamp(s.loud || 0, 0, 1) : 0;
+  const vocal = on ? clamp(s.vocal || 0, 0, 1) : 0;
 
   let boost = 0;
   graph.bands.forEach((f, i) => {
@@ -323,15 +388,21 @@ export function apply(s: Sound): void {
   to(graph.presence.gain, clarity * 3);
   to(graph.air.gain, clarity * 6);
   to(graph.sparkleGain.gain, clarity * 0.14);
+  to(graph.vocalGain.gain, singing ? 0 : vocal * 0.55);
+  to(graph.lowKeep.gain, singing ? 1 : 0);
+  to(graph.highKeep.gain, singing ? 0.6 : 0);
 
-  const width = 1 + space * 0.9;
-  to(graph.ll.gain, (1 + width) / 2);
-  to(graph.rr.gain, (1 + width) / 2);
-  to(graph.lr.gain, (1 - width) / 2);
-  to(graph.rl.gain, (1 - width) / 2);
-  to(graph.wet.gain, space * 0.3);
+  // "centre" is how much of what both ears share is kept; "width" is how far
+  // the differences are pushed apart. Sing-along drops the centre almost away.
+  const centre = singing ? 0.06 : 1;
+  const width = singing ? 1.5 : 1 + space * 0.9;
+  to(graph.ll.gain, (centre + width) / 2);
+  to(graph.rr.gain, (centre + width) / 2);
+  to(graph.lr.gain, (centre - width) / 2);
+  to(graph.rl.gain, (centre - width) / 2);
+  to(graph.wet.gain, singing ? 0 : space * 0.3);
   // The room costs processor time, so it is only wired in while it is used.
-  const wantRoom = space > 0.01;
+  const wantRoom = space > 0.01 && !singing;
   if (wantRoom !== roomOn) {
     try {
       if (wantRoom) graph.mix.connect(graph.room);
@@ -353,7 +424,7 @@ export function apply(s: Sound): void {
   to(graph.makeup.gain, db(restore));
 
   // Leave headroom for whatever was boosted; the limiter catches the rest.
-  to(graph.input.gain, db(-(boost * 0.5 + bass * 2.5 + clarity * 1)));
+  to(graph.input.gain, db(-(boost * 0.5 + bass * 2.5 + clarity * 1 + vocal * 2)));
 }
 
 /** How loud the output is right now (0…1) — used by tests to confirm sound is flowing and not clipping. */

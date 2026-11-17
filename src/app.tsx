@@ -2,10 +2,11 @@
 // slide over the page.
 
 import { computed, effect } from '@preact/signals';
-import { useEffect, useRef } from 'preact/hooks';
+import { useRef } from 'preact/hooks';
 import { Home as HomeIcon, Library as LibraryIcon, Mic, Plus, Search as SearchIcon, Settings as Cog } from 'lucide-preact';
 import { playlists, settings, createPlaylist } from './lib/library';
 import { setTheme } from './lib/native';
+import { perfLevel } from './lib/perf';
 import * as player from './lib/player';
 import { cssVars, paletteFor } from './lib/themes';
 import { back, canGoBack, go, isOpen, route, to } from './lib/router';
@@ -15,25 +16,31 @@ import { AlbumPage, PlaylistPage } from './pages/collection';
 import { ArtistPage } from './pages/artist';
 import { Home, SectionPage } from './pages/home';
 import { Importer } from './pages/importer';
+import { MixPage } from './pages/mixes';
+import { SharedPage } from './pages/shared';
+import { StatsPage } from './pages/stats';
 import { HistoryPage, Library, LikedPage, LocalPlaylistPage } from './pages/library';
 import { Podcasts, ShowPage } from './pages/podcasts';
 import { Search } from './pages/search';
 import { SettingsPage } from './pages/settings';
 import { Bar, Mini } from './player/dock';
+import { Karaoke } from './player/karaoke';
 import { NowPlaying } from './player/nowplaying';
 import { Empty, Link } from './ui/bits';
 import { canGlass, useLens } from './ui/glass';
-import { openPrompt, SheetHost } from './ui/sheet';
-import { isWide, themeNow } from './ui/state';
+import { like } from './ui/actions';
+import { openPrompt, openShortcuts, SheetHost } from './ui/sheet';
+import { closePlayer, isWide, npPanel, openPlayer, themeNow } from './ui/state';
+import { toast } from './lib/toast';
 
 type Tab = 'home' | 'search' | 'library' | 'podcasts';
 let lastTab: Tab = 'home';
 
 /** Which tab a screen belongs to. Albums, artists and playlists stay under the tab you came from. */
 function tabFor(name: string): Tab {
-  if (name === '' || name === 'section') lastTab = 'home';
+  if (name === '' || name === 'section' || name === 'mix') lastTab = 'home';
   else if (name === 'search') lastTab = 'search';
-  else if (name === 'library' || name === 'import') lastTab = 'library';
+  else if (name === 'library' || name === 'import' || name === 'stats' || name === 'shared') lastTab = 'library';
   else if (name === 'podcasts' || name === 'show') lastTab = 'podcasts';
   return lastTab;
 }
@@ -127,6 +134,9 @@ function Screen() {
     case 'show': return <ShowPage />;
     case 'settings': return <SettingsPage />;
     case 'import': return <Importer />;
+    case 'mix': return <MixPage />;
+    case 'stats': return <StatsPage />;
+    case 'shared': return <SharedPage />;
   }
   return (
     <div class="page page-in">
@@ -137,26 +147,44 @@ function Screen() {
   );
 }
 
-export function App() {
+// The frame is split into small parts on purpose. Each part redraws only when
+// the one thing it shows changes. Before, the whole frame redrew whenever the
+// song changed, which meant re-checking every card on the screen for nothing
+// and a visible hitch at each song change.
+
+/** Sidebar on wide screens, tab bar on phones. Redraws when the screen or the width changes. */
+function Chrome() {
+  const active = tabFor(route.value.name);
+  return isWide.value ? <Side active={active} /> : <Tabs active={active} />;
+}
+
+/** The current screen. Redraws only when the address changes. */
+function Main() {
   const r = route.value;
-  const wide = isWide.value;
-  const has = !!player.current.value;
-  const active = tabFor(r.name);
+  return (
+    <main class="main">
+      {/* The key makes each screen start fresh; the search text is not part of it, so typing never resets the box. */}
+      <Screen key={r.name + '/' + r.parts.join('/')} />
+    </main>
+  );
+}
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('has-player', has);
-  }, [has]);
+const hasPlayer = computed(() => !!player.current.value);
 
+/** Mini player or desktop bar. Appears once there is something to play. */
+function Dock() {
+  if (!hasPlayer.value) return null;
+  return isWide.value ? <Bar /> : <Mini />;
+}
+
+export function App() {
   return (
     <div class="app">
-      {wide && <Side active={active} />}
-      <main class="main">
-        {/* The key makes each screen start fresh; the search text is not part of it, so typing never resets the box. */}
-        <Screen key={r.name + '/' + r.parts.join('/')} />
-      </main>
-      {has && (wide ? <Bar /> : <Mini />)}
-      {!wide && <Tabs active={active} />}
+      <Chrome />
+      <Main />
+      <Dock />
       <NowPlaying />
+      <Karaoke />
       <SheetHost />
       <Toasts />
     </div>
@@ -193,10 +221,18 @@ if (typeof window !== 'undefined') {
   effect(paint);
   media.addEventListener('change', paint);
 
+  // Glass is drawn when it is switched on, the browser can do it, and this
+  // device is keeping up (lib/perf.ts steps it down by itself if not).
   effect(() => {
-    if (settings.value.glass && canGlass) root.dataset.glass = '1';
+    const level = perfLevel.value;
+    if (settings.value.glass && canGlass && level < 2) root.dataset.glass = '1';
     else delete root.dataset.glass;
+    if (level) root.dataset.perf = String(level);
+    else delete root.dataset.perf;
   });
+
+  // Room is kept at the bottom of every screen once the player is showing.
+  effect(() => { root.classList.toggle('has-player', hasPlayer.value); });
 
   effect(() => {
     if (settings.value.calmMotion) root.dataset.calm = '1';
@@ -230,22 +266,59 @@ if (typeof window !== 'undefined') {
     document.title = t && player.playing.value ? `${t.title} · ${t.artist}` : 'Sukoon';
   });
 
-  // Keyboard: Space plays/pauses, Shift+arrows change song, "/" jumps to search.
+  // Keyboard. Space plays and pauses, the arrows move through the song (with
+  // Shift: change song), and single letters do the things reached for most.
+  // "?" shows the whole list. Nothing here fires while typing in a box.
+  let unmuteTo = 0.8;
   window.addEventListener('keydown', (e) => {
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
     const el = e.target as HTMLElement | null;
     if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
-    if (e.key === ' ' || e.code === 'Space') {
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    const t = player.current.value;
+    if (key === ' ' || e.code === 'Space') {
       if (el && (el.tagName === 'BUTTON' || el.tagName === 'A' || el.getAttribute('role') === 'button' || el.getAttribute('role') === 'switch')) return;
-      if (!player.current.value) return;
+      if (!t) return;
       e.preventDefault();
       player.toggle();
-    } else if (e.shiftKey && e.key === 'ArrowRight') { e.preventDefault(); void player.next(); }
-    else if (e.shiftKey && e.key === 'ArrowLeft') { e.preventDefault(); player.prev(); }
-    else if (e.key === '/' && !isOpen('sheet')) {
+      return;
+    }
+    if (isOpen('sheet')) return;
+    if (key === '/') {
       e.preventDefault();
       go(to.search());
       setTimeout(() => document.querySelector<HTMLInputElement>('.search-box input')?.focus(), 80);
+      return;
+    }
+    if (key === '?') { e.preventDefault(); openShortcuts(); return; }
+    if (!t) return;
+    const big = isOpen('player') || isOpen('karaoke');
+    const done = () => e.preventDefault();
+    switch (key) {
+      case 'ArrowRight': done(); if (e.shiftKey) void player.next(); else player.seekBy(5); break;
+      case 'ArrowLeft': done(); if (e.shiftKey) player.prev(); else player.seekBy(-5); break;
+      // Up and down scroll the page, so they only change the volume while the big player covers it.
+      case 'ArrowUp': if (big) { done(); player.setVolume(player.volume.value + 0.05); } break;
+      case 'ArrowDown': if (big) { done(); player.setVolume(player.volume.value - 0.05); } break;
+      case 'n': done(); void player.next(); break;
+      case 'p': done(); player.prev(); break;
+      case 'm': {
+        done();
+        const v = player.volume.value;
+        if (v > 0) { unmuteTo = v; player.setVolume(0); toast('Muted'); } else { player.setVolume(unmuteTo || 0.8); toast('Sound on'); }
+        break;
+      }
+      case 'l': if (t.kind === 'song') { done(); like(t); } break;
+      case 's': done(); player.toggleShuffle(); toast(player.shuffle.value ? 'Shuffle on' : 'Shuffle off'); break;
+      case 'r': {
+        done();
+        player.cycleRepeat();
+        const r = player.repeat.value;
+        toast(r === 'one' ? 'Repeating this song' : r === 'all' ? 'Repeating everything' : 'Repeat off');
+        break;
+      }
+      case 'q': done(); if (isOpen('player') && npPanel.value === 'queue') closePlayer(); else openPlayer('queue'); break;
+      case 'f': done(); if (isOpen('player')) closePlayer(); else openPlayer(); break;
     }
   });
 }

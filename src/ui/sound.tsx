@@ -1,9 +1,10 @@
-// The Sound panel: pick a mode made for your speakers, nudge four simple
+// The Sound panel: pick a mode made for your speakers, nudge five simple
 // sliders, or open the ten-band equalizer for fine control.
 
 import { useState } from 'preact/hooks';
 import { ChevronDown } from 'lucide-preact';
 import * as eq from '../lib/eq';
+import { buzz } from '../lib/haptics';
 import { setSettings, settings } from '../lib/library';
 import * as player from '../lib/player';
 import { cx } from '../lib/util';
@@ -14,9 +15,28 @@ export function openSound(): void {
   openSheet(() => <SoundPanel />);
 }
 
-const CONTROLS: Array<{ key: 'fxBass' | 'fxClarity' | 'fxSpace' | 'fxLoud'; name: string; hint: string }> = [
+/** Switch the sound on in one of the ready-made modes (by name). */
+export function applyMode(name: string): void {
+  const m = eq.MODES.find((x) => x.name === name);
+  if (!m || !eq.supported) return;
+  setSettings({
+    eqOn: true,
+    eqPreset: m.name,
+    eqGains: m.gains.slice(),
+    fxBass: m.bass,
+    fxClarity: m.clarity,
+    fxSpace: m.space,
+    fxLoud: m.loud,
+    fxVocal: m.vocal,
+    fxLowCut: m.lowCut,
+  });
+  if (player.playing.value) eq.wake();
+}
+
+const CONTROLS: Array<{ key: 'fxBass' | 'fxVocal' | 'fxClarity' | 'fxSpace' | 'fxLoud'; name: string; hint: string }> = [
   { key: 'fxBass', name: 'Bass', hint: 'Deeper low end, even on small speakers' },
-  { key: 'fxClarity', name: 'Clarity', hint: 'Clearer voices and detail' },
+  { key: 'fxVocal', name: 'Vocals', hint: 'Brings the singer forward' },
+  { key: 'fxClarity', name: 'Clarity', hint: 'Crisper detail and sparkle' },
   { key: 'fxSpace', name: 'Surround', hint: 'Wider, with room around the music' },
   { key: 'fxLoud', name: 'Loudness', hint: 'Evens out quiet and loud parts' },
 ];
@@ -38,19 +58,7 @@ function SoundPanel() {
 
   const mode = eq.MODES.find((m) => m.name === s.eqPreset);
   const wake = () => { if (player.playing.value) eq.wake(); };
-  const pick = (m: eq.Mode) => {
-    setSettings({
-      eqOn: true,
-      eqPreset: m.name,
-      eqGains: m.gains.slice(),
-      fxBass: m.bass,
-      fxClarity: m.clarity,
-      fxSpace: m.space,
-      fxLoud: m.loud,
-      fxLowCut: m.lowCut,
-    });
-    wake();
-  };
+  const pick = (m: eq.Mode) => { buzz('select'); applyMode(m.name); };
   const setControl = (key: (typeof CONTROLS)[number]['key'], value: number) => {
     setSettings({ [key]: Math.round(value * 100) / 100, eqPreset: 'Custom', eqOn: true });
   };
@@ -74,7 +82,7 @@ function SoundPanel() {
           role="switch"
           aria-checked={s.eqOn}
           aria-label="Sound"
-          onClick={() => { setSettings({ eqOn: !s.eqOn }); wake(); }}
+          onClick={() => { buzz('select'); setSettings({ eqOn: !s.eqOn }); wake(); }}
         />
       </div>
 

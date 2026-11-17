@@ -7,14 +7,17 @@
 import { effect } from '@preact/signals';
 import * as player from './player';
 import { back, canGoBack } from './router';
+import { nativeHeard } from './voice';
 
 interface Shell {
   /** JSON: {id,title,artist,album,image,playing,position,duration}. */
   update(json: string): void;
   /** Asks Android to send a JSON POST; the answer arrives as an 'http' event. */
   httpPost?(id: string, url: string, body: string): void;
-  /** Light vibration. */
-  haptic?(ms: number): void;
+  /** A small tap you can feel: 'tap', 'select', 'tick', 'like', 'done' or 'warn'. */
+  haptic?(kind: string): void;
+  /** Voice search: Android listens and answers with a 'heard' event. */
+  listen?(language: string): void;
   /** Saves a small text file into the phone's Downloads folder. */
   saveText?(name: string, text: string): void;
   /** Light or dark is showing: lets Android colour the status-bar icons to match. */
@@ -95,6 +98,10 @@ export function initNative(): void {
         // Android's Back button: close what is open, or go back a screen.
         if (canGoBack()) { back(); return true; }
         return false;
+      case 'heard':
+        // Voice search finished: the words (or nothing), and whether listening was possible.
+        nativeHeard(typeof a === 'string' ? a : '', b !== false);
+        return true;
       case 'insets':
         if (typeof a === 'number' && typeof b === 'number') setInsets(a, b);
         return true;

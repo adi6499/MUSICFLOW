@@ -3,23 +3,17 @@
 import type { TargetedPointerEvent } from 'preact';
 import { useRef } from 'preact/hooks';
 import {
-  Heart, ListMusic, Maximize2, MicVocal, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX,
+  Heart, ListMusic, Maximize2, MicVocal, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX,
 } from 'lucide-preact';
 import { isLiked } from '../lib/library';
 import * as player from '../lib/player';
-import { clock, cx, tick } from '../lib/util';
+import { buzz } from '../lib/haptics';
+import { clock, cx } from '../lib/util';
 import { goAlbum, goArtist, like } from '../ui/actions';
-import { Art, Spinner } from '../ui/bits';
+import { Art, PlayPause } from '../ui/bits';
 import { useLens } from '../ui/glass';
 import { Seek } from '../ui/slider';
 import { openPlayer } from '../ui/state';
-
-function PlayIcon(props: { size: number }) {
-  if (player.loading.value && player.playing.value) return <Spinner size={props.size} />;
-  return player.playing.value
-    ? <Pause size={props.size} fill="currentColor" strokeWidth={0} />
-    : <Play size={props.size} fill="currentColor" strokeWidth={0} style={{ marginLeft: props.size / 10 }} />;
-}
 
 function MiniProgress() {
   const d = player.duration.value;
@@ -47,7 +41,7 @@ export function Mini() {
     if (dy < -28 && Math.abs(dy) > Math.abs(dx)) { s.moved = true; openPlayer(); }
     else if (Math.abs(dx) > 54 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       s.moved = true;
-      tick();
+      buzz('tap');
       if (dx < 0) void player.next(); else player.prev();
     }
     if (s.moved) swallow.current = true;
@@ -67,10 +61,10 @@ export function Mini() {
         <div class="mini-title clip">{t.title}</div>
         <div class="mini-sub clip">{t.artist}</div>
       </div>
-      <button class="play-btn plain" onClick={stop(() => { tick(); player.toggle(); })} aria-label={player.playing.value ? 'Pause' : 'Play'}>
-        <PlayIcon size={22} />
+      <button class="play-btn plain" onClick={stop(() => { buzz('tap'); player.toggle(); })} aria-label={player.playing.value ? 'Pause' : 'Play'}>
+        <PlayPause size={22} />
       </button>
-      <button class="icon-btn" onClick={stop(() => { tick(); void player.next(); })} aria-label="Next song">
+      <button class="icon-btn" onClick={stop(() => { buzz('tap'); void player.next(); })} aria-label="Next song">
         <SkipForward size={22} fill="currentColor" />
       </button>
       <MiniProgress />
@@ -90,7 +84,7 @@ function BarSeek() {
   );
 }
 
-function Volume() {
+export function Volume() {
   const v = player.volume.value;
   const last = useRef(0.8);
   const Icon = v === 0 ? VolumeX : v < 0.5 ? Volume1 : Volume2;
@@ -106,13 +100,11 @@ function Volume() {
 
 export function Bar() {
   const t = player.current.value;
-  const glass = useRef<HTMLDivElement>(null);
-  useLens(glass, 0);
   if (!t) return null;
   const liked = isLiked(t.id);
   const rep = player.repeat.value;
   return (
-    <div ref={glass} class="bar">
+    <div class="bar">
       <div class="bar-left">
         <button onClick={() => openPlayer()} aria-label="Open player" style={{ flex: 'none' }}><Art src={t.image} /></button>
         <div style={{ minWidth: 0 }} class="mini-swap" key={t.id}>
@@ -129,7 +121,7 @@ export function Bar() {
         <div class="bar-ctrl">
           <button class={cx('icon-btn sm', player.shuffle.value && 'on')} onClick={player.toggleShuffle} aria-label="Shuffle" aria-pressed={player.shuffle.value}><Shuffle size={17} /></button>
           <button class="icon-btn sm" onClick={player.prev} aria-label="Previous"><SkipBack size={19} fill="currentColor" /></button>
-          <button class="play-btn" onClick={player.toggle} aria-label={player.playing.value ? 'Pause' : 'Play'}><PlayIcon size={18} /></button>
+          <button class="play-btn" onClick={player.toggle} aria-label={player.playing.value ? 'Pause' : 'Play'}><PlayPause size={18} /></button>
           <button class="icon-btn sm" onClick={() => void player.next()} aria-label="Next"><SkipForward size={19} fill="currentColor" /></button>
           <button class={cx('icon-btn sm', rep !== 'off' && 'on')} onClick={player.cycleRepeat} aria-label={rep === 'one' ? 'Repeating one song' : rep === 'all' ? 'Repeating all' : 'Repeat'}>
             {rep === 'one' ? <Repeat1 size={17} /> : <Repeat size={17} />}

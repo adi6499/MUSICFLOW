@@ -8,7 +8,8 @@ import { go, to } from '../lib/router';
 import { MOODS, moodTracks, stationFrom, type Mood } from '../lib/station';
 import { settings } from '../lib/library';
 import { toast } from '../lib/toast';
-import { firstArtist, tick } from '../lib/util';
+import { buzz } from '../lib/haptics';
+import { firstArtist } from '../lib/util';
 import { isApp } from '../lib/native';
 
 export function isTrack(item: Item): item is Track {
@@ -49,7 +50,7 @@ export function openItem(item: Item): void {
 
 export function like(track: Track): void {
   const now = toggleLike(track);
-  tick(now ? 12 : 6);
+  buzz(now ? 'like' : 'tap');
   toast(now ? 'Added to Liked songs' : 'Removed from Liked songs', now ? undefined : { label: 'Undo', run: () => { toggleLike(track); } });
 }
 
@@ -107,6 +108,25 @@ export async function share(title: string, path: string): Promise<void> {
     toast(url ? 'Link copied' : 'Copied');
   } catch {
     toast("Couldn't share from this browser.");
+  }
+}
+
+/** Where the website lives. Links made inside the Android app point here, since the app's own address is private to the phone. */
+const SITE = 'https://musicflow-two.vercel.app/';
+
+/** Share a link that opens a screen of Sukoon for whoever receives it. Works from the app too. */
+export async function shareLink(title: string, path: string): Promise<void> {
+  const url = (isApp ? SITE : `${location.origin}${location.pathname}`) + '#' + path;
+  try {
+    if (navigator.share) { await navigator.share({ title, text: title, url }); return; }
+  } catch (e) {
+    if ((e as { name?: string })?.name === 'AbortError') return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Link copied. Paste it to anyone.');
+  } catch {
+    toast("Couldn't copy the link from here.");
   }
 }
 

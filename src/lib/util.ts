@@ -173,11 +173,6 @@ export const isStandalone =
 export const isTouch =
   typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 
-/** A light tap you can feel, where the device supports it. Never throws. */
-export function tick(ms = 8): void {
-  try { navigator.vibrate?.(ms); } catch { /* not supported */ }
-}
-
 export function cx(...parts: Array<string | false | null | undefined>): string {
   let out = '';
   for (const p of parts) if (p) out += (out ? ' ' : '') + p;

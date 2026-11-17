@@ -7,7 +7,8 @@ import { isFollowing, toggleFollow } from '../lib/library';
 import * as player from '../lib/player';
 import { route } from '../lib/router';
 import { toast } from '../lib/toast';
-import { cx, shuffled, tick } from '../lib/util';
+import { buzz } from '../lib/haptics';
+import { cx, shuffled } from '../lib/util';
 import { Art, Empty, Failed, SkeletonHero, SkeletonRows, TopBar } from '../ui/bits';
 import { ItemShelf, Section } from '../ui/cards';
 import { useQuery } from '../ui/hooks';
@@ -38,7 +39,7 @@ export function ArtistPage() {
   const follow = () => {
     if (!a) return;
     const now = toggleFollow(a);
-    tick(now ? 12 : 6);
+    buzz(now ? 'like' : 'tap');
     toast(now ? `Following ${a.name}` : `Unfollowed ${a.name}`);
   };
 
@@ -56,10 +57,10 @@ export function ArtistPage() {
               <div class="label">Artist</div>
               <h1 class="display" style={{ marginTop: 6 }}>{a.name}</h1>
               <div class="hero-actions">
-                <button class="btn" disabled={!all.length} onClick={() => { tick(); player.shuffle.value = false; player.playTracks(all, 0, a.name); }}>
+                <button class="btn" disabled={!all.length} onClick={() => { buzz('tap'); player.shuffle.value = false; player.playTracks(all, 0, a.name); }}>
                   <Play size={18} fill="currentColor" /> Play
                 </button>
-                <button class="btn quiet" disabled={!all.length} onClick={() => { tick(); player.shuffle.value = false; player.playTracks(shuffled(all), 0, `${a.name} radio`); }}>
+                <button class="btn quiet" disabled={!all.length} onClick={() => { buzz('tap'); player.shuffle.value = false; player.playTracks(shuffled(all), 0, `${a.name} radio`); }}>
                   <Radio size={18} /> Radio
                 </button>
                 <button class={cx('btn outline', following && 'on')} onClick={follow} aria-pressed={following}>

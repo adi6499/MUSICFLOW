@@ -15,6 +15,7 @@ import { Art, Failed, Link, SkeletonShelf, Spinner, TopBar } from '../ui/bits';
 import { ItemGrid, ItemShelf, Section } from '../ui/cards';
 import { useQuery } from '../ui/hooks';
 import { isWide } from '../ui/state';
+import { MadeForYou, NewFromFollowed } from './mixes';
 
 export const LANGUAGES: Array<[string, string]> = [
   ['hindi', 'Hindi'], ['english', 'English'], ['punjabi', 'Punjabi'], ['marathi', 'Marathi'], ['gujarati', 'Gujarati'],
@@ -155,10 +156,13 @@ export function Home() {
       {!s.welcomed && <Welcome />}
       {s.welcomed && !s.homeTipSeen && isIOS && !isStandalone && !isApp && <HomeScreenTip />}
       <JumpBackIn />
+      <MadeForYou />
 
       <Section title="Play a mood">
         <Moods limit={wide ? undefined : 6} />
       </Section>
+
+      <NewFromFollowed />
 
       {favourites.length >= 4 && (
         <Section title="Your most played">

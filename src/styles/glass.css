@@ -23,11 +23,9 @@
   backdrop-filter: var(--lens,) blur(var(--glass-blur)) saturate(1.7);
 }
 
-/* The page cross-fade treats these bars as part of the page while they are
-   glass, so what shows through them fades together with the page. */
-[data-glass='1'] .mini,
-[data-glass='1'] .tabs,
-[data-glass='1'] .bar { view-transition-name: none; }
+/* Only the two small floating pills (mini player, tab bar) get the bending
+   rim. The wide desktop bar and the top bar are clear glass without it: over
+   such a large area the bending is barely visible and costs the most. */
 
 [data-glass='1'] .bar { border-top-color: var(--glass-edge); }
 [data-glass='1'] .topbar.stuck { border-bottom-color: var(--line); }

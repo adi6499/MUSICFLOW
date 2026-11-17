@@ -8,7 +8,8 @@ import { getShow, searchShows, topShows } from '../lib/podcasts';
 import * as player from '../lib/player';
 import { route } from '../lib/router';
 import { toast } from '../lib/toast';
-import { clock, cx, longTime, plural, tick } from '../lib/util';
+import { buzz } from '../lib/haptics';
+import { clock, cx, longTime, plural } from '../lib/util';
 import { Art, Empty, Failed, SkeletonHero, SkeletonRows, SkeletonShelf, TopBar } from '../ui/bits';
 import { ItemGrid, ItemShelf, Section } from '../ui/cards';
 import { useDebounced, useQuery } from '../ui/hooks';
@@ -73,7 +74,7 @@ function EpisodeRow(props: { ep: Track; list: Track[]; index: number; from: stri
         {ep.note && <div class="row-sub clip-2" style={{ marginTop: 4 }}>{ep.note}</div>}
       </div>
       <button class="play-btn" style={{ marginTop: 6, width: 38, height: 38 }} aria-label={on && player.playing.value ? 'Pause' : `Play ${ep.title}`}
-        onClick={(e) => { e.stopPropagation(); tick(); tap(); }}>
+        onClick={(e) => { e.stopPropagation(); buzz('tap'); tap(); }}>
         {on && player.playing.value ? <span class="eqbars live" style={{ position: 'static', background: 'none', padding: 0, height: 14 }}><i style={{ background: 'currentColor' }} /><i style={{ background: 'currentColor' }} /><i style={{ background: 'currentColor' }} /></span> : <Play size={16} fill="currentColor" strokeWidth={0} style={{ marginLeft: 2 }} />}
       </button>
       <button class="icon-btn sm" style={{ marginTop: 6 }} aria-label="More options" onClick={(e) => { e.stopPropagation(); openTrackMenu(ep); }}><Ellipsis size={20} /></button>
@@ -89,7 +90,7 @@ export function ShowPage() {
   const follow = () => {
     if (!s) return;
     const now = toggleShow(s);
-    tick(now ? 12 : 6);
+    buzz(now ? 'like' : 'tap');
     toast(now ? `Following ${s.title}` : `Unfollowed ${s.title}`);
   };
   return (
@@ -106,7 +107,7 @@ export function ShowPage() {
               <h1 class="title" style={{ marginTop: 6 }}>{s.title}</h1>
               <div class="hero-meta">{s.author}</div>
               <div class="hero-actions">
-                <button class="btn" disabled={!s.episodes.length} onClick={() => { tick(); player.shuffle.value = false; player.playTracks(s.episodes, 0, s.title); }}>
+                <button class="btn" disabled={!s.episodes.length} onClick={() => { buzz('tap'); player.shuffle.value = false; player.playTracks(s.episodes, 0, s.title); }}>
                   <Play size={18} fill="currentColor" /> Latest episode
                 </button>
                 <button class={cx('btn outline', following && 'on')} onClick={follow} aria-pressed={following}>

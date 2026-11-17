@@ -200,26 +200,30 @@ svg { display: block; flex: none; }
 }
 .page-narrow { max-width: 760px; }
 
-/* A screen arriving. Used when the browser cannot cross-fade screens itself. */
-.page-in { animation: page-in var(--t-3) var(--out) both; }
+/* A screen arriving: it rises a little and fades in, and its sections follow
+   one after another. Only opacity and position move, so the graphics chip
+   does all the work and nothing is re-laid-out. Going Back is quicker and
+   plainer, because you are returning to something you have already seen. */
+.page-in { animation: page-in 300ms var(--out) both; }
 @keyframes page-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
-
-/* Where the browser can cross-fade screens (View Transitions), do that instead. */
-@supports (view-transition-name: none) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) { animation-duration: 220ms; animation-timing-function: var(--inout); }
-  .tabs { view-transition-name: tabs; }
-  .side { view-transition-name: side; }
-  .mini { view-transition-name: mini; }
-  ::view-transition-group(tabs),
-  ::view-transition-group(side),
-  ::view-transition-group(mini) { animation: none; }
-  ::view-transition-old(tabs), ::view-transition-old(side), ::view-transition-old(mini) { display: none; }
-  ::view-transition-new(tabs), ::view-transition-new(side), ::view-transition-new(mini) { animation: none; }
+.page-in > .section { animation: rise 380ms var(--out) both; }
+.page-in > .section:nth-of-type(1) { animation-delay: 30ms; }
+.page-in > .section:nth-of-type(2) { animation-delay: 70ms; }
+.page-in > .section:nth-of-type(3) { animation-delay: 110ms; }
+.page-in > .section:nth-of-type(4) { animation-delay: 150ms; }
+.page-in > .section:nth-of-type(n + 5) { animation-delay: 180ms; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
+[data-move='pop'] .page-in { animation: page-back 170ms linear both; }
+[data-move='pop'] .page-in > .section { animation: none; }
+@keyframes page-back { from { opacity: 0.35; } to { opacity: 1; } }
+/* On a device that is struggling (see lib/perf.ts) screens simply appear. */
+[data-perf='2'] .page-in, [data-perf='2'] .page-in > .section { animation: none; }
 
 .page-head { padding: 22px 0 6px; }
 .page-head .display + .muted { margin-top: 8px; }

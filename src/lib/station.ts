@@ -31,7 +31,7 @@ function usable(t: Track, seed: Track, exclude: Set<string>, usedTitles: Set<str
 }
 
 /** Reorder so the same lead artist does not play twice in a row, where the list allows it. */
-function spread(list: Track[]): Track[] {
+export function spread(list: Track[]): Track[] {
   const rest = list.slice();
   const out: Track[] = [];
   let last = '';

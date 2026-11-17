@@ -1,11 +1,10 @@
 // Small shared pieces: artwork, links, the sticky top bar, loading and empty states.
 
 import type { ComponentChildren, TargetedMouseEvent } from 'preact';
-import { ArrowLeft, CloudOff, LoaderCircle, Music2, RotateCw } from 'lucide-preact';
+import { ArrowLeft, CloudOff, LoaderCircle, Music2, Pause, Play, RotateCw } from 'lucide-preact';
+import * as player from '../lib/player';
 import { back, go } from '../lib/router';
 import { cx, img } from '../lib/util';
-import { useRef } from 'preact/hooks';
-import { useLens } from './glass';
 import { useScrolled } from './hooks';
 
 export function Art(props: {
@@ -57,14 +56,25 @@ export function Link(props: { to: string; class?: string; children?: ComponentCh
 /** Sticky bar for inner screens. The title fades in once the big heading has scrolled away. */
 export function TopBar(props: { title?: string; children?: ComponentChildren; threshold?: number }) {
   const stuck = useScrolled(props.threshold ?? 120);
-  const ref = useRef<HTMLDivElement>(null);
-  useLens(ref, 0);
   return (
-    <div ref={ref} class={cx('topbar', stuck && 'stuck')}>
+    <div class={cx('topbar', stuck && 'stuck')}>
       <button class="icon-btn" onClick={back} aria-label="Back"><ArrowLeft size={22} /></button>
       {props.title ? <div class="topbar-title clip">{props.title}</div> : <div class="spacer" />}
       {props.children}
     </div>
+  );
+}
+
+/** Play and pause turn into each other instead of blinking; a spinner shows while a song loads. */
+export function PlayPause(props: { size: number }) {
+  const on = player.playing.value;
+  const busy = on && player.loading.value;
+  return (
+    <span class={cx('pp', on && 'on', busy && 'busy')} style={{ width: props.size, height: props.size }}>
+      <Play class="pp-play" size={props.size} fill="currentColor" strokeWidth={0} />
+      <Pause class="pp-pause" size={props.size} fill="currentColor" strokeWidth={0} />
+      {busy && <LoaderCircle class="spin pp-spin" size={props.size} />}
+    </span>
   );
 }
 

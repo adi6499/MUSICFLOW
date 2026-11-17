@@ -18,6 +18,7 @@ import type { RefObject } from 'preact';
 import { effect } from '@preact/signals';
 import { useEffect } from 'preact/hooks';
 import { settings } from '../lib/library';
+import { perfLevel } from '../lib/perf';
 
 const hasCss = typeof CSS !== 'undefined' && typeof CSS.supports === 'function';
 
@@ -152,7 +153,8 @@ export function useLens(ref: RefObject<HTMLElement | null>, radius: number): voi
     let h = 0;
     let on = false;
     const update = () => {
-      if (!settings.peek().glass) {
+      // The bending rim is the costly part; it is dropped first on a device that struggles.
+      if (!settings.peek().glass || perfLevel.peek() > 0) {
         if (on) { el.style.removeProperty('--lens'); on = false; }
         return;
       }
@@ -167,7 +169,7 @@ export function useLens(ref: RefObject<HTMLElement | null>, radius: number): voi
     update();
     const watcher = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
     watcher?.observe(el);
-    const stop = effect(() => { settings.value.glass; update(); });
+    const stop = effect(() => { settings.value.glass; perfLevel.value; update(); });
     return () => {
       watcher?.disconnect();
       stop();

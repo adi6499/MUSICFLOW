@@ -23,7 +23,7 @@ android\build.cmd
 ```
 
 It builds the website, copies it into the app, builds the signed APK, and leaves
-**`Sukoon-v1.0.0.apk`** in this folder. The first build takes a few minutes; later
+**`Sukoon-v1.1.0.apk`** in this folder. The first build takes a few minutes; later
 ones are quicker. If something goes wrong, the full output is in `build.log`.
 
 It expects the Android tools where they already are on this PC

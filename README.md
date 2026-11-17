@@ -2,9 +2,11 @@
 
 A calm, fast music player for phone and PC. *Sukoon* means peace of mind.
 
-Songs, albums, artists and playlists · one-tap moods · endless radio · synced lyrics ·
-podcasts · sound modes for every kind of speaker · sleep timer · import from YouTube
-Music · eleven themes and a liquid glass look · your own playlists and liked songs,
+Songs, albums, artists and playlists · search that finds the right song first · voice
+search · one-tap moods · mixes made for you · endless radio · songs that blend into each
+other · synced lyrics and a sing-along screen · podcasts · sound modes for every kind of
+speaker · sleep timer · listening stats · import from YouTube Music · share a playlist
+as a link · eleven themes and a liquid glass look · your own playlists and liked songs,
 kept on your device.
 
 One web app runs everywhere: in any browser, "installed" to a phone's home screen,
@@ -108,11 +110,45 @@ Liked songs, playlists, history and settings are saved **only on your device** �
 are no accounts and nothing is uploaded. The website and the Android app therefore
 keep separate libraries; **Settings → Back up / Restore** moves a library between them.
 
+### In the player
+
+- **Swipe the cover** left or right to change song; **tap it twice** to like the song.
+- **Drag a song** in the queue by its handle to change what plays next.
+- **Songs blend together**: the end of one song overlaps the start of the next
+  (Settings → Songs blend together; off, or 3 to 12 seconds). Not on iPhone, which does
+  not let a web page change loudness.
+- **Sing along**: open Lyrics, then *Sing along*. The words fill the screen and light
+  up as they are sung, the screen stays awake, and one switch lowers the original
+  singer's voice (it removes what is identical in both ears, which is where the singer
+  usually sits; it suits most songs, not all).
+- **Keyboard** (on a computer): Space, the arrow keys, and N P M L S R Q F. Press **?**
+  for the list.
+- **Taps you can feel** on phones, a different feel for a press, a like and a drag.
+
+### Made from your own listening
+
+All of this is worked out on your device; none of it is sent anywhere.
+
+- **Made for you** (Home): *Daily mix*, *Discover*, *On repeat* and *Rediscover*.
+- **New from artists you follow** (Home): their recent singles and film songs, with
+  the label compilations and remixes that flood "newest first" lists filtered out.
+- **Your listening** (Library): this week's minutes, your streak, top artists and songs,
+  and a picture of your week to share.
+- **Share as a link** (a playlist's ⋯ menu): the link itself carries the playlist, so
+  whoever opens it can play it or save it without any account.
+
+### Search
+
+Both catalog servers are asked at once and Sukoon ranks the answers itself (the right
+original ahead of covers, remixes and karaoke versions; spelling slips forgiven).
+`npm run bench:search` measures it against 65 real searches. The microphone in the
+search box listens for a song, an artist or an album; say "play …" and it starts.
+
 ### Sound
 
-Settings → Sound (or the sliders button in the player). Pick a mode — Spatial, Cinema,
-Old speaker, Phone speaker, Late night and more — or set Bass, Clarity, Surround and
-Loudness yourself, with a ten-band equalizer underneath for fine control. The modes for
+Settings → Sound (or the sliders button in the player). Pick a mode — Signature (Sukoon's
+own tuning), Spatial, Cinema, Old speaker, Phone speaker, Late night and more — or set
+Bass, Vocals, Clarity, Surround and Loudness yourself, with a ten-band equalizer underneath for fine control. The modes for
 old and small speakers remove the rumble those speakers cannot play, add overtones so
 bass is still heard, restore detail, and raise the level; a limiter keeps everything
 free of distortion. It is a stereo enhancer, not Dolby Atmos (that needs specially

@@ -31,9 +31,9 @@ void restoreSession();
 // While developing only: a handle for poking at the app from the browser console.
 if (import.meta.env.DEV) {
   void Promise.all([
-    import('./lib/player'), import('./lib/library'), import('./lib/router'), import('./lib/api'), import('./lib/station'), import('./lib/ytimport'), import('./lib/eq'),
-  ]).then(([player, library, router, api, station, ytimport, eq]) => {
-    (window as any).__sukoonDev = { player, library, router, api, station, ytimport, eq };
+    import('./lib/player'), import('./lib/library'), import('./lib/router'), import('./lib/api'), import('./lib/station'), import('./lib/ytimport'), import('./lib/eq'), import('./lib/mixes'),
+  ]).then(([player, library, router, api, station, ytimport, eq, mixes]) => {
+    (window as any).__sukoonDev = { player, library, router, api, station, ytimport, eq, mixes };
   });
 }
 

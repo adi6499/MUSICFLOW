@@ -16,6 +16,8 @@ export const DEFAULT_SETTINGS: Settings = {
   tint: true,
   calmMotion: false,
   glass: true,
+  haptics: true,
+  crossfade: 5,
   lightTheme: 'paper',
   darkTheme: 'ink',
   eqOn: false,
@@ -25,10 +27,12 @@ export const DEFAULT_SETTINGS: Settings = {
   fxClarity: 0,
   fxSpace: 0,
   fxLoud: 0,
+  fxVocal: 0,
   fxLowCut: 0,
   podcastSpeed: 1,
   welcomed: false,
   homeTipSeen: false,
+  soundTipSeen: false,
 };
 
 const unit = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
@@ -49,6 +53,9 @@ function readSettings(): Settings {
         merged.fxClarity = unit(merged.fxClarity);
         merged.fxSpace = unit(merged.fxSpace);
         merged.fxLoud = unit(merged.fxLoud);
+        merged.fxVocal = unit(merged.fxVocal);
+        merged.haptics = merged.haptics !== false;
+        merged.crossfade = typeof merged.crossfade === 'number' && merged.crossfade >= 0 && merged.crossfade <= 12 ? merged.crossfade : 5;
         merged.fxLowCut = typeof merged.fxLowCut === 'number' && merged.fxLowCut > 0 ? Math.min(300, merged.fxLowCut) : 0;
         merged.glass = merged.glass !== false;
         if (typeof merged.lightTheme !== 'string') merged.lightTheme = DEFAULT_SETTINGS.lightTheme;
@@ -88,6 +95,8 @@ export const following = signal<ArtistRef[]>([]);
 export const shows = signal<ShowRef[]>([]);
 export const episodePos = signal<Record<string, number>>({});
 export const searches = signal<string[]>([]);
+/** Listening per day: "2026-11-17" → [seconds listened, songs played]. */
+export const daily = signal<Record<string, [number, number]>>({});
 /** True once saved data has been read from the device. */
 export const hydrated = signal(false);
 
@@ -99,6 +108,7 @@ const showIds = computed(() => new Set(shows.value.map((s) => s.id)));
 const BOXES: Array<[string, Signal<any>]> = [
   ['liked', liked], ['playlists', playlists], ['history', history], ['counts', counts],
   ['saved', saved], ['following', following], ['shows', shows], ['episodePos', episodePos], ['searches', searches],
+  ['daily', daily],
 ];
 
 /** Read everything from the device once at start-up, then keep it written. */
@@ -203,12 +213,40 @@ const HISTORY_MAX = 400;
 export function logPlay(track: Track): void {
   const rest = history.value.filter((p) => p.t.id !== track.id);
   history.value = [{ t: track, at: Date.now() }, ...rest].slice(0, HISTORY_MAX);
-  if (track.kind === 'song') counts.value = { ...counts.value, [track.id]: (counts.value[track.id] || 0) + 1 };
+  if (track.kind === 'song') {
+    counts.value = { ...counts.value, [track.id]: (counts.value[track.id] || 0) + 1 };
+    addToDay(0, 1);
+  }
 }
 
 export function clearHistory(): void {
   history.value = [];
   counts.value = {};
+  daily.value = {};
+}
+
+// ---------------------------------------------------------------- listening per day
+
+/** The local calendar day as "2026-11-17". */
+export function dayKey(d = new Date()): string {
+  const two = (n: number) => (n < 10 ? '0' + n : '' + n);
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
+function addToDay(seconds: number, plays: number): void {
+  const key = dayKey();
+  const map = { ...daily.value };
+  const had = map[key] || [0, 0];
+  map[key] = [had[0] + seconds, had[1] + plays];
+  // A little over a year is plenty; older days are dropped.
+  const keys = Object.keys(map);
+  if (keys.length > 400) for (const k of keys.sort().slice(0, keys.length - 400)) delete map[k];
+  daily.value = map;
+}
+
+/** Called by the player with time actually spent listening. */
+export function addListening(seconds: number): void {
+  if (seconds > 0 && seconds < 3600) addToDay(seconds, 0);
 }
 
 /** Songs played most, most-played first. */

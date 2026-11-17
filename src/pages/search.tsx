@@ -1,17 +1,65 @@
 // Search: type, and songs, artists, albums and playlists appear as you go.
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Clock, Search as SearchIcon, SearchX, X } from 'lucide-preact';
+import { Clock, Mic, Search as SearchIcon, SearchX, X } from 'lucide-preact';
 import { searchAll, searchKey } from '../lib/api';
+import { buzz } from '../lib/haptics';
 import { addSearch, removeSearch, searches, settings } from '../lib/library';
+import * as player from '../lib/player';
+import { toast } from '../lib/toast';
+import { canListen, listen, understand, voiceIsNative, voiceLanguage, type VoiceProblem } from '../lib/voice';
 import { quietReplace, route, to } from '../lib/router';
 import { cx } from '../lib/util';
 import { Empty, Failed, SkeletonRows, SkeletonShelf } from '../ui/bits';
 import { ItemShelf, Section } from '../ui/cards';
 import { useDebounced, useQuery } from '../ui/hooks';
 import { TrackList } from '../ui/rows';
-import { isWide } from '../ui/state';
+import { isWide, openSheet } from '../ui/state';
 import { Moods } from './home';
+
+const PROBLEMS: Record<VoiceProblem, string> = {
+  denied: "Sukoon isn't allowed to use the microphone. Allow it in your browser's settings for this site, then try again.",
+  nothing: "Didn't catch that.",
+  unavailable: "Voice search isn't available on this device.",
+  failed: "Voice search didn't work just now.",
+};
+
+/** The little panel shown while the browser listens. */
+function Listening(props: { language: string; close: () => void; onHeard: (text: string) => void }) {
+  const [text, setText] = useState('');
+  const [problem, setProblem] = useState<VoiceProblem | null>(null);
+  const [round, setRound] = useState(0);
+  useEffect(() => {
+    setText('');
+    setProblem(null);
+    return listen(props.language, {
+      onPartial: setText,
+      onDone: (said) => { buzz('done'); props.close(); props.onHeard(said); },
+      onProblem: (kind) => { buzz('warn'); setProblem(kind); },
+    });
+  }, [round]);
+  const again = problem === 'nothing' || problem === 'failed';
+  return (
+    <div class="hear">
+      <div class={cx('hear-mic', !problem && 'live')}><Mic size={30} /></div>
+      <div class="hear-text" aria-live="polite">{problem ? PROBLEMS[problem] : text || 'Listening…'}</div>
+      {!problem && <p class="small muted">Say a song, an artist or an album. Try “play Kesariya”.</p>}
+      {again && <button class="btn" onClick={() => setRound((n) => n + 1)}>Try again</button>}
+    </div>
+  );
+}
+
+/** "Play …" said out loud starts the best match straight away. */
+async function playTop(words: string): Promise<void> {
+  toast(`Finding “${words}”…`);
+  try {
+    const found = await searchAll(words, undefined, settings.peek().languages);
+    if (found.songs.length) player.playTracks(found.songs.slice(0, 20), 0, `Search: ${words}`);
+    else toast(`Couldn't find “${words}”.`);
+  } catch {
+    toast("Couldn't search just now. Please try again.");
+  }
+}
 
 type Filter = 'all' | 'songs' | 'artists' | 'albums' | 'playlists';
 const FILTERS: Array<[Filter, string]> = [['all', 'All'], ['songs', 'Songs'], ['artists', 'Artists'], ['albums', 'Albums'], ['playlists', 'Playlists']];
@@ -48,6 +96,22 @@ export function Search() {
   const show = (f: Filter) => filter === 'all' || filter === f;
   const remember = () => { if (ready) addSearch(term); };
 
+  const heard = (said: string) => {
+    const { words, play } = understand(said);
+    if (!words) return;
+    setText(words);
+    addSearch(words);
+    if (play) void playTop(words);
+  };
+  const speak = () => {
+    buzz('tap');
+    const language = voiceLanguage(settings.peek().languages);
+    input.current?.blur();
+    // The Android app shows Android's own "speak now" screen; browsers get our small panel.
+    if (voiceIsNative) listen(language, { onDone: heard, onProblem: (kind) => toast(PROBLEMS[kind]) });
+    else openSheet((close) => <Listening language={language} close={close} onHeard={heard} />);
+  };
+
   return (
     <div class="page page-in">
       <header class="page-head"><h1 class="display">Search</h1></header>
@@ -68,11 +132,15 @@ export function Search() {
             enterkeyhint="search"
             onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)}
           />
-          {text && (
+          {text ? (
             <button type="button" class="icon-btn" aria-label="Clear" onClick={() => { setText(''); input.current?.focus(); }}>
               <X size={19} />
             </button>
-          )}
+          ) : canListen ? (
+            <button type="button" class="icon-btn mic" aria-label="Search by voice" onClick={speak}>
+              <Mic size={20} />
+            </button>
+          ) : null}
         </form>
         {ready && (
           <div class="chips scroll" style={{ marginTop: 10 }}>

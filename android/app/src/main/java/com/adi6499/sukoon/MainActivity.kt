@@ -9,6 +9,10 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.speech.RecognizerIntent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.RenderProcessGoneDetail
@@ -30,6 +34,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
+import org.json.JSONObject
 
 /**
  * The whole screen is one web view showing the Sukoon web app, which is packed
@@ -73,6 +78,16 @@ class MainActivity : ComponentActivity() {
     }
 
     private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    // Voice search: Android's own "speak now" screen listens and returns the words.
+    private val hearSpeech = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val said = if (result.resultCode == RESULT_OK) {
+            result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+        } else {
+            null
+        }
+        callJs("window.__sukoon&&window.__sukoon('heard',${JSONObject.quote(said ?: "")},true)")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -229,6 +244,53 @@ class MainActivity : ComponentActivity() {
         prefs.edit().putBoolean("askedNotifications", true).apply()
         try {
             askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Open Android's "speak now" screen. The third value tells the page whether listening was possible at all. */
+    fun listen(language: String) {
+        val tag = if (Regex("^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$").matches(language)) language else "en-IN"
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag)
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Say a song, artist or album")
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+        }
+        try {
+            hearSpeech.launch(intent)
+        } catch (_: Exception) {
+            // This phone has no speech service installed.
+            callJs("window.__sukoon&&window.__sukoon('heard','',false)")
+        }
+    }
+
+    /** A short, crisp tap. Uses the phone's own ready-made effects where it has them. */
+    fun haptic(kind: String) {
+        try {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            }
+            if (!vibrator.hasVibrator()) return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val effect = when (kind) {
+                    "tick", "select" -> VibrationEffect.EFFECT_TICK
+                    "like", "done" -> VibrationEffect.EFFECT_DOUBLE_CLICK
+                    "warn" -> VibrationEffect.EFFECT_HEAVY_CLICK
+                    else -> VibrationEffect.EFFECT_CLICK
+                }
+                vibrator.vibrate(VibrationEffect.createPredefined(effect))
+            } else {
+                val ms = when (kind) {
+                    "tick", "select" -> 6L
+                    "warn" -> 30L
+                    else -> 12L
+                }
+                vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE))
+            }
         } catch (_: Exception) {
         }
     }

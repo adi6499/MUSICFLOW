@@ -7,7 +7,8 @@ import { isSaved, toggleSaved } from '../lib/library';
 import * as player from '../lib/player';
 import { route, to } from '../lib/router';
 import { toast } from '../lib/toast';
-import { cx, firstArtist, longTime, plural, tick } from '../lib/util';
+import { buzz } from '../lib/haptics';
+import { cx, firstArtist, longTime, plural } from '../lib/util';
 import { share } from '../ui/actions';
 import { Art, Empty, Failed, Link, SkeletonHero, SkeletonRows, TopBar } from '../ui/bits';
 import { useQuery } from '../ui/hooks';
@@ -31,10 +32,10 @@ export function ListActions(props: {
   const none = !props.tracks.length;
   return (
     <div class="hero-actions">
-      <button class="btn" disabled={none} onClick={() => { tick(); player.shuffle.value = false; player.playTracks(props.tracks, 0, props.from); }}>
+      <button class="btn" disabled={none} onClick={() => { buzz('tap'); player.shuffle.value = false; player.playTracks(props.tracks, 0, props.from); }}>
         <Play size={18} fill="currentColor" /> Play
       </button>
-      <button class="btn quiet" disabled={none} onClick={() => { tick(); player.playShuffled(props.tracks, props.from); }}>
+      <button class="btn quiet" disabled={none} onClick={() => { buzz('tap'); player.playShuffled(props.tracks, props.from); }}>
         <Shuffle size={18} /> Shuffle
       </button>
       {props.onSave && (
@@ -82,7 +83,7 @@ export function AlbumPage() {
   const save = () => {
     if (!a) return;
     const now = toggleSaved({ type: 'album', id: a.id, title: a.title, artist: a.artist, image: a.image, year: a.year, songCount: a.songCount });
-    tick(now ? 12 : 6);
+    buzz(now ? 'like' : 'tap');
     toast(now ? 'Saved to your library' : 'Removed from your library');
   };
   const lead = a ? firstArtist(a.artist) : '';
@@ -123,7 +124,7 @@ export function PlaylistPage() {
   const save = () => {
     if (!p) return;
     const now = toggleSaved({ type: 'playlist', id: p.id, title: p.title, subtitle: p.subtitle, image: p.image, songCount: p.songCount });
-    tick(now ? 12 : 6);
+    buzz(now ? 'like' : 'tap');
     toast(now ? 'Saved to your library' : 'Removed from your library');
   };
   const meta = p ? [plural(p.songs.length, 'song'), total(p.songs)].filter(Boolean).join(' · ') : '';

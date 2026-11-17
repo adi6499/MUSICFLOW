@@ -272,6 +272,39 @@ function Sleep(props: { close: () => void }) {
   );
 }
 
+// ---------------------------------------------------------------- keyboard shortcuts
+
+const SHORTCUTS: Array<[string, string]> = [
+  ['Space', 'Play or pause'],
+  ['←  →', 'Back or forward 5 seconds'],
+  ['Shift ←  →', 'Previous or next song'],
+  ['N  P', 'Next or previous song'],
+  ['↑  ↓', 'Volume, in the full player'],
+  ['M', 'Mute'],
+  ['L', 'Like this song'],
+  ['S', 'Shuffle'],
+  ['R', 'Repeat'],
+  ['Q', 'Show the queue'],
+  ['F', 'Open or close the full player'],
+  ['/', 'Search'],
+  ['?', 'This list'],
+];
+
+export function openShortcuts(): void {
+  openSheet(() => (
+    <>
+      <div class="sheet-title">Keyboard shortcuts</div>
+      <div class="sheet-body">
+        <div class="keys">
+          {SHORTCUTS.map(([k, what]) => (
+            <div class="key-row" key={k}><kbd>{k}</kbd><span>{what}</span></div>
+          ))}
+        </div>
+      </div>
+    </>
+  ));
+}
+
 // ---------------------------------------------------------------- podcast speed
 
 export function openSpeed(): void {
