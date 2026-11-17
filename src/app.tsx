@@ -318,7 +318,7 @@ if (typeof window !== 'undefined') {
     if (key === '/') {
       e.preventDefault();
       go(to.search());
-      setTimeout(() => document.querySelector<HTMLInputElement>('.search-box input')?.focus(), 80);
+      setTimeout(() => document.querySelector<HTMLInputElement>('main.main .search-box input')?.focus(), 80);
       return;
     }
     if (key === '?') { e.preventDefault(); openShortcuts(); return; }

@@ -35,14 +35,14 @@ if errorlevel 1 (
 echo BUILD_EXIT 0 >> "%PROJECT%build.log"
 
 echo === 3/4 Copying the APK ===
-copy /y "%PROJECT%app\build\outputs\apk\release\app-release.apk" "%PROJECT%MusicFlow-v1.3.0.apk" > nul
+copy /y "%PROJECT%app\build\outputs\apk\release\app-release.apk" "%PROJECT%MusicFlow-v1.3.1.apk" > nul
 if errorlevel 1 goto failed
 echo === 4/4 Putting it on the website's download page ===
 cd /d "%PROJECT%.."
 call node scripts\publish-apk.mjs
 if errorlevel 1 goto failed
 echo.
-echo BUILD_OK  The app is at %PROJECT%MusicFlow-v1.3.0.apk
+echo BUILD_OK  The app is at %PROJECT%MusicFlow-v1.3.1.apk
 exit /b 0
 
 :failed

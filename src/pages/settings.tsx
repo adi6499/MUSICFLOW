@@ -7,7 +7,7 @@ import { appFileKey, getAppFile, isNewer } from '../lib/appfile';
 import * as eq from '../lib/eq';
 import { clearHistory, exportLibrary, history, importLibrary, liked, playlists, setSetting, setSettings, settings } from '../lib/library';
 import { PALETTES, paletteFor, type Palette } from '../lib/themes';
-import { canBend, canGlass, glassName, type GlassName } from '../ui/glass';
+import { canGlass, glassName, type GlassName } from '../ui/glass';
 import { Seek } from '../ui/slider';
 import { saveText } from '../lib/native';
 import { to } from '../lib/router';
@@ -150,9 +150,7 @@ export function SettingsPage() {
               <div class="set-note">
                 {!canGlass
                   ? 'This browser cannot draw glass, so the bars stay solid.'
-                  : canBend
-                    ? 'The bars at the top and bottom and the menus are glass. Clear is a magnifying glass: what passes underneath stays sharp and looks bigger. Frosted is milky. Solid is plain.'
-                    : 'The bars at the top and bottom and the menus are glass. Clear shows the page through them, Frosted is milky, Solid is plain. The magnifying effect needs Chrome, Edge or the Android app.'}
+                  : 'The bars at the top and bottom and the menus are glass. Clear is a magnifying glass: what passes underneath stays sharp and looks bigger. Frosted is milky. Solid is plain.'}
               </div>
             </div>
             {canGlass && (

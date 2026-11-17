@@ -43,6 +43,55 @@
   backdrop-filter: var(--lens) blur(calc((1 - var(--g)) * 22px)) brightness(var(--mag-bright));
 }
 
+/* ---- iPhone, Safari, Firefox: the magnifier as a copy -------------------------
+   These browsers cannot bend what is behind an element, so each round pill gets
+   a layer underneath it holding a live, enlarged copy of the page (ui/glass.ts,
+   "the copy lens"). The pill itself is then left clear so the copy shows. */
+.lens-under {
+  position: fixed;
+  overflow: hidden;
+  border-radius: 999px;
+  /* Belt and braces: some iPhones forget rounded corners on moving layers; a clip path they do not. */
+  -webkit-clip-path: inset(0 round 999px);
+  clip-path: inset(0 round 999px);
+  background: var(--bg);
+  pointer-events: none;
+  contain: layout paint style;
+  animation: lens-in 240ms linear both;
+  /* Placed exactly as its pill is placed (the two rules at the end of this file),
+     so the browser moves both together when an iPhone's address bar slides away. */
+  left: calc(12px + var(--safe-left));
+  right: calc(12px + var(--safe-right));
+}
+.lens-under.for-tabs { bottom: calc(var(--safe-bottom) + 8px); height: var(--tabs-h); }
+.lens-under.for-mini { bottom: calc(var(--tabs-h) + var(--safe-bottom) + 16px); height: var(--mini-h); }
+@keyframes lens-in { from { opacity: 0; } to { opacity: 1; } }
+.lens-page { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+/* The copy is a still picture of the page: nothing in it fades, slides or waits to appear. */
+.lens-page, .lens-page * { animation: none !important; transition: none !important; }
+.lens-page .art img { opacity: 1 !important; }
+/* The wash of the theme's colour that the pill's own background would have given. */
+.lens-under::after { content: ''; position: absolute; inset: 0; background: var(--glass); }
+/* Bending glass smears what is right at its rim. A little blur in a band round
+   the edge gives the copy the same soft rim, leaving the middle sharp. */
+.lens-under::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, transparent 26%, transparent 74%, #000 100%), linear-gradient(to right, #000 0, transparent 28px, transparent calc(100% - 28px), #000 100%);
+  mask-image: linear-gradient(to bottom, #000 0, transparent 26%, transparent 74%, #000 100%), linear-gradient(to right, #000 0, transparent 28px, transparent calc(100% - 28px), #000 100%);
+}
+[data-glass='1'] .mini[data-copy],
+[data-glass='1'] .tabs[data-copy] {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 /* Clear glass shows whatever is underneath, album covers included. So that the
    words and icons ON a bar stay readable over any picture, they carry a soft
    edge of the theme's own colour (like subtitles on a film). The glass itself
