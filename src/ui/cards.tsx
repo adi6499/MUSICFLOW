@@ -5,8 +5,10 @@ import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-preact';
 import type { Item } from '../lib/types';
+import { canPlay } from '../lib/offline';
 import * as player from '../lib/player';
 import { to } from '../lib/router';
+import { toast } from '../lib/toast';
 import { cx, plural } from '../lib/util';
 import { isTrack, playItem } from './actions';
 import { Art, Link } from './bits';
@@ -31,6 +33,7 @@ export function ItemCard(props: { item: Item }) {
   const song = isTrack(item);
   const cur = player.current.value;
   const on = song && !!cur && cur.id === item.id;
+  const away = song && !canPlay(item);
   const art = (
     <Art src={item.image} round={d.round} size={150}>
       {on && <span class={cx('eqbars', player.playing.value && 'live')}><i /><i /><i /></span>}
@@ -55,7 +58,10 @@ export function ItemCard(props: { item: Item }) {
     return <Link to={d.href} class={cx('card', d.round && 'center')}>{art}{text}</Link>;
   }
   return (
-    <button class="card" onClick={() => (on ? player.toggle() : void playItem(item))}>
+    <button class={cx('card', away && 'away')} onClick={() => {
+      if (away && !on) { toast("You're offline. This one isn't downloaded."); return; }
+      if (on) player.toggle(); else void playItem(item);
+    }}>
       {art}{text}
     </button>
   );

@@ -21,6 +21,7 @@ import { kvGet, kvSet } from './store';
 import { toast } from './toast';
 import { clamp, img, isIOS, shuffled } from './util';
 import * as eq from './eq';
+import * as offline from './offline';
 import { moreLike, markHeard } from './station';
 
 // ---------------------------------------------------------------- state
@@ -92,6 +93,9 @@ let fading = false;
 
 function pickUrl(track: Track): string {
   if (track.kind === 'episode') return track.url || '';
+  // A downloaded song plays from the device: it starts at once and uses no data.
+  const local = offline.peekUrl(track.id);
+  if (local) return local;
   const streams = track.streams;
   if (!streams || !streams.length) return '';
   const want = wantedBitrate();
@@ -128,6 +132,8 @@ function unlock(target: HTMLAudioElement): void {
 async function start(track: Track, startAt = 0, autoplay = true): Promise<void> {
   const my = ++ticket;
   endBlend();
+  // No internet: only downloaded songs can play. Go on to the next one that is on the device.
+  if (navigator.onLine === false && !(track.kind === 'song' && offline.has(track.id))) { offlineSkip(autoplay); return; }
   // Songs keep whichever deck is in use; episodes have their own element.
   const target = track.kind === 'episode' ? spoken : el === musicB ? musicB : music;
   if (el !== target) {
@@ -147,6 +153,12 @@ async function start(track: Track, startAt = 0, autoplay = true): Promise<void> 
   setMeta(track);
   markHeard(track);
 
+  if (track.kind === 'song' && offline.has(track.id) && !offline.peekUrl(track.id)) {
+    // Fetching the file from the device takes a moment; keep the tap "alive" meanwhile.
+    if (autoplay) unlock(el);
+    await offline.localUrl(track.id);
+    if (my !== ticket) return;
+  }
   let url = pickUrl(track);
   if (!url) {
     if (autoplay) unlock(el);
@@ -189,6 +201,29 @@ async function start(track: Track, startAt = 0, autoplay = true): Promise<void> 
   }
 }
 
+/** No internet and this song is not on the device: play the next one that is, or stop. */
+function offlineSkip(autoplay: boolean): void {
+  const q = queue.value;
+  if (autoplay) {
+    for (let n = index.value + 1; n < q.length; n++) {
+      if (q[n].kind === 'song' && offline.has(q[n].id)) { jump(n); return; }
+    }
+  }
+  ticket++;
+  try { el.pause(); } catch { /* nothing loaded */ }
+  loadedId = '';
+  batch(() => { playing.value = false; loading.value = false; });
+  if (autoplay) {
+    toast(
+      offline.downloads.peek().length
+        ? "You're offline, and the rest of this queue isn't downloaded."
+        : "You're offline. Download songs to play them without internet.",
+      undefined,
+      4400,
+    );
+  }
+}
+
 /** A song would not play. Try once more with a fresh address, then move on. */
 function fail(track: Track, my: number): void {
   if (my !== ticket) return;
@@ -216,10 +251,15 @@ function fail(track: Track, my: number): void {
 function giveUp(track: Track): void {
   retried = false;
   skipsInARow++;
-  const offline = navigator.onLine === false;
-  if (offline || skipsInARow >= 3 || index.value >= queue.value.length - 1) {
+  if (navigator.onLine === false) {
+    // The connection went: carry on with whatever is downloaded.
+    skipsInARow = 0;
+    offlineSkip(true);
+    return;
+  }
+  if (skipsInARow >= 3 || index.value >= queue.value.length - 1) {
     batch(() => { playing.value = false; loading.value = false; });
-    toast(offline ? 'You are offline. Playback will continue when you are back.' : `Couldn't play “${track.title}”.`);
+    toast(`Couldn't play “${track.title}”.`);
     skipsInARow = 0;
     return;
   }
@@ -371,6 +411,7 @@ function maybeBlend(track: Track, t: number, d: number): void {
   }
   const upcoming = q[i];
   if (!upcoming || upcoming.kind !== 'song' || upcoming.id === track.id) return;
+  if (navigator.onLine === false && !offline.has(upcoming.id)) return;
   const url = pickUrl(upcoming);
   if (!url) return; // its address is still being fetched; look again on the next tick
   const deck = idleDeck();
@@ -488,6 +529,7 @@ function prepareNext(): void {
   const upcoming = queue.value[index.value + 1];
   if (!upcoming || upcoming.id === preparedFor) return;
   preparedFor = upcoming.id;
+  if (upcoming.kind === 'song' && offline.has(upcoming.id)) { void offline.localUrl(upcoming.id); return; }
   void withStreams(upcoming).catch(() => { preparedFor = ''; });
 }
 
@@ -727,7 +769,7 @@ export function stop(): void {
 
 /** When the queue is about to run out, quietly add songs like the ones just heard. */
 async function topUp(force = false): Promise<void> {
-  if (toppingUp || !settings.value.autoplay || repeat.value === 'all') return;
+  if (toppingUp || !settings.value.autoplay || repeat.value === 'all' || navigator.onLine === false) return;
   const q = queue.value;
   const seed = current.value;
   if (!seed || seed.kind !== 'song') return;
@@ -921,7 +963,7 @@ if (typeof window !== 'undefined') {
 
 /** What the two song decks are doing right now. Used by tests to confirm a blend really overlaps. */
 export function decks() {
-  const say = (a: HTMLAudioElement) => ({ playing: !a.paused && !a.ended && !!a.src, volume: Math.round(a.volume * 100) / 100, at: Math.round((a.currentTime || 0) * 10) / 10 });
+  const say = (a: HTMLAudioElement) => ({ from: !a.src ? '' : a.src.startsWith('blob:') ? 'device' : 'network', playing: !a.paused && !a.ended && !!a.src, volume: Math.round(a.volume * 100) / 100, at: Math.round((a.currentTime || 0) * 10) / 10 });
   return { active: el === music ? 'A' : el === musicB ? 'B' : 'spoken', blending: !!blend, A: say(music), B: say(musicB) };
 }
 

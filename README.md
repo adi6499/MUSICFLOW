@@ -5,7 +5,8 @@ A calm, fast music player for phone and PC. *Sukoon* means peace of mind.
 Songs, albums, artists and playlists · search that finds the right song first · voice
 search · one-tap moods · mixes made for you · endless radio · songs that blend into each
 other · synced lyrics and a sing-along screen · podcasts · sound modes for every kind of
-speaker · sleep timer · listening stats · import from YouTube Music · share a playlist
+speaker · sleep timer · downloads that play without internet · listening stats · import
+from YouTube Music · share a playlist
 as a link · eleven themes and a liquid glass look · your own playlists and liked songs,
 kept on your device.
 
@@ -106,7 +107,7 @@ android/              the Android shell
 
 ### Your data
 
-Liked songs, playlists, history and settings are saved **only on your device** — there
+Liked songs, playlists, history, downloads and settings are saved **only on your device** — there
 are no accounts and nothing is uploaded. The website and the Android app therefore
 keep separate libraries; **Settings → Back up / Restore** moves a library between them.
 
@@ -124,6 +125,26 @@ keep separate libraries; **Settings → Back up / Restore** moves a library betw
 - **Keyboard** (on a computer): Space, the arrow keys, and N P M L S R Q F. Press **?**
   for the list.
 - **Taps you can feel** on phones, a different feel for a press, a like and a drag.
+
+### Downloads and offline
+
+- **Download** a song from its ⋯ menu, or a whole album, playlist, mix or your liked
+  songs with the arrow beside Play and Shuffle. *Settings → Downloads* sets the quality
+  (about 3, 5 or 10 MB a song) and can keep every liked song downloaded automatically.
+- Downloaded songs are kept **inside Sukoon's own storage on the device**, with their
+  cover and lyrics. They are not loose files in the phone's folders, and nothing is
+  uploaded. *Library → Downloads* lists them, shows the space used, and removes them.
+- **With no internet** a strip at the top says so, Home leads with your downloads,
+  songs that are not on the device are faded, and the player skips straight to the next
+  downloaded song. A downloaded song also starts instantly and uses no data when online.
+- A download interrupted by a lost connection or by closing the app carries on by
+  itself next time.
+- The website opens with no internet after one visit (its own files are kept by a
+  service worker); the Android app always does, since its files are inside the app.
+- Podcasts cannot be downloaded: most podcast hosts do not allow a web page to save
+  their files.
+- On iPhone, add Sukoon to the Home Screen: Safari may clear the storage of a website
+  that has not been opened for a week.
 
 ### Made from your own listening
 

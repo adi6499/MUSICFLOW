@@ -33,10 +33,10 @@ if errorlevel 1 (
 echo BUILD_EXIT 0 >> "%PROJECT%build.log"
 
 echo === 3/3 Copying the APK ===
-copy /y "%PROJECT%app\build\outputs\apk\release\app-release.apk" "%PROJECT%Sukoon-v1.1.0.apk" > nul
+copy /y "%PROJECT%app\build\outputs\apk\release\app-release.apk" "%PROJECT%Sukoon-v1.2.0.apk" > nul
 if errorlevel 1 goto failed
 echo.
-echo BUILD_OK  The app is at %PROJECT%Sukoon-v1.1.0.apk
+echo BUILD_OK  The app is at %PROJECT%Sukoon-v1.2.0.apk
 exit /b 0
 
 :failed

@@ -3,6 +3,8 @@
 
     <!-- Streaming music -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Knowing when there is no internet, so downloaded songs take over (asks the user nothing) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Keep playing with the screen off, with controls on the notification and lock screen -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />

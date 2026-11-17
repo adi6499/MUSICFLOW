@@ -166,6 +166,10 @@ export interface Settings {
   fxVocal: number;
   /** Remove sound below this many hertz (0 = keep everything). Set by the small-speaker modes. */
   fxLowCut: number;
+  /** Quality used when a song is downloaded for listening without internet. */
+  downloadQuality: 'high' | 'normal' | 'saver';
+  /** Download every liked song automatically. */
+  keepLiked: boolean;
   podcastSpeed: number;
   welcomed: boolean;
   /** The iPhone "Add to Home Screen" tip has been dismissed. */

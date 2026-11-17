@@ -2,17 +2,19 @@
 
 import { useState } from 'preact/hooks';
 import {
-  ChartNoAxesColumn, Clock, Download, Heart, History as HistoryIcon, Link2, ListEnd, ListMusic, Pencil, Plus, Search as SearchIcon, Share2, Trash2, X,
+  ArrowDownToLine, ChartNoAxesColumn, Clock, Download, Heart, History as HistoryIcon, Link2, ListEnd, ListMusic, Pencil, Plus, Search as SearchIcon, Share2, Trash2, X,
 } from 'lucide-preact';
 import type { LocalPlaylist, Track } from '../lib/types';
 import {
   clearHistory, createPlaylist, deletePlaylist, following, history, hydrated, liked, playlists, renamePlaylist,
   restorePlaylist, saved, shows,
 } from '../lib/library';
+import { isApp } from '../lib/native';
+import * as offline from '../lib/offline';
 import * as player from '../lib/player';
 import { back, go, route, to } from '../lib/router';
 import { toast } from '../lib/toast';
-import { ago, cx, img, longTime, plain, plural } from '../lib/util';
+import { ago, cx, img, isIOS, isStandalone, longTime, plain, plural } from '../lib/util';
 import { Art, Empty, Link, SkeletonRows, TopBar } from '../ui/bits';
 import { ItemShelf, Section } from '../ui/cards';
 import { TrackList, TrackRow } from '../ui/rows';
@@ -32,7 +34,11 @@ export function Mosaic(props: { tracks: Track[]; class?: string; size?: 150 | 50
   if (pics.length < 4) return <Art src={pics[0]} class={props.class} size={props.size ?? 150} />;
   return (
     <span class={cx('art mosaic', props.class)}>
-      {pics.map((p) => <img key={p} src={img(p, 150)} alt="" loading="lazy" decoding="async" draggable={false} />)}
+      {pics.map((p) => {
+        const remote = img(p, 150);
+        const kept = offline.offlineArt(remote);
+        return <img key={p} src={kept && !offline.online.value ? kept : remote} alt="" loading="lazy" decoding="async" draggable={false} />;
+      })}
     </span>
   );
 }
@@ -59,6 +65,12 @@ export function Library() {
           <Heart size={24} />
           <div><b>Liked songs</b><span>{plural(likes, 'song')}</span></div>
         </Link>
+        {offline.supported && (
+          <Link to={to.library('downloads')} class="lib-tile">
+            <ArrowDownToLine size={24} />
+            <div><b>Downloads</b><span>{offline.downloads.value.length ? `${plural(offline.downloads.value.length, 'song')} · ${offline.megabytes(offline.totalBytes.value)}` : 'Play without internet'}</span></div>
+          </Link>
+        )}
         <Link to={to.library('history')} class="lib-tile">
           <HistoryIcon size={24} />
           <div><b>History</b><span>What you played</span></div>
@@ -71,9 +83,9 @@ export function Library() {
           <Download size={24} />
           <div><b>Import</b><span>From YouTube Music</span></div>
         </Link>
-        <Link to={to.stats()} class="lib-tile wide">
+        <Link to={to.stats()} class="lib-tile">
           <ChartNoAxesColumn size={24} />
-          <div><b>Your listening</b><span>This week, your streak and what you play most</span></div>
+          <div><b>Your listening</b><span>Your week and top songs</span></div>
         </Link>
       </div>
 
@@ -134,6 +146,62 @@ export function LikedPage() {
         <div style={{ marginTop: 14 }}>
           {list.length ? <TrackList tracks={list} from="Liked songs" /> : <Empty title="No match" text={`Nothing in your liked songs matches “${filter}”.`} />}
         </div>
+      )}
+    </div>
+  );
+}
+
+export function DownloadsPage() {
+  const list = offline.downloads.value;
+  const tracks = list.map((d) => d.t);
+  const total = offline.totalBytes.value;
+  const busy = offline.busyCount.value;
+  const parts = Object.values(offline.percent.value);
+  const clear = () => openConfirm({
+    title: 'Remove all downloads?',
+    text: `This frees ${offline.megabytes(total)} on this device. Your liked songs and playlists stay, and everything still plays when you are online.`,
+    action: 'Remove all',
+    danger: true,
+    onConfirm: () => { void offline.removeAll(); toast('All downloads removed'); },
+  });
+  return (
+    <div class="page page-narrow page-in">
+      <TopBar title="Downloads" threshold={110}>
+        {list.length > 0 && <button class="btn quiet small" onClick={clear}>Remove all</button>}
+      </TopBar>
+      <header class="page-head">
+        <h1 class="display">Downloads</h1>
+        <p class="muted">{list.length ? `${plural(list.length, 'song')} · ${offline.megabytes(total)} on this device` : 'Songs you download play without internet.'}</p>
+        {list.length > 0 && <div style={{ marginTop: 2 }}><ListActions tracks={tracks} from="Downloads" noDownload /></div>}
+      </header>
+
+      {busy > 0 && (
+        <div class="set-card dl-card">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <b>{offline.online.value ? `Downloading ${plural(busy, 'song')}` : `${plural(busy, 'song')} waiting for internet`}</b>
+            <div class="meter" style={{ marginTop: 10 }}><i style={{ transform: `scaleX(${parts.length ? Math.max(0.03, parts.reduce((a, b) => a + b, 0) / parts.length) : 0.03})` }} /></div>
+          </div>
+          <button class="btn quiet small" onClick={() => { offline.stopAll(); toast('Stopped'); }}>Stop</button>
+        </div>
+      )}
+
+      {!offline.supported && (
+        <Empty icon={<ArrowDownToLine size={26} strokeWidth={1.6} />} title="Downloads aren't available here" text="This browser window doesn't allow files to be kept (private windows often don't). Open Sukoon in a normal window." />
+      )}
+      {offline.supported && offline.ready.value && !list.length && !busy && (
+        <Empty icon={<ArrowDownToLine size={26} strokeWidth={1.6} />} title="Nothing downloaded yet" text="Open an album, a playlist or your liked songs and tap the download arrow. For one song, use its ⋯ menu.">
+          <Link to={to.library('liked')} class="btn quiet"><Heart size={17} /> Liked songs</Link>
+        </Empty>
+      )}
+      <div class="rows" style={{ marginTop: 14 }}>
+        {list.map((d, i) => (
+          <TrackRow key={d.t.id} track={d.t} list={tracks} index={i} from="Downloads" sub={`${offline.megabytes(d.size)} · ${d.t.artist}`} />
+        ))}
+      </div>
+      {list.length > 0 && isIOS && !isStandalone && !isApp && (
+        <p class="small faint" style={{ padding: '16px 4px 0' }}>
+          On iPhone, add Sukoon to your Home Screen (Share, then Add to Home Screen). Safari may clear the downloads of a website that hasn't been opened for a week; on the Home Screen they are kept.
+        </p>
       )}
     </div>
   );

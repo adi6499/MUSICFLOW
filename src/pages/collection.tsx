@@ -1,24 +1,52 @@
 // An album or a catalog playlist: cover, a few actions, and the songs.
 
-import { Ellipsis, Heart, ListEnd, ListPlus, ListStart, Play, Share2, Shuffle } from 'lucide-preact';
+import { ArrowDownToLine, CircleCheck, Ellipsis, Heart, ListEnd, ListPlus, ListStart, Play, Share2, Shuffle } from 'lucide-preact';
 import type { Album, Playlist, Track } from '../lib/types';
 import { getAlbum, getPlaylist, keys } from '../lib/api';
 import { isSaved, toggleSaved } from '../lib/library';
+import * as offline from '../lib/offline';
 import * as player from '../lib/player';
 import { route, to } from '../lib/router';
 import { toast } from '../lib/toast';
 import { buzz } from '../lib/haptics';
 import { cx, firstArtist, longTime, plural } from '../lib/util';
-import { share } from '../ui/actions';
-import { Art, Empty, Failed, Link, SkeletonHero, SkeletonRows, TopBar } from '../ui/bits';
+import { share, startDownload } from '../ui/actions';
+import { Art, Empty, Failed, Link, SkeletonHero, SkeletonRows, Spinner, TopBar } from '../ui/bits';
 import { useQuery } from '../ui/hooks';
 import { TrackList } from '../ui/rows';
-import { openAddToPlaylist } from '../ui/sheet';
+import { openAddToPlaylist, openConfirm } from '../ui/sheet';
 import { openSheet } from '../ui/state';
 
 function total(tracks: Track[]): string {
   const seconds = tracks.reduce((sum, t) => sum + (t.duration || 0), 0);
   return seconds ? longTime(seconds) : '';
+}
+
+/** One button for a whole list: download it, see that it is on its way, or (once it is all here) remove it. */
+function DownloadButton(props: { tracks: Track[] }) {
+  if (!offline.supported) return null;
+  const songs = props.tracks.filter((t) => t.kind === 'song');
+  if (!songs.length) return null;
+  const have = songs.filter((t) => offline.isDownloaded(t.id)).length;
+  const moving = offline.active.value;
+  const coming = songs.some((t) => t.id in moving);
+  const all = have === songs.length;
+  const tap = () => {
+    if (coming) { toast(`Downloading: ${have} of ${songs.length} done.`); return; }
+    if (!all) { startDownload(songs); return; }
+    openConfirm({
+      title: songs.length === 1 ? 'Remove this download?' : `Remove these ${songs.length} downloads?`,
+      text: 'They stay in your library and still play when you are online.',
+      action: 'Remove',
+      danger: true,
+      onConfirm: () => { void offline.remove(songs.map((t) => t.id)); toast('Removed from this device'); },
+    });
+  };
+  return (
+    <button class={cx('icon-btn dl-btn', all && 'on')} onClick={tap} aria-label={all ? 'Downloaded. Tap to remove from this device.' : coming ? 'Downloading' : 'Download to play without internet'}>
+      {coming ? <Spinner size={21} /> : all ? <CircleCheck size={22} /> : <ArrowDownToLine size={22} />}
+    </button>
+  );
 }
 
 /** Play / Shuffle / save / more — shared by albums, playlists and the person's own lists. */
@@ -28,6 +56,8 @@ export function ListActions(props: {
   saved?: boolean;
   onSave?: () => void;
   onMore?: () => void;
+  /** Leave out the download button (the Downloads screen itself). */
+  noDownload?: boolean;
 }) {
   const none = !props.tracks.length;
   return (
@@ -38,12 +68,16 @@ export function ListActions(props: {
       <button class="btn quiet" disabled={none} onClick={() => { buzz('tap'); player.playShuffled(props.tracks, props.from); }}>
         <Shuffle size={18} /> Shuffle
       </button>
-      {props.onSave && (
-        <button class={cx('icon-btn heart', props.saved && 'on')} onClick={props.onSave} aria-label={props.saved ? 'Remove from library' : 'Save to library'} aria-pressed={props.saved}>
-          <Heart size={22} />
-        </button>
-      )}
-      {props.onMore && <button class="icon-btn" onClick={props.onMore} aria-label="More options"><Ellipsis size={22} /></button>}
+      {/* The small buttons stay together: on a narrow phone they drop to a row of their own instead of one straggler. */}
+      <div class="hero-icons">
+        {!props.noDownload && <DownloadButton tracks={props.tracks} />}
+        {props.onSave && (
+          <button class={cx('icon-btn heart', props.saved && 'on')} onClick={props.onSave} aria-label={props.saved ? 'Remove from library' : 'Save to library'} aria-pressed={props.saved}>
+            <Heart size={22} />
+          </button>
+        )}
+        {props.onMore && <button class="icon-btn" onClick={props.onMore} aria-label="More options"><Ellipsis size={22} /></button>}
+      </div>
     </div>
   );
 }

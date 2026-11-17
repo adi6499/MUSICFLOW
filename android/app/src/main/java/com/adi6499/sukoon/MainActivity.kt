@@ -6,6 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -57,6 +60,7 @@ class MainActivity : ComponentActivity() {
     private var pendingSave: String? = null
     private var insetTop = 0f
     private var insetBottom = 0f
+    private var networkWatch: ConnectivityManager.NetworkCallback? = null
 
     // "Restore from a backup": the web app's file input opens Android's file picker.
     private val pickFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -96,6 +100,7 @@ class MainActivity : ComponentActivity() {
         container = FrameLayout(this)
         setContentView(container)
         buildWebView()
+        watchNetwork()
 
         // Tell the web app how much room the status bar and gesture bar take,
         // and shrink the page when the keyboard is up so nothing hides behind it.
@@ -212,7 +217,54 @@ class MainActivity : ComponentActivity() {
 
         container.addView(view)
         webView = view
+        // Before the page starts, so it knows from its first moment whether there is internet.
+        tellNetwork()
         view.loadUrl(START)
+    }
+
+    /** Is there an internet connection right now? */
+    private fun hasInternet(): Boolean {
+        return try {
+            val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } catch (_: Exception) {
+            true // if the phone won't say, assume there is one
+        }
+    }
+
+    /**
+     * A web view does not notice the connection coming and going by itself; it
+     * has to be told. The web app uses this to switch to "offline mode": only
+     * downloaded songs play, and waiting downloads resume when the internet returns.
+     */
+    private fun tellNetwork() {
+        runOnUiThread {
+            try {
+                webView?.setNetworkAvailable(hasInternet())
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    private fun watchNetwork() {
+        val watch = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) = tellNetwork()
+
+            override fun onLost(network: Network) {
+                tellNetwork()
+                // The phone can take a moment to settle on "no connection at all": look again shortly.
+                container.postDelayed({ tellNetwork() }, 700)
+            }
+
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = tellNetwork()
+        }
+        try {
+            (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).registerDefaultNetworkCallback(watch)
+            networkWatch = watch
+        } catch (_: Exception) {
+        }
+        tellNetwork()
     }
 
     /** Run a line of JavaScript in the web app. Safe to call from any thread. */
@@ -318,6 +370,13 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        networkWatch?.let {
+            try {
+                (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).unregisterNetworkCallback(it)
+            } catch (_: Exception) {
+            }
+        }
+        networkWatch = null
         PlaybackService.command = null
         if (isFinishing) PlaybackService.stop()
         fileCallback?.onReceiveValue(null)

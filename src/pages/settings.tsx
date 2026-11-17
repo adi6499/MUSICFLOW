@@ -12,6 +12,7 @@ import { to } from '../lib/router';
 import { toast } from '../lib/toast';
 import { buzz } from '../lib/haptics';
 import { isApp } from '../lib/native';
+import * as offline from '../lib/offline';
 import { cx, isIOS, isTouch } from '../lib/util';
 import { Link, TopBar } from '../ui/bits';
 import { openConfirm, openShortcuts } from '../ui/sheet';
@@ -19,7 +20,7 @@ import { openSound } from '../ui/sound';
 import { isWide, themeNow } from '../ui/state';
 import { LanguageChips } from './home';
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 
 function Switch(props: { on: boolean; label: string; onChange: (on: boolean) => void }) {
   return <button class={cx('switch', props.on && 'on')} role="switch" aria-checked={props.on} aria-label={props.label} onClick={() => props.onChange(!props.on)} />;
@@ -201,6 +202,35 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+
+{offline.supported && (
+        <section class="set-group">
+          <span class="label">Downloads</span>
+          <div class="set-card">
+            <Link to={to.library('downloads')} class="set-row">
+              <div class="set-text">
+                <div class="set-name">Downloaded songs</div>
+                <div class="set-note">{offline.downloads.value.length ? `${offline.downloads.value.length} songs, ${offline.megabytes(offline.totalBytes.value)} on this device.` : 'Songs you download play without internet.'}</div>
+              </div>
+              <ChevronRight size={20} class="faint" />
+            </Link>
+            <div class="set-row" style={{ flexWrap: 'wrap' }}>
+              <div class="set-text" style={{ minWidth: 180 }}>
+                <div class="set-name">Download quality</div>
+                <div class="set-note">{s.downloadQuality === 'high' ? 'Best sound, about 10 MB a song.' : s.downloadQuality === 'saver' ? 'Smallest, about 3 MB a song.' : 'Good sound, about 5 MB a song.'}</div>
+              </div>
+              <Seg<Settings['downloadQuality']> label="Download quality" value={s.downloadQuality} options={[['high', 'High'], ['normal', 'Normal'], ['saver', 'Saver']]} onChange={(v) => setSetting('downloadQuality', v)} />
+            </div>
+            <div class="set-row">
+              <div class="set-text"><div class="set-name">Keep liked songs offline</div><div class="set-note">Every song you like is downloaded by itself.</div></div>
+              <Switch on={s.keepLiked} label="Keep liked songs offline" onChange={(v) => {
+                setSetting('keepLiked', v);
+                if (v) { const n = offline.download(liked.value); if (n) toast(`Downloading ${n} liked ${n === 1 ? 'song' : 'songs'}…`); }
+              }} />
+            </div>
+          </div>
+        </section>
+      )}
 
       <section class="set-group">
         <span class="label">Your library</span>

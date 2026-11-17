@@ -29,6 +29,8 @@ export const DEFAULT_SETTINGS: Settings = {
   fxLoud: 0,
   fxVocal: 0,
   fxLowCut: 0,
+  downloadQuality: 'normal',
+  keepLiked: false,
   podcastSpeed: 1,
   welcomed: false,
   homeTipSeen: false,
@@ -58,6 +60,8 @@ function readSettings(): Settings {
         merged.crossfade = typeof merged.crossfade === 'number' && merged.crossfade >= 0 && merged.crossfade <= 12 ? merged.crossfade : 5;
         merged.fxLowCut = typeof merged.fxLowCut === 'number' && merged.fxLowCut > 0 ? Math.min(300, merged.fxLowCut) : 0;
         merged.glass = merged.glass !== false;
+        if (merged.downloadQuality !== 'high' && merged.downloadQuality !== 'saver') merged.downloadQuality = 'normal';
+        merged.keepLiked = merged.keepLiked === true;
         if (typeof merged.lightTheme !== 'string') merged.lightTheme = DEFAULT_SETTINGS.lightTheme;
         if (typeof merged.darkTheme !== 'string') merged.darkTheme = DEFAULT_SETTINGS.darkTheme;
         return merged;

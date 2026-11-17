@@ -4,17 +4,18 @@
 import type { ComponentChildren, TargetedPointerEvent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
-  Check, Disc3, Heart, ListEnd, ListPlus, ListStart, MicVocal, Plus, Radio, Share2, Trash2,
+  ArrowDownToLine, Check, CircleX, Disc3, Heart, ListEnd, ListPlus, ListStart, MicVocal, Plus, Radio, Share2, Trash2,
 } from 'lucide-preact';
 import type { Track } from '../lib/types';
 import {
   addToPlaylist, createPlaylist, isLiked, playlists, removeFromPlaylist, settings,
 } from '../lib/library';
+import * as offline from '../lib/offline';
 import * as player from '../lib/player';
 import { isOpen } from '../lib/router';
 import { toast } from '../lib/toast';
 import { clock, cx, plural } from '../lib/util';
-import { goAlbum, goArtist, like, shareTrack, startRadio } from './actions';
+import { goAlbum, goArtist, like, shareTrack, startDownload, startRadio } from './actions';
 import { Art } from './bits';
 import { closeSheet, openSheet, sheet } from './state';
 
@@ -94,6 +95,8 @@ export function openTrackMenu(track: Track, opts: { playlistId?: string; queueIn
   openSheet((close) => {
     const liked = isLiked(track.id);
     const song = track.kind === 'song';
+    const kept = offline.downloads.value.find((d) => d.t.id === track.id);
+    const coming = track.id in offline.active.value;
     const act = (fn: () => void) => () => { close(); fn(); };
     return (
       <>
@@ -109,6 +112,11 @@ export function openTrackMenu(track: Track, opts: { playlistId?: string; queueIn
           <Item icon={<ListEnd size={20} />} label="Add to queue" onClick={act(() => { toast(player.addToQueue([track]) ? 'Added to queue' : 'Already in the queue'); })} />
           {song && <Item icon={<Heart size={20} fill={liked ? 'currentColor' : 'none'} />} label={liked ? 'Remove from Liked songs' : 'Like'} onClick={act(() => like(track))} />}
           {song && <Item icon={<ListPlus size={20} />} label="Add to playlist" onClick={() => openAddToPlaylist([track])} />}
+          {song && offline.supported && (kept
+            ? <Item icon={<Trash2 size={20} />} label="Remove download" end={offline.megabytes(kept.size)} onClick={act(() => { void offline.remove([track.id]); toast('Removed from this device'); })} />
+            : coming
+              ? <Item icon={<CircleX size={20} />} label="Stop downloading" onClick={act(() => offline.stop(track.id))} />
+              : <Item icon={<ArrowDownToLine size={20} />} label="Download" end="Plays without internet" onClick={act(() => startDownload([track]))} />)}
           {song && <Item icon={<Radio size={20} />} label="Start radio" onClick={act(() => void startRadio(track))} />}
           {(track.albumId || track.showId) && <Item icon={<Disc3 size={20} />} label={song ? 'Go to album' : 'Go to podcast'} onClick={act(() => goAlbum(track))} />}
           {song && track.artist && <Item icon={<MicVocal size={20} />} label="Go to artist" onClick={act(() => goArtist(track))} />}

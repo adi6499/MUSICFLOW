@@ -87,22 +87,38 @@ export function getLyrics(track: Track, signal?: AbortSignal): Promise<Lyrics | 
     const artist = firstArtist(track.artist);
     const e = encodeURIComponent;
     if (!title) return null;
+    // "No lyrics" may only be concluded when the lyrics library was actually
+    // reached. With no internet every request fails; that must count as an
+    // error, so the copy saved earlier (for downloaded songs) is used instead
+    // of being overwritten with "none".
+    let reached = false;
+    const tryAsk = async (path: string): Promise<any> => {
+      try {
+        const got = await ask(path, signal);
+        reached = true;
+        return got;
+      } catch (err) {
+        if (signal?.aborted) throw err;
+        return null;
+      }
+    };
 
     // 1. Exact lookup (fast, but needs the names to match closely).
     if (artist && track.duration) {
-      const exact = await ask(`/get?track_name=${e(title)}&artist_name=${e(artist)}&duration=${Math.round(track.duration)}`, signal).catch(() => null);
+      const exact = await tryAsk(`/get?track_name=${e(title)}&artist_name=${e(artist)}&duration=${Math.round(track.duration)}`);
       const got = toLyrics(exact);
       if (got?.synced) return got;
     }
     // 2. Search by title + artist, then by title alone; take the closest in length.
     const tries = artist ? [`/search?track_name=${e(title)}&artist_name=${e(artist)}`, `/search?q=${e(title + ' ' + artist)}`] : [`/search?q=${e(title)}`];
     for (const path of tries) {
-      const hits = await ask(path, signal).catch(() => null);
+      const hits = await tryAsk(path);
       if (Array.isArray(hits) && hits.length) {
         const got = toLyrics(best(hits, track.duration));
         if (got) return got;
       }
     }
+    if (!reached) throw new Error('The lyrics library could not be reached.');
     return null;
   }, true);
 }

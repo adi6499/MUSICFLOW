@@ -9,7 +9,8 @@ import { MOODS, moodTracks, stationFrom, type Mood } from '../lib/station';
 import { settings } from '../lib/library';
 import { toast } from '../lib/toast';
 import { buzz } from '../lib/haptics';
-import { firstArtist } from '../lib/util';
+import * as offline from '../lib/offline';
+import { firstArtist, plural } from '../lib/util';
 import { isApp } from '../lib/native';
 
 export function isTrack(item: Item): item is Track {
@@ -51,7 +52,21 @@ export function openItem(item: Item): void {
 export function like(track: Track): void {
   const now = toggleLike(track);
   buzz(now ? 'like' : 'tap');
+  // "Keep liked songs offline" is on: a like also downloads the song.
+  if (now && settings.peek().keepLiked) offline.download(track);
   toast(now ? 'Added to Liked songs' : 'Removed from Liked songs', now ? undefined : { label: 'Undo', run: () => { toggleLike(track); } });
+}
+
+/** Download songs for listening without internet, and say what is happening. */
+export function startDownload(tracks: Track[]): void {
+  const songs = tracks.filter((t) => t.kind === 'song');
+  if (!songs.length) { toast('Only songs can be downloaded.'); return; }
+  const first = songs.find((t) => !offline.has(t.id) && !(t.id in offline.active.peek()));
+  const n = offline.download(songs);
+  buzz('tap');
+  if (!n) { toast(songs.every((t) => offline.has(t.id)) ? 'Already downloaded' : 'Already downloading'); return; }
+  if (!offline.online.peek()) toast(n === 1 ? "You're offline. It will download when you're back." : "You're offline. They will download when you're back.", undefined, 4200);
+  else toast(n === 1 && first ? `Downloading “${first.title}”…` : `Downloading ${plural(n, 'song')}…`);
 }
 
 export async function startRadio(track: Track): Promise<void> {

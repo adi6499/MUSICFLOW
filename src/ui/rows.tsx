@@ -1,14 +1,23 @@
 // A song in a list.
 
 import type { ComponentChildren, TargetedKeyboardEvent, TargetedPointerEvent } from 'preact';
-import { Ellipsis, GripVertical, Heart } from 'lucide-preact';
+import { CircleArrowDown, Ellipsis, GripVertical, Heart } from 'lucide-preact';
 import type { Track } from '../lib/types';
+import { buzz } from '../lib/haptics';
 import { isLiked } from '../lib/library';
+import * as offline from '../lib/offline';
 import * as player from '../lib/player';
+import { toast } from '../lib/toast';
 import { clock, cx } from '../lib/util';
 import { like } from './actions';
 import { Art } from './bits';
 import { openTrackMenu } from './sheet';
+
+/** "42%" while a song is on its way to the device. Only this redraws as the number climbs. */
+function Coming(props: { id: string }) {
+  const p = offline.percent.value[props.id];
+  return <span class="dl-pct">{p === undefined ? 'Waiting' : Math.round(p * 100) + '%'}</span>;
+}
 
 /** What a queue row's drag handle needs. */
 export interface Grip {
@@ -42,8 +51,13 @@ export function TrackRow(props: {
   const on = !!cur && cur.id === t.id && (props.queueIndex === undefined || props.queueIndex === player.index.value);
   const live = on && player.playing.value;
   const liked = isLiked(t.id);
+  const saved = offline.isDownloaded(t.id);
+  const coming = t.id in offline.active.value;
+  // No internet and not on the device: shown faded, and a tap explains why.
+  const away = !offline.canPlay(t);
 
   const tap = () => {
+    if (away && !on) { buzz('warn'); toast("You're offline. This one isn't downloaded."); return; }
     if (props.onPlay) { props.onPlay(); return; }
     if (on) { player.toggle(); return; }
     player.playTracks(props.list, props.index, props.from);
@@ -52,7 +66,7 @@ export function TrackRow(props: {
 
   return (
     <div
-      class={cx('row', on && 'on')}
+      class={cx('row', on && 'on', away && 'away')}
       role="button"
       tabIndex={0}
       onClick={tap}
@@ -68,6 +82,8 @@ export function TrackRow(props: {
         <div class="row-title clip">{t.title}</div>
         <div class="row-sub clip">
           {t.explicit && <span class="badge-e">E</span>}
+          {saved && <CircleArrowDown size={13} class="dl-mark" aria-label="Downloaded" />}
+          {coming && <Coming id={t.id} />}
           {props.sub ?? t.artist}
         </div>
       </div>

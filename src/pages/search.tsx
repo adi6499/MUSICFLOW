@@ -116,7 +116,7 @@ export function Search() {
     <div class="page page-in">
       <header class="page-head"><h1 class="display">Search</h1></header>
 
-      <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'var(--bg)', margin: '8px calc(var(--gutter) * -1) 0', padding: 'calc(var(--safe-top) + 8px) var(--gutter) 10px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'var(--bg)', margin: '8px calc(var(--gutter) * -1) 0', padding: 'calc(var(--top) + 8px) var(--gutter) 10px' }}>
         <form class="search-box" role="search" onSubmit={(e) => { e.preventDefault(); remember(); input.current?.blur(); }}>
           <SearchIcon size={20} />
           <input

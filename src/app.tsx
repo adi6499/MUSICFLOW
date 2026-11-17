@@ -3,9 +3,10 @@
 
 import { computed, effect } from '@preact/signals';
 import { useRef } from 'preact/hooks';
-import { Home as HomeIcon, Library as LibraryIcon, Mic, Plus, Search as SearchIcon, Settings as Cog } from 'lucide-preact';
+import { Home as HomeIcon, Library as LibraryIcon, Mic, Plus, Search as SearchIcon, Settings as Cog, WifiOff } from 'lucide-preact';
 import { playlists, settings, createPlaylist } from './lib/library';
 import { setTheme } from './lib/native';
+import * as offline from './lib/offline';
 import { perfLevel } from './lib/perf';
 import * as player from './lib/player';
 import { cssVars, paletteFor } from './lib/themes';
@@ -19,7 +20,7 @@ import { Importer } from './pages/importer';
 import { MixPage } from './pages/mixes';
 import { SharedPage } from './pages/shared';
 import { StatsPage } from './pages/stats';
-import { HistoryPage, Library, LikedPage, LocalPlaylistPage } from './pages/library';
+import { DownloadsPage, HistoryPage, Library, LikedPage, LocalPlaylistPage } from './pages/library';
 import { Podcasts, ShowPage } from './pages/podcasts';
 import { Search } from './pages/search';
 import { SettingsPage } from './pages/settings';
@@ -125,6 +126,7 @@ function Screen() {
       if (r.parts[0] === 'liked') return <LikedPage />;
       if (r.parts[0] === 'history') return <HistoryPage />;
       if (r.parts[0] === 'playlist') return <LocalPlaylistPage />;
+      if (r.parts[0] === 'downloads') return <DownloadsPage />;
       break;
     case 'album': return <AlbumPage />;
     case 'playlist': return <PlaylistPage />;
@@ -158,11 +160,26 @@ function Chrome() {
   return isWide.value ? <Side active={active} /> : <Tabs active={active} />;
 }
 
+/** A thin strip across the top while there is no internet. */
+function OfflineBar() {
+  if (offline.online.value) return null;
+  const n = offline.downloads.value.length;
+  const there = route.value.name === 'library' && route.value.parts[0] === 'downloads';
+  return (
+    <div class="offline-bar" role="status">
+      <WifiOff size={14} />
+      <span>{n ? 'No internet. Your downloads still play.' : 'No internet.'}</span>
+      {n > 0 && !there && <Link to={to.library('downloads')}>Open</Link>}
+    </div>
+  );
+}
+
 /** The current screen. Redraws only when the address changes. */
 function Main() {
   const r = route.value;
   return (
     <main class="main">
+      <OfflineBar />
       {/* The key makes each screen start fresh; the search text is not part of it, so typing never resets the box. */}
       <Screen key={r.name + '/' + r.parts.join('/')} />
     </main>
@@ -230,6 +247,9 @@ if (typeof window !== 'undefined') {
     if (level) root.dataset.perf = String(level);
     else delete root.dataset.perf;
   });
+
+  // Room is kept at the top of every screen for the "no internet" strip while it shows.
+  effect(() => { root.classList.toggle('is-offline', !offline.online.value); });
 
   // Room is kept at the bottom of every screen once the player is showing.
   effect(() => { root.classList.toggle('has-player', hasPlayer.value); });

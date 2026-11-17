@@ -566,7 +566,7 @@ button.set-row:active { background: var(--line); }
 
 /* Library tiles */
 .lib-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (min-width: 760px) { .lib-tiles { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 760px) { .lib-tiles { grid-template-columns: repeat(3, 1fr); } }
 .lib-tile {
   display: flex;
   flex-direction: column;
@@ -708,3 +708,18 @@ button.set-row:active { background: var(--line); }
 .bar-track i.none { opacity: 0.12; }
 .bar-col.today .bar-track i { background: var(--accent); opacity: 1; }
 @keyframes grow { from { transform: scaleY(0.02); } }
+
+/* ------------------------------------------------------------------ downloads and offline */
+
+/* On a row: a small mark for "this song is on the device", or how far along it is. */
+.dl-mark { display: inline-block; vertical-align: -2px; margin-right: 5px; color: var(--accent); }
+.dl-pct { margin-right: 6px; font-size: 12px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hero-icons { display: flex; align-items: center; gap: 4px; }
+.hero-icons:empty { display: none; }
+/* The download button beside Play and Shuffle. */
+.dl-btn { color: var(--ink-2); }
+.dl-btn.on { color: var(--accent); }
+/* No internet and not downloaded: still listed, but plainly out of reach. */
+.row.away, .card.away, .pick.away { opacity: 0.38; }
+.dl-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-top: 16px; }
+.dl-card b { font-size: 15px; font-weight: 500; }

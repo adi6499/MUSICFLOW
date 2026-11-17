@@ -183,11 +183,36 @@ svg { display: block; flex: none; }
 
 /* ------------------------------------------------------------------ app frame */
 
-.app { min-height: 100vh; min-height: 100dvh; }
+/* --top is where a screen's content may begin: below the phone's status bar,
+   and below the "no internet" strip while that is showing. */
+.app { min-height: 100vh; min-height: 100dvh; --top: var(--safe-top); }
+.is-offline .app { --top: calc(var(--safe-top) + 30px); }
+.offline-bar {
+  position: fixed;
+  z-index: 45;
+  top: 0;
+  left: var(--side-w);
+  right: 0;
+  height: calc(var(--safe-top) + 30px);
+  padding: var(--safe-top) 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  animation: offline-in var(--t-3) var(--out) both;
+}
+.offline-bar span { overflow: hidden; text-overflow: ellipsis; }
+.offline-bar a { flex: none; text-decoration: underline; text-underline-offset: 3px; }
+@keyframes offline-in { from { transform: translateY(-100%); } to { transform: none; } }
 
 .main {
   margin-left: var(--side-w);
-  padding: calc(var(--safe-top) + 8px) 0 calc(var(--dock) + 28px);
+  padding: calc(var(--top) + 8px) 0 calc(var(--dock) + 28px);
   min-height: 100vh;
   min-height: 100dvh;
 }
@@ -247,9 +272,9 @@ svg { display: block; flex: none; }
   display: flex;
   align-items: center;
   gap: 6px;
-  height: calc(52px + var(--safe-top));
-  margin: calc(-8px - var(--safe-top)) calc(var(--gutter) * -1) 0;
-  padding: var(--safe-top) calc(var(--gutter) - 8px) 0;
+  height: calc(52px + var(--top));
+  margin: calc(-8px - var(--top)) calc(var(--gutter) * -1) 0;
+  padding: var(--top) calc(var(--gutter) - 8px) 0;
   background: transparent;
   border-bottom: 1px solid transparent;
   transition: background-color var(--t-2) var(--out), border-color var(--t-2) var(--out);

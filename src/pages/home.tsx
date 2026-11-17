@@ -6,6 +6,7 @@ import type { HomeSection, Track } from '../lib/types';
 import { getHome, homeKey, keys, searchSongs } from '../lib/api';
 import { dedupeSongs } from '../lib/normalize';
 import { history, mostPlayed, setSetting, settings, topArtistNames } from '../lib/library';
+import * as offline from '../lib/offline';
 import * as player from '../lib/player';
 import { route, to } from '../lib/router';
 import { cx, greeting, isIOS, isStandalone, plain } from '../lib/util';
@@ -117,13 +118,34 @@ function JumpBackIn() {
     <section class="section" style={{ marginTop: 18 }}>
       <div class="picks">
         {recent.map((t, i) => (
-          <button key={t.id} class="pick" onClick={() => player.playTracks(recent, i, 'Recently played')}>
+          <button key={t.id} class={cx('pick', !offline.canPlay(t) && 'away')} onClick={() => player.playTracks(recent, i, 'Recently played')}>
             <Art src={t.image} />
             <span class="clip-2">{t.title}</span>
           </button>
         ))}
       </div>
     </section>
+  );
+}
+
+/** With no internet, what is on the device comes first. */
+function OfflineShelf() {
+  if (offline.online.value) return null;
+  const list = offline.downloads.value;
+  if (!list.length) {
+    return (
+      <section class="section" style={{ marginTop: 18 }}>
+        <div class="set-card" style={{ padding: '16px 16px 14px' }}>
+          <b style={{ fontSize: 15.5, fontWeight: 500 }}>You're offline</b>
+          <p class="muted" style={{ margin: '6px 0 0', fontSize: 14 }}>Nothing is downloaded yet. Next time you're online, tap the download arrow on an album, a playlist or your liked songs, and they'll play here without internet.</p>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <Section title="Your downloads" more={to.library('downloads')}>
+      <ItemShelf items={list.slice(0, 16).map((d) => d.t)} small />
+    </Section>
   );
 }
 
@@ -155,6 +177,7 @@ export function Home() {
 
       {!s.welcomed && <Welcome />}
       {s.welcomed && !s.homeTipSeen && isIOS && !isStandalone && !isApp && <HomeScreenTip />}
+      <OfflineShelf />
       <JumpBackIn />
       <MadeForYou />
 

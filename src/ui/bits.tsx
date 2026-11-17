@@ -2,6 +2,7 @@
 
 import type { ComponentChildren, TargetedMouseEvent } from 'preact';
 import { ArrowLeft, CloudOff, LoaderCircle, Music2, Pause, Play, RotateCw } from 'lucide-preact';
+import { artTick, offlineArt, online } from '../lib/offline';
 import * as player from '../lib/player';
 import { back, go } from '../lib/router';
 import { cx, img } from '../lib/util';
@@ -17,7 +18,11 @@ export function Art(props: {
   alt?: string;
   children?: ComponentChildren;
 }) {
-  const url = img(props.src, props.size ?? 150);
+  const remote = img(props.src, props.size ?? 150);
+  // Without internet, a downloaded song's cover comes from the copy kept on the device.
+  artTick.value;
+  const kept = remote ? offlineArt(remote) : undefined;
+  const url = kept && !online.value ? kept : remote;
   return (
     <span class={cx('art', props.round && 'round', props.class)}>
       <span class="art-fallback" aria-hidden="true"><Music2 size={22} strokeWidth={1.6} /></span>
@@ -30,7 +35,11 @@ export function Art(props: {
           decoding="async"
           draggable={false}
           onLoad={(e) => (e.currentTarget as HTMLImageElement).classList.add('ready')}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          onError={(e) => {
+            const el = e.currentTarget as HTMLImageElement;
+            const saved = remote ? offlineArt(remote) : undefined;
+            if (saved && el.src !== saved) el.src = saved; else el.style.display = 'none';
+          }}
         />
       )}
       {props.children}
